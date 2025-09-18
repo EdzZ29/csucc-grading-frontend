@@ -137,7 +137,7 @@
         </button>
         <button
           @click="showLogoutModal = false"
-          class="px-6 py-2 bg-green-700 text-white  hover:bg-gray-400"
+          class="px-6 py-2 bg-green-700 text-white hover:bg-gray-400"
         >
           No
         </button>
