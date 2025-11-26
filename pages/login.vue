@@ -1,121 +1,133 @@
-
 <template>
-  <div class="min-h-screen bg-cover bg-center" :style="{ backgroundImage: `url(${bgImage})` }">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-md w-full">
-      <div class="flex justify-between items-center max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <a href="#" class="flex items-center space-x-3">
-          <img src="../assets/image/header-logo.png" alt="Csucc Logo" class="h-8 sm:h-10 md:h-12" />
-        </a>
-      </div>
-    </nav>
+  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
 
-    <!-- Main Content -->
-    <div 
-      class=" flex flex-col md:flex-row justify-center items-center md:items-start max-w-screen-xl mx-auto p-6 mt-12 md:mt-24 gap-12 md:gap-24"
-      
-      >
-      <!-- Info Section -->
-      <div class="p-4 sm:p-6 flex-1 max-w-4xl mx-auto text-center">
-        <img
-          src="../assets/image/site-logo.svg"
-          alt="Site Logo"
-          class="h-36 sm:h-48 md:h-60 mx-auto mb-4 sm:mb-6"
+    <SuccessMessage ref="successMsg" />
+
+    <form
+      @submit.prevent="onSubmit"
+      class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
+    >
+      <div class="mb-5">
+        <label
+          for="email"
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          Email
+        </label>
+        <input
+          v-model="form.email"
+          @input="validateField('email')"
+          type="email"
+          id="email"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         />
-        <h1
-          class="font-bold font-epundaslab text-4xl sm:text-5xl md:text-5xl text-gray-800 leading-snug "
-        >
-          CARAGA STATE UNIVERSITY
-        </h1>
-        <p class="text-lg font-poppins font-semibold sm:text-lg text-gray-600 mt-1">CABADBARAN CAMPUS</p>
-        <p
-          class="font-epundaslab text-gray-500 mt-4 sm:mt-5 text-sm sm:text-base md:text-lg"
-        >
-          A socially-engaged digital, innovation, and entrepreneurial university
-          excelling globally in science, engineering, and the arts by 2028.
+        <p v-if="errors.email" class="text-red-500 text-sm mt-2">
+          {{ errors.email }}
+        </p>
+        <p v-if="backendError" class="text-red-600 text-sm mt-2">
+          {{ backendError }}
         </p>
       </div>
 
-      <!-- Login Form -->
-      <div
-        class="bg-white border shadow-md p-4 sm:p-6 flex-1 max-w-sm sm:max-w-md md:mt-16 mx-auto w-full"
+      <div class="mb-5">
+        <label
+          for="password"
+          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          Password
+        </label>
+        <input
+          v-model="form.password"
+          @input="validateField('password')"
+          type="password"
+          id="password"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        />
+        <p v-if="errors.password" class="text-red-500 text-sm mt-2">
+          {{ errors.password }}
+        </p>
+      </div>
+
+      <div class="flex items-center mb-5">
+        <input
+          id="remember"
+          type="checkbox"
+          v-model="form.remember"
+          class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
+        />
+        <label
+          for="remember"
+          class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+        >
+          Remember me
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
-        <h2 class="text-xl font-epundaslab sm:text-2xl font-bold text-gray-800 text-center mb-1">
-          Login
-        </h2>
-        <p class="mb-6 text-center text-xs sm:text-sm font-inria font-regular text-gray-400">
-          Please enter your details to login.
-        </p>
-         <form @submit.prevent="login">
-            <input v-model="email" type="email" placeholder="Email" class="font-inria w-full mb-6 p-2 border"/>
-            
-            <input
-            
-              v-model="password"
-              type="password"
-              placeholder="Password"
-              class="w-full mb-4 p-2 border font-inria "
-            />
-            <button
-              type="submit"
-              class="w-full bg-green-700 font-inria hover:bg-green-800 transition text-white p-2 mt-4"
-            >
-              Login
-            </button>
-          </form>
-
-          <p v-if="error" class="text-red-500 mt-3">{{ error }}</p>
-      </div>
-    </div>
+        Submit
+      </button>
+    </form>
   </div>
 </template>
 
 <script>
-import bgImage from '@/assets/image/background-image.png'
+import * as yup from "yup";
+import axios from "axios";
+import SuccessMessage from "@/components/success-message.vue";
 
 export default {
-
-  middleware: 'auth',
-
+  components: { SuccessMessage },
   data() {
     return {
-      bgImage,
-      email: '',
-      password: '',
-      error: null
-    }
+      form: { email: "", password: "", remember: false },
+      errors: {},
+      backendError: "",
+      schema: yup.object().shape({
+        email: yup.string().email("Please enter a valid email").required("Email is required"),
+        password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+      }),
+    };
   },
-
-  
   methods: {
-    async login() {
+    async validateField(field) {
       try {
-        const res = await this.$axios.post('/login', {
-          email: this.email,
-          password: this.password
-        })
-
-        this.$store.commit('auth/setUser', {
-          email: this.email,
-          role: res.data.role,
-          token: res.data.access_token
-        })
-
-
-        localStorage.setItem('user', JSON.stringify(res.data))
-
-        if (res.data.role === 'Admin') {
-          this.$router.push('/admin')
-        } else if (res.data.role === 'Instructor') {
-          this.$router.push('/auth/users/instructor-module')
-        } else {
-          this.$router.push('/')
-        }
+        await this.schema.validateAt(field, this.form);
+        this.$set(this.errors, field, "");
       } catch (err) {
-        this.error = err.response?.data?.message || 'Login failed'
+        this.$set(this.errors, field, err.message);
       }
     },
 
-  }
-}
+    async onSubmit() {
+      this.errors = {};
+      this.backendError = "";
+
+      try {
+        await this.schema.validate(this.form, { abortEarly: false });
+
+        const res = await axios.post("http://localhost:9000/api/auth/login", {
+          email: this.form.email,
+          password: this.form.password,
+        }, { withCredentials: true });
+
+        this.$refs.successMsg.show("Successfully logged in!", "success");
+
+        setTimeout(() => {
+          window.location.href = res.data.redirect;
+        }, 2000);
+      } catch (err) {
+        if (err.response && err.response.data.message) {
+          this.$refs.successMsg.show(err.response.data.message, "error");
+        } else if (err.inner) {
+          err.inner.forEach((e) => { this.$set(this.errors, e.path, e.message); });
+        } else {
+          this.$refs.successMsg.show("Something went wrong. Please try again.", "error");
+        }
+      }
+    },
+  },
+};
 </script>

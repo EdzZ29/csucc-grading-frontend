@@ -1,5 +1,5 @@
 export default {
-  // Global page headers: https://go.nuxtjs.dev/config-head
+
   head: {
     title: 'Nuxt Starter',
     htmlAttrs: {
@@ -11,11 +11,11 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '../../assets/image/site-logo.svg' }
     ]
   },
 
-  // Global CSS: https://go.nuxtjs.dev/config-css
+
   css: [
     '@/assets/css/tailwind.css',
   ],
@@ -38,33 +38,34 @@ export default {
     ]
   },
 
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
+
   plugins: [
+    { src: '~/plugins/handsontable.js', mode: 'client' },
+    { src: '~/plugins/html2pdf.client.js', mode: 'client' }
   ],
 
-  // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
-  // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
      '@nuxt/postcss8',
   ],
 
-  // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
   ],
 
   axios: {
-    baseUrl: 'http://localhost:8000/api',
+    baseUrl: 'http://localhost:9000/api',
     credentials: true
   },
 
   server: {
-    port: 5000
+    port: 7000
   },
 
-  // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    transpile: ['html2pdf.js', 'jspdf', 'fast-png'],
   }
+
 }
+
