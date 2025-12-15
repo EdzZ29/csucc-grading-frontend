@@ -12,11 +12,11 @@
         <div class="flex flex-col items-center text-center mb-6">
           <img src="../../assets/image/user.png" class="w-20 h-20 mb-2" alt="">
           <h2 class="text-xl font-semibold text-white font-epundaslab">
-            {{ user?.first_name + ' ' + user?.last_name || "Guest" }}
+            {{ user?.firstname + ' ' + user?.lastname || "Guest" }}
           </h2>
           <span class="text-sm text-gray-200 font-inria">{{ user?.role || "No role" }}</span>
         </div>
-        
+
         <div class="border-b border-gray-500 mb-5"></div>
 
         <!-- Menu Items -->
@@ -187,7 +187,7 @@ export default {
       try {
         await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
         this.user = null
-        window.location.href = "/login"
+        window.location.href = "/"
       } catch (err) {
         console.error("Logout failed:", err)
       }

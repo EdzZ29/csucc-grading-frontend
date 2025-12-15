@@ -16,7 +16,7 @@
           </h2>
           <span class="text-sm text-gray-200 font-inria">{{ user?.role || "No role" }}</span>
         </div>
-        
+
         <div class="border-b border-gray-500 mb-5"></div>
 
         <!-- Menu Items -->
@@ -134,7 +134,7 @@ import Dashboard from "@/components/dashboard/dashboard.vue"
 import User from "@/components/user/user.vue"
 import Profile from "@/components/profile/profile.vue"
 import GradingModule from "@/components/grading-module/grading-module.vue"
-import ImportCSV from "@/components/import-csv.vue"
+import ImportCSV from "@/components/upload/import-csv.vue"
 import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
 
 export default {
@@ -161,6 +161,7 @@ export default {
     try {
       const res = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true })
       this.user = res.data
+      console.log(res)
     } catch (err) {
       console.error("Failed to fetch user:", err)
     }
@@ -191,7 +192,7 @@ export default {
       try {
         await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
         this.user = null
-        window.location.href = "/login"
+        window.location.href = "/"
       } catch (err) {
         console.error("Logout failed:", err)
       }

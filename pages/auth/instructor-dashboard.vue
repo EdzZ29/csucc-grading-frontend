@@ -16,7 +16,7 @@
           </h2>
           <span class="text-sm text-gray-200 font-inria">{{ user?.role || "No role" }}</span>
         </div>
-        
+
         <div class="border-b border-gray-500 mb-5"></div>
 
         <!-- Menu Items -->
@@ -152,7 +152,7 @@ export default {
         { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
         { name: "Class Record", icon: require("../../assets/image/grading-module.png") },
         { name: "Profile", component: Profile, icon: require("../../assets/image/user-sidebar.png") },
-  
+
       ]
     }
   },
@@ -190,7 +190,7 @@ export default {
       try {
         await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
         this.user = null
-        window.location.href = "/login"
+        window.location.href = "/"
       } catch (err) {
         console.error("Logout failed:", err)
       }

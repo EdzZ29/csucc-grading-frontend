@@ -17,18 +17,6 @@ const fetchUser = async () => {
   }
 };
 
-// ✅ Fetch students
-const fetchStudents = async () => {
-  try {
-    const response = await axios.get("http://localhost:9000/api/students/all");
-    students.value = Array.isArray(response.data)
-      ? response.data
-      : response.data.data || [];
-  } catch (err) {
-    console.error("Error fetching students:", err);
-  }
-};
-
 // ✅ Calendar setup
 const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const calendarDays = ref([]);
@@ -86,7 +74,6 @@ const observeAnimations = () => {
 
 onMounted(() => {
   fetchUser();
-  fetchStudents();
   generateCalendar();
   observeAnimations();
 });
