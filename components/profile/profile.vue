@@ -129,8 +129,9 @@ const updatePassword = async () => {
   }
 
   try {
+    // No ID needed in URL, backend gets it from cookie/token
     await axios.put(
-      `http://localhost:9000/api/auth/admin/user/reset-password/${user.value.id}`,
+      `http://localhost:9000/api/auth/user/update-password`,
       {
         password: password.value,
         password_confirm: passwordConfirm.value

@@ -1,6 +1,5 @@
 <template>
-  <div class="flex bg-gray-100">
-    <!-- Sidebar -->
+  <div class="flex bg-gray-100 font-sans min-h-screen">
     <aside :class="[
       'fixed top-0 left-0 z-40 w-64 h-full lg:h-screen bg-green-900 text-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out overflow-y-auto',
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -8,38 +7,37 @@
     ]" aria-label="Sidebar">
       <div class="flex flex-col px-3 py-8 min-h-full">
 
-        <!-- User Info Section -->
         <div class="flex flex-col items-center text-center mb-6">
-          <img src="../../assets/image/user.png" class="w-20 h-20 mb-2" alt="">
+          <img src="../../assets/image/user.png" class="w-20 h-20 mb-2 rounded-full border-2 border-green-700 p-1"
+            alt="User Avatar">
           <h2 class="text-xl font-semibold text-white font-epundaslab">
             {{ user?.firstname + ' ' + user?.lastname || "Guest" }}
           </h2>
-          <span class="text-sm text-gray-200 font-inria">{{ user?.role || "No role" }}</span>
+          <span class="text-sm text-green-200 font-inria uppercase tracking-wider">{{ user?.role || "No role" }}</span>
         </div>
 
-        <div class="border-b border-gray-500 mb-5"></div>
+        <div class="border-b border-green-800 mb-5"></div>
 
-        <!-- Menu Items -->
-        <ul class="space-y-3 text-sm font-small">
+        <ul class="space-y-2 text-sm font-medium">
           <li v-for="item in menuItems" :key="item.name">
             <a href="#" @click.prevent="setActivePage(item)" :class="[
-              'flex items-center p-2 rounded-lg group space-x-3',
+              'flex items-center p-3 rounded-lg group transition-all duration-200',
               activePage.name === item.name
-                ? 'bg-green-700 text-white'
-                : 'text-white hover:bg-green-700'
+                ? 'bg-green-700 text-white shadow-md'
+                : 'text-green-100 hover:bg-green-800 hover:text-white'
             ]">
-              <!-- Icon beside text -->
-              <img :src="item.icon" class="w-4 h-4" alt="icon" />
+              <img :src="item.icon" class="w-5 h-5 mr-3 opacity-90" alt="icon" />
               <span>{{ item.name }}</span>
             </a>
           </li>
 
-          <div class="border-b border-gray-500"></div>
+          <div class="my-4 border-b border-green-800"></div>
 
           <li>
             <a href="#" @click.prevent="showLogout"
-              class="flex items-center space-x-3 text-md text-white hover:text-white px-2 py-2 rounded-lg hover:bg-red-800 transition">
-              <img src="../../assets/image/logout.png" class="w-4 h-4 text-white" alt="logout icon" />
+              class="flex items-center p-3 rounded-lg text-red-200 hover:bg-red-900 hover:text-white transition-all duration-200 group">
+              <img src="../../assets/image/logout.png" class="w-5 h-5 mr-3 opacity-80 group-hover:opacity-100"
+                alt="logout icon" />
               <span>Logout</span>
             </a>
           </li>
@@ -48,80 +46,182 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen">
+    <div class="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all duration-300">
 
-      <!-- Navbar -->
-      <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mb-4">
-        <div class="flex justify-between items-center p-4">
-          <img src="../../assets/image/header-logo.png" class="h-14" alt="Logo" />
-          <div class="flex items-center space-x-4">
+      <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm">
+        <div class="flex justify-between items-center px-6 py-3">
+          <div class="flex items-center gap-4">
             <button @click="toggleSidebar"
-              class="md:inline-flex lg:hidden items-center p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
-              <svg :class="{ 'rotate-90': sidebarOpen }" class="w-6 h-6 transition-transform duration-300"
-                fill="currentColor" viewBox="0 0 20 20">
+              class="lg:hidden p-2 text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path clip-rule="evenodd" fill-rule="evenodd"
                   d="M2 4.75h15v1.5H2v-1.5zm0 10.5h8v1.5H2v-1.5zM2 10h15v1.5H2V10z" />
               </svg>
             </button>
+            <img src="../../assets/image/header-logo.png" class="h-12 w-auto" alt="Logo" />
+          </div>
+
+          <div class="text-sm text-gray-500 font-medium">
+            {{ currentDate }}
           </div>
         </div>
       </nav>
 
-      <!-- Dynamic Content -->
-      <main class="flex-1 p-4">
-        <component :is="activePage.component" :user="user" />
+      <main class="flex-1 p-6 overflow-y-auto">
+
+        <div v-if="activePage.name === 'Dashboard'" class="animate-fade-in space-y-8">
+
+          <div class="flex flex-col xl:flex-row gap-6">
+
+            <div
+              class="flex-1 bg-gradient-to-r from-green-800 to-green-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden flex flex-col justify-center min-h-[250px]">
+              <div class="relative z-10 max-w-lg">
+                <h1 class="text-3xl md:text-4xl font-bold font-epundaslab mb-3 leading-tight">
+                  Hello, {{ user?.firstname }}! 👋
+                </h1>
+                <p class="text-green-100 text-lg leading-relaxed">
+                  Welcome back to your instructor dashboard. Here you can manage your modules, track student
+                  performance, and view your class records.
+                </p>
+              </div>
+              <div
+                class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl pointer-events-none">
+              </div>
+            </div>
+
+            <div class="w-full xl:w-96 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-800 text-lg">{{ currentMonth }} {{ currentYear }}</h3>
+              </div>
+
+              <div class="grid grid-cols-7 text-center text-xs text-gray-400 mb-2 font-bold uppercase tracking-wide">
+                <span v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day">{{ day }}</span>
+              </div>
+              <div class="grid grid-cols-7 text-center text-sm gap-y-3">
+                <span v-for="n in 31" :key="n" :class="[
+                  'w-8 h-8 flex items-center justify-center rounded-full mx-auto cursor-pointer transition-colors',
+                  n === currentDay ? 'bg-green-600 text-white shadow-md font-bold' : 'text-gray-600 hover:bg-gray-100'
+                ]">
+                  {{ n }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-5 font-epundaslab border-l-4 border-green-600 pl-4">
+              Assigned Workload Overview
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow group">
+                <div>
+                  <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Masterlists Assigned
+                  </p>
+                  <h4 class="text-4xl font-bold text-green-800 group-hover:text-green-600 transition-colors">{{
+                    masterlistStats.count }}</h4>
+                  <p class="text-sm text-gray-500 mt-2">Active classes for this semester</p>
+                </div>
+                <div
+                  class="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                  <img src="../../assets/image/grading-module.png" class="w-8 h-8 opacity-80" alt="icon">
+                </div>
+              </div>
+
+              <div
+                class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center hover:shadow-md transition-shadow relative overflow-hidden group">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 z-10">Latest Class Added</p>
+
+                <div v-if="masterlistStats.latest" class="flex items-start gap-4 z-10">
+                  <div
+                    class="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600 font-bold text-xl">
+                    {{ masterlistStats.latest.subjcode.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <h4 class="text-lg font-bold text-gray-800">{{ masterlistStats.latest.subjcode }}</h4>
+                      <span
+                        class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200">
+                        {{ masterlistStats.latest.section }}
+                      </span>
+                    </div>
+                    <p class="text-sm text-gray-600 line-clamp-1">{{ masterlistStats.latest.description }}</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ masterlistStats.latest.sy }} • {{ masterlistStats.latest.sem }} Sem
+                    </p>
+                  </div>
+                </div>
+
+                <div v-else class="text-gray-400 italic text-sm z-10">
+                  No classes assigned yet.
+                </div>
+
+                <div
+                  class="absolute right-[-10px] bottom-[-10px] opacity-5 transform rotate-12 group-hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <component v-else :is="activePage.component" :user="user" />
+
       </main>
 
-      <!-- Footer -->
-      <footer class="bg-white dark:bg-gray-900 rounded-lg shadow-sm mt-20">
-        <div class="w-full p-4 md:py-8">
-          <div class="sm:flex sm:items-center sm:justify-between">
-            <img src="../../assets/image/header-logo.png" class="h-14 mb-4 sm:mb-0" alt="Logo" />
-            <ul class="flex flex-wrap text-sm font-medium text-gray-500 dark:text-gray-400">
-              <li><a href="#" class="hover:underline me-4 md:me-6">About</a></li>
-              <li><a href="#" class="hover:underline me-4 md:me-6">Privacy Policy</a></li>
-              <li><a href="#" class="hover:underline me-4 md:me-6">Licensing</a></li>
+      <footer class="bg-white border-t border-gray-200 dark:bg-gray-900 mt-auto">
+        <div class="w-full max-w-screen-xl mx-auto p-4 md:py-6">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <img src="../../assets/image/header-logo.png" class="h-10" alt="Logo" />
+              <div class="text-xs text-gray-500">
+                <p class="font-bold text-gray-700">Caraga State University</p>
+                <p>Ampayon, Butuan City</p>
+              </div>
+            </div>
+            <ul class="flex flex-wrap items-center text-xs font-medium text-gray-500 dark:text-gray-400 gap-4">
+              <li><a href="#" class="hover:underline">About</a></li>
+              <li><a href="#" class="hover:underline">Privacy Policy</a></li>
               <li><a href="#" class="hover:underline">Contact</a></li>
             </ul>
           </div>
-
-          <hr class="my-6 border-gray-200 dark:border-gray-700" />
-
-          <div class="text-center space-y-2">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              2024 All Rights Reserved - Caraga State University<br />
-              Ampayon, Butuan City, Caraga Region, 8600 Philippines<br />
-              Powered by: CSU - ICT Center, CSU - Main Campus
-            </p>
-          </div>
+          <hr class="my-4 border-gray-200 dark:border-gray-700" />
+          <span class="block text-xs text-gray-400 text-center">
+            © 2024 Caraga State University - ICT Center. All Rights Reserved.
+          </span>
         </div>
       </footer>
 
     </div>
 
-    <!-- Logout Modal -->
-    <div v-if="showLogoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-80 transform transition-transform duration-300"
-        :class="modalAnimation ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Confirm Logout</h2>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">Are you sure you want to logout?</p>
+    <div v-if="showLogoutModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-80 transform transition-all scale-100"
+        :class="modalAnimation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Sign Out?</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Are you sure you want to end your session?</p>
         <div class="flex justify-end space-x-3">
           <button @click="cancelLogout"
-            class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600">
+            class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-colors">
             Cancel
           </button>
-          <button @click="confirmLogout" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
+          <button @click="confirmLogout"
+            class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-medium shadow-md transition-colors">
             Logout
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Scroll To Top -->
     <button v-show="showScrollTop" @click="scrollToTop"
-      class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transition z-50">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      class="fixed bottom-6 right-6 bg-green-700 hover:bg-green-800 text-white p-3 rounded-full shadow-lg transition-all z-50 transform hover:scale-110">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
       </svg>
     </button>
@@ -130,14 +230,13 @@
 
 <script>
 import axios from "axios"
-import Dashboard from "@/components/dashboard/dashboard.vue"
-import User from "@/components/user/user.vue"
 import Profile from "@/components/profile/profile.vue"
 import GradingModule from "@/components/grading-module/grading-module.vue"
-import ImportCSV from "@/components/import-csv.vue"
 import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
+import ClassRecord from "@/components/class-record/class-record.vue"
 
 export default {
+  middleware: 'auth',
   data() {
     return {
       user: null,
@@ -145,21 +244,39 @@ export default {
       showLogoutModal: false,
       modalAnimation: false,
       showScrollTop: false,
-      activePage: { name: "Dashboard", component: Dashboard },
+      activePage: { name: "Dashboard", component: null },
       menuItems: [
-        { name: "Dashboard", component: Dashboard, icon: require("../../assets/image/dashboard-sidebar.png") },
+        { name: "Dashboard", component: null, icon: require("../../assets/image/dashboard-sidebar.png") },
         { name: "Grading Module", component: GradingModule, icon: require("../../assets/image/grading-module.png") },
         { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
-        { name: "Class Record", icon: require("../../assets/image/grading-module.png") },
+        { name: "Class Record", component: ClassRecord, icon: require("../../assets/image/grading-module.png") },
         { name: "Profile", component: Profile, icon: require("../../assets/image/user-sidebar.png") },
-
-      ]
+      ],
+      masterlistStats: {
+        count: 0,
+        latest: null
+      }
+    }
+  },
+  computed: {
+    currentDate() {
+      return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    currentMonth() {
+      return new Date().toLocaleDateString('en-US', { month: 'long' });
+    },
+    currentYear() {
+      return new Date().getFullYear();
+    },
+    currentDay() {
+      return new Date().getDate();
     }
   },
   async mounted() {
     try {
       const res = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true })
       this.user = res.data
+      this.fetchDashboardStats();
     } catch (err) {
       console.error("Failed to fetch user:", err)
     }
@@ -169,14 +286,42 @@ export default {
     window.removeEventListener("scroll", this.handleScroll)
   },
   methods: {
+    async fetchDashboardStats() {
+      try {
+        const res = await axios.get("http://localhost:9000/api/masterlist/all", { withCredentials: true });
+        const lists = res.data;
+
+        // ✅ LOGIC UPDATE: Calculate Unique Classes (Subject + Section)
+        const uniqueClasses = new Set();
+        lists.forEach(item => {
+          if (item.subjcode && item.section) {
+            // Create a unique key for each class
+            uniqueClasses.add(`${item.subjcode}-${item.section}`);
+          }
+        });
+
+        // Use the size of the Set for the count
+        this.masterlistStats.count = uniqueClasses.size;
+
+        if (lists.length > 0) {
+          // Sort by ID descending to get the most recent entry
+          lists.sort((a, b) => b.masterlist_id - a.masterlist_id);
+          // Use the latest entry as the representative for the "Latest Class" card
+          this.masterlistStats.latest = lists[0];
+        }
+      } catch (e) {
+        console.error("Failed to load dashboard stats", e);
+      }
+    },
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen
     },
     setActivePage(item) {
-      if (item.component) {
-        this.activePage = item
+      this.activePage = item;
+      this.sidebarOpen = false;
+      if (item.name === 'Dashboard') {
+        this.fetchDashboardStats();
       }
-      this.sidebarOpen = false
     },
     showLogout() {
       this.showLogoutModal = true
@@ -189,6 +334,7 @@ export default {
     async confirmLogout() {
       try {
         await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
+        this.$store.dispatch('logout')
         this.user = null
         window.location.href = "/"
       } catch (err) {
@@ -204,3 +350,21 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

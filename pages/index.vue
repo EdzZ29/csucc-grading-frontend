@@ -101,23 +101,38 @@ export default {
       }
     },
 
-    async onSubmit() {
+async onSubmit() {
       this.errors = {};
       this.backendError = "";
 
       try {
         await this.schema.validate(this.form, { abortEarly: false });
 
-        const res = await axios.post("http://localhost:9000/api/auth/login", {
+        // 1. Login Request
+        const loginRes = await axios.post("http://localhost:9000/api/auth/login", {
           email: this.form.email,
           password: this.form.password,
         }, { withCredentials: true });
 
+        // 2. IMPORTANT: Fetch User Data immediately using the new session
+        const userRes = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true });
+
+        // 3. Save User to Store & Cookie (Using the action we created in step 1)
+        this.$store.dispatch('login', userRes.data);
+
         this.$refs.successMsg.show("Successfully logged in!", "success");
 
+        // 4. Redirect using Router (SPA Navigation) instead of window.location
         setTimeout(() => {
-          window.location.href = res.data.redirect;
-        }, 2000);
+          // Ensure path starts with /
+          let path = loginRes.data.redirect;
+          if (!path.startsWith('/')) {
+            path = '/' + path;
+          }
+          console.log(path)
+          this.$router.push(path);
+        }, 1000);
+
       } catch (err) {
         if (err.response && err.response.data.message) {
           this.$refs.successMsg.show(err.response.data.message, "error");
