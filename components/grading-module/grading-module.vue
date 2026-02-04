@@ -1,17 +1,17 @@
 <template>
-  <div class="font-inria min-h-screen bg-gray-50 p-4 md:p-8">
+  <div class="font-inria min-h-screen bg-white p-4 md:p-8 rounded-md">
     <success-message ref="msg" />
 
     <grade-weight-modal :is-open="showWeightModal" @close="showWeightModal = false" @save="handleWeightSave" />
 
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <div>
-        <h1 class="text-3xl font-bold font-epundaslab text-green-900">Grading Module</h1>
-        <p class="text-sm text-gray-500 mt-1">Manage student grades and class records</p>
+        <h1 class="text-3xl font-bold font-epundaslab text-black700">Grading Module</h1>
+        <p class="text-md text-gray-500 mt-1">Manage student grades and class records</p>
       </div>
 
       <button v-if="user && (user.role === 'ADMIN' || user.role === 'Admin')" @click="showWeightModal = true"
-        class="flex items-center gap-2 bg-white text-green-800 px-4 py-2 rounded-lg border border-green-200 text-sm font-bold shadow-sm">
+        class="flex items-center gap-2 bg-black700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
         <span>Set Grade Weights</span>
       </button>
     </div>
@@ -35,7 +35,7 @@
       </div>
 
       <button @click="loadClassesFromDatabase" :disabled="loading"
-        class="h-10 px-6 bg-green-700 text-white rounded-lg hover:bg-green-800 font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+        class="h-10 px-6 bg-orange400 text-white rounded-lg hover:bg-orange300 font-bold text-sm flex items-center gap-2 disabled:opacity-50">
         {{ loading ? "Loading..." : "Display Classes" }}
       </button>
 
@@ -53,21 +53,21 @@
 
       <div v-for="(subject, index) in subjects" :key="index" @click="openGradingSheet(subject)"
         class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md cursor-pointer group">
-        <div class="bg-green-50 p-4 border-b border-green-100">
+        <div class="bg-orange400 p-4 border-b border-green-100">
           <div class="flex justify-between items-start">
-            <h3 class="font-bold text-green-900 text-lg">{{ subject.subjcode }}</h3>
-            <span class="bg-white text-green-700 text-xs px-2 py-1 rounded font-bold border border-green-200">
+            <h3 class="font-bold text-white text-lg">{{ subject.subjcode }}</h3>
+            <span class="bg-white text-orange400 text-xs px-2 py-1 rounded font-bold">
               {{ subject.section }}
             </span>
           </div>
-          <p class="text-sm text-green-700 mt-1 truncate">{{ subject.description }}</p>
-          <p class="text-xs text-gray-500 mt-2 flex items-center gap-1">
+          <p class="text-sm text-white mt-1 truncate">{{ subject.description }}</p>
+          <p class="text-xs text-white mt-2 flex items-center gap-1">
             <span class="font-bold">Instructor:</span> {{ subject.instructor }}
           </p>
         </div>
         <div class="p-4 flex justify-between items-center text-sm text-gray-500">
           <span>{{ subject.students.length }} Students</span>
-          <span class="text-green-600 font-semibold group-hover:underline">Open Sheet &rarr;</span>
+          <span class="text-orange400 font-semibold group-hover:underline">Open Sheet &rarr;</span>
         </div>
       </div>
     </div>
@@ -245,6 +245,7 @@ export default {
       if (!this.activeSubject) return [];
 
       const system = this.activeSubject.gradingSystem;
+      console.log(this.activeSubject)
       const weights = this.gradeWeights[system]; // Get weights for this system
 
       // Helper function to format percentage

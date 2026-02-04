@@ -1,37 +1,34 @@
 <template>
   <div class="flex bg-gray-100 font-sans min-h-screen">
     <aside :class="[
-      'fixed top-0 left-0 z-40 w-64 h-full lg:h-screen bg-green-900 text-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out overflow-y-auto',
+      'fixed top-0 left-0 z-40 w-64 h-full lg:h-screen bg-gradient-to-b border-r border-gray-300 from-orange400 to-orange300 text-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out overflow-y-auto',
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       'lg:translate-x-0'
     ]" aria-label="Sidebar">
       <div class="flex flex-col px-3 py-8 min-h-full">
 
         <div class="flex flex-col items-center text-center mb-6">
-          <img src="../../assets/image/user.png" class="w-20 h-20 mb-2 rounded-full border-2 border-green-700 p-1"
+          <img src="../../assets/image/user.png" class="w-20 h-20 mb-2 rounded-full border-2 p-1"
             alt="User Avatar">
           <h2 class="text-xl font-semibold text-white font-epundaslab">
             {{ user?.firstname + ' ' + user?.lastname || "Guest" }}
           </h2>
-          <span class="text-sm text-green-200 font-inria uppercase tracking-wider">{{ user?.role || "No role" }}</span>
+          <span class="text-sm text-white font-inria uppercase tracking-wider">{{ user?.role || "No role" }}</span>
         </div>
 
-        <div class="border-b border-green-800 mb-5"></div>
-
+        <div class="border border-orange200 mb-6"></div>
         <ul class="space-y-2 text-sm font-medium">
           <li v-for="item in menuItems" :key="item.name">
             <a href="#" @click.prevent="setActivePage(item)" :class="[
               'flex items-center p-3 rounded-lg group transition-all duration-200',
               activePage.name === item.name
-                ? 'bg-green-700 text-white shadow-md'
-                : 'text-green-100 hover:bg-green-800 hover:text-white'
+                ? 'bg-black700 text-white shadow-md'
+                : 'text-white hover:bg-orange300 hover:text-white'
             ]">
               <img :src="item.icon" class="w-5 h-5 mr-3 opacity-90" alt="icon" />
               <span>{{ item.name }}</span>
             </a>
           </li>
-
-          <div class="my-4 border-b border-green-800"></div>
 
           <li>
             <a href="#" @click.prevent="showLogout"
@@ -48,7 +45,7 @@
 
     <div class="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all duration-300">
 
-      <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm">
+      <nav class="bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 sticky top-0 z-30 shadow-sm">
         <div class="flex justify-between items-center px-6 py-3">
           <div class="flex items-center gap-4">
             <button @click="toggleSidebar"
@@ -58,7 +55,8 @@
                   d="M2 4.75h15v1.5H2v-1.5zm0 10.5h8v1.5H2v-1.5zM2 10h15v1.5H2V10z" />
               </svg>
             </button>
-            <img src="../../assets/image/header-logo.png" class="h-12 w-auto" alt="Logo" />
+            <img src="../../assets/image/ceit-logo.png" class="h-16 w-auto" alt="Logo" />
+            <p class="font-inria text-lg font-semibold text-black700">College of Engineering and Information Technology</p>
           </div>
 
           <div class="text-sm text-gray-500 font-medium">
@@ -74,12 +72,12 @@
           <div class="flex flex-col xl:flex-row gap-6">
 
             <div
-              class="flex-1 bg-gradient-to-r from-green-900 to-green-700 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden flex flex-col justify-center min-h-[250px]">
+              class="flex-1 bg-gradient-to-r from-orange400 to-orange300 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden flex flex-col justify-center min-h-[250px]">
               <div class="relative z-10 max-w-lg">
                 <h1 class="text-3xl md:text-4xl font-bold font-epundaslab mb-3 leading-tight">
-                  Welcome, Admin! 🛡️
+                  Welcome, Admin! 
                 </h1>
-                <p class="text-green-100 text-lg leading-relaxed">
+                <p class="text-white text-lg leading-relaxed">
                   You have full control over the system. Manage users, monitor grade submissions, and oversee system
                   records from here.
                 </p>
@@ -99,7 +97,7 @@
               <div class="grid grid-cols-7 text-center text-sm gap-y-3">
                 <span v-for="n in 31" :key="n" :class="[
                   'w-8 h-8 flex items-center justify-center rounded-full mx-auto cursor-pointer transition-colors',
-                  n === currentDay ? 'bg-green-800 text-white shadow-md font-bold' : 'text-gray-600 hover:bg-gray-100'
+                  n === currentDay ? 'bg-orange400 text-white shadow-md font-bold' : 'text-gray-600 hover:bg-gray-100'
                 ]">
                   {{ n }}
                 </span>
@@ -108,9 +106,14 @@
           </div>
 
           <div>
-            <h3 class="text-xl font-bold text-gray-800 mb-5 font-epundaslab border-l-4 border-green-800 pl-4">
-              System Overview
-            </h3>
+            <div class="mb-8">
+              <h3 class="text-xl font-bold text-black700 mb-2 font-epundaslab border-l-4 border-orange400 pl-4">
+                System Overview
+              </h3>
+              <p class="text-gray-500 text-base leading-relaxed pl-4">
+                This system allows admins to efficiently manage users, monitor grade submissions, and maintain accurate records for smooth academic operations.
+              </p>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -118,12 +121,12 @@
                 class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow group">
                 <div>
                   <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Classes in System</p>
-                  <h4 class="text-4xl font-bold text-green-900 group-hover:text-green-700 transition-colors">{{
+                  <h4 class="text-4xl font-bold text-orange300 group-hover:text-orange400 transition-colors">{{
                     masterlistStats.count }}</h4>
                   <p class="text-sm text-gray-500 mt-2">All active masterlists across all instructors</p>
                 </div>
                 <div
-                  class="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                  class="h-16 w-16 bg-orange100 rounded-full flex items-center justify-center group-hover:bg-orange400 transition-colors">
                   <img src="../../assets/image/grading-module.png" class="w-8 h-8 opacity-80" alt="icon">
                 </div>
               </div>
@@ -139,17 +142,17 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2 mb-1">
-                      <h4 class="text-lg font-bold text-gray-800">{{ masterlistStats.latest.subjcode }}</h4>
+                      <h4 class="text-lg font-bold text-black700">{{ masterlistStats.latest.subjcode }}</h4>
                       <span
                         class="bg-orange-100 text-orange-800 text-[10px] px-2 py-0.5 rounded-full font-bold border border-orange-200">
                         {{ masterlistStats.latest.section }}
                       </span>
                     </div>
-                    <p class="text-sm text-gray-600 line-clamp-1">
+                    <p class="text-sm text-gray-700 line-clamp-1">
                       Instructor: <span class="font-semibold">{{ masterlistStats.latest.employee?.firstname }} {{
                         masterlistStats.latest.employee?.lastname }}</span>
                     </p>
-                    <p class="text-xs text-gray-400 mt-1">
+                    <p class="text-xs text-gray-500 mt-1">
                       {{ masterlistStats.latest.sy }} • {{ masterlistStats.latest.sem }} Sem
                     </p>
                   </div>
@@ -178,13 +181,13 @@
       </main>
 
       <footer class="bg-white border-t border-gray-200 dark:bg-gray-900 mt-auto">
-        <div class="w-full max-w-screen-xl mx-auto p-4 md:py-6">
+        <div class="w-full max-w-full mx-auto p-4 md:py-6">
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <img src="../../assets/image/header-logo.png" class="h-10" alt="Logo" />
+              <img src="../../assets/image/ceit-logo.png" class="h-10" alt="Logo" />
               <div class="text-xs text-gray-500">
-                <p class="font-bold text-gray-700">Caraga State University</p>
-                <p>Ampayon, Butuan City</p>
+                <p class="font-bold text-gray-700">Caraga State University Cabadbaran Campus</p>
+                <p>T.Curato St., Cabadbaran, Philippines </p>
               </div>
             </div>
             <ul class="flex flex-wrap items-center text-xs font-medium text-gray-500 dark:text-gray-400 gap-4">

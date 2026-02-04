@@ -4,7 +4,7 @@
       v-if="visible"
       :class="[
         'fixed top-6 left-1/2 px-6 py-3 rounded-lg shadow-lg z-50 transform -translate-x-1/2',
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white shake'
+        type === 'success' ? 'bg-black700 text-white' : 'bg-red-500 text-white shake'
       ]"
     >
       {{ message }}
