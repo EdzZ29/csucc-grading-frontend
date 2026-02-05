@@ -9,7 +9,7 @@
 
     <div class="relative z-10 w-full max-w-lg px-4 flex flex-col items-center">
 
-      <div class="text-center mb-8">
+      <div class="text-center mb-8 mt-4">
         <div class="inline-block bg-white p-3 rounded-full shadow-lg mb-4">
           <img src="../assets/image/ceit-logo.png" class="h-28 w-auto" alt="CSU Logo" />
         </div>
@@ -63,14 +63,14 @@
 
 
             <button type="submit"
-              class="w-full text-white bg-orange400 hover:bg-orange300 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-3 text-center shadow-md transition-all duration-200 transform hover:-translate-y-0.5">
+              class="w-full text-white bg-orange400 hover:bg-orange300 focus:ring-2 focus:outline-none focus:ring-black700 font-medium rounded-lg text-sm px-5 py-3 text-center shadow-md transition-all duration-200 transform hover:-translate-y-0.5">
               Login
             </button>
           </form>
         </div>
       </div>
 
-      <div class="mt-20 text-center text-white text-xs space-y-1">
+      <div class="mt-20 mb-4 text-center text-white text-xs space-y-1">
         <p>© 2024 Caraga State University. All Rights Reserved.</p>
       </div>
 

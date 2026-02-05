@@ -79,14 +79,14 @@
         <p class="text-green-800 font-bold text-xl animate-pulse">Processing...</p>
       </div>
 
-      <div class="bg-gray-800 text-white px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="bg-black700 text-white px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex-1">
           <h2 class="text-lg font-bold flex items-center gap-2">
-            <span class="bg-green-600 text-xs px-2 py-0.5 rounded">{{ activeSubject.subjcode }}</span>
+            <span class="bg-orange400 text-xs px-2 py-0.5 rounded">{{ activeSubject.subjcode }}</span>
             {{ activeSubject.section }}
           </h2>
           <div class="mt-1 flex items-center gap-2 text-sm">
-            <span class="text-green-400 font-bold">Instructor:</span>
+            <span class="text-orange400 font-bold">Instructor:</span>
             <span class="text-white">{{ activeSubject.instructor }}</span>
           </div>
         </div>
@@ -94,7 +94,7 @@
         <div class="flex bg-gray-700 rounded-lg p-1 overflow-x-auto no-scrollbar">
           <button v-for="tab in availableTabs" :key="tab.id" @click="activeTab = tab.id"
             :class="['px-4 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap',
-            activeTab === tab.id ? 'bg-green-500 text-white shadow' : 'text-gray-300 hover:text-white']">
+            activeTab === tab.id ? 'bg-orange400 text-white shadow' : 'text-gray-300 hover:text-white']">
             {{ tab.label }}
           </button>
         </div>
