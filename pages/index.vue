@@ -1,33 +1,39 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-green-900 relative overflow-hidden font-sans">
+  <div class="min-h-screen flex flex-col items-center justify-center bg-orange400 relative overflow-hidden font-sans">
 
     <SuccessMessage ref="successMsg" />
 
-    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-      <img src="../assets/image/header-logo.png" class="w-[600px] max-w-none grayscale" alt="Background Pattern" />
+    <div class="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
+      <img src="../assets/image/bg-ceit.jpg" class="w-full max-w-none grayscale" alt="Background Pattern" />
     </div>
 
     <div class="relative z-10 w-full max-w-lg px-4 flex flex-col items-center">
 
-      <div class="text-center mb-8">
+      <div class="text-center mb-8 mt-4">
         <div class="inline-block bg-white p-3 rounded-full shadow-lg mb-4">
-          <img src="../assets/image/header-logo.png" class="h-20 w-auto" alt="CSU Logo" />
+          <img src="../assets/image/ceit-logo.png" class="h-28 w-auto" alt="CSU Logo" />
         </div>
         <h1 class="text-3xl md:text-4xl font-bold text-white font-epundaslab tracking-wide">
           Grading System
         </h1>
-        <p class="text-green-100 font-inria mt-1 tracking-wider text-sm uppercase">
+        <p class="text-white font-inria mt-1 tracking-wider text-sm uppercase">
           Caraga State University
+        </p>
+        <p class="text-white font-inria mt-1 tracking-wider text-md font-bold uppercase">
+          College of Engineering and Information Technology
         </p>
       </div>
 
       <div class="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
-        <div class="h-2 bg-gradient-to-r from-green-600 to-green-800"></div>
+        <div class="h-2 bg-black700"></div>
 
         <div class="p-8 md:p-10">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6 text-center">
+          <h2 class="text-xl font-semibold font-inria text-black700 dark:text-white text-center">
             Sign In to your account
           </h2>
+          <p class="text-gray-600 dark:text-gray-300 text-center text-sm mb-6">
+            Please login to continue
+          </p>
 
           <form @submit.prevent="onSubmit">
             <div class="mb-5">
@@ -57,14 +63,14 @@
 
 
             <button type="submit"
-              class="w-full text-white bg-green-900 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-3 text-center shadow-md transition-all duration-200 transform hover:-translate-y-0.5">
+              class="w-full text-white bg-orange400 hover:bg-orange300 focus:ring-2 focus:outline-none focus:ring-black700 font-medium rounded-lg text-sm px-5 py-3 text-center shadow-md transition-all duration-200 transform hover:-translate-y-0.5">
               Login
             </button>
           </form>
         </div>
       </div>
 
-      <div class="mt-8 text-center text-yellow-200 text-xs space-y-1">
+      <div class="mt-20 mb-4 text-center text-white text-xs space-y-1">
         <p>© 2024 Caraga State University. All Rights Reserved.</p>
       </div>
 
