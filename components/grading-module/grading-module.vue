@@ -697,7 +697,7 @@ export default {
         section: this.activeSubject.section,
         sy: this.selectedYear,
         sem: this.selectedSemester,
-        grading_type: "Lec", // API Requirement
+        grading_type: this.activeSubject.gradingSystem,
         category: "FINAL",   // API Requirement
         finalGrades: finalGradesList,
         activities: []

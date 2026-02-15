@@ -103,10 +103,11 @@ export default {
         };
     },
     methods: {
-        async loadSubjects() {
-            // 1. Validation: Check selections
+        // Load the Masterlists (Subjects and Students)
+        async loadClassesFromDatabase() {
+            // 1. Validation
             if (!this.selectedYear || !this.selectedSemester) {
-                this.$refs.msg.show("Please select both Academic Year and Semester.", "error");
+                this.$refs.msg.show("Please select Academic Year and Semester.", "error");
                 return;
             }
 
@@ -115,40 +116,64 @@ export default {
 
             try {
                 const url = `http://localhost:9000/api/masterlist/filter/${this.selectedYear}/${this.selectedSemester}`;
-                const res = await axios.get(url, { withCredentials: true });
+                const response = await axios.get(url, { withCredentials: true });
 
-                // 2. Validation: Check if data exists
-                if (!res.data || res.data.length === 0) {
+                if (!response.data || response.data.length === 0) {
                     this.subjects = [];
-                    // ✅ Trigger Modal if no records found
-                    this.$refs.msg.show("No class records found for the selected timeline.", "info");
+                    this.$refs.msg.show("No classes found.", "info");
+                    this.loading = false;
                     return;
                 }
 
-                // Grouping Logic
-                const grouped = {};
-                res.data.forEach((row) => {
-                    const key = `${row.subjcode}-${row.section}`;
-                    if (!grouped[key]) {
-                        grouped[key] = {
+                const organizedClasses = {};
+
+                response.data.forEach(row => {
+                    const classId = row.subjcode + "-" + row.section;
+
+                    if (!organizedClasses[classId]) {
+                        // --- ROBUST DETECTION FIX START ---
+                        let system = 'LECTURE';
+
+                        // 1. Safely convert units to number (handles "3", null, undefined)
+                        const units = Number(row.lab_units) || 0;
+
+                        // 2. Safely convert code to uppercase (handles "Lab", "lab", "LAB")
+                        const code = (row.subjcode || "").toUpperCase();
+
+                        // Check units OR subject code
+                        if (units > 0 || code.includes('LAB')) {
+                            system = 'LEC_LAB';
+                        }
+                        // --- ROBUST DETECTION FIX END ---
+
+                        organizedClasses[classId] = {
                             subjcode: row.subjcode,
                             section: row.section,
                             description: row.type || 'Subject Description',
-                            gradingSystem: (row.lab_units > 0 || row.subjcode.includes('LAB')) ? 'LEC_LAB' : 'LECTURE',
+                            gradingSystem: system, // Now correctly identifies LEC_LAB
+                            instructor: row.employee ? (row.employee.firstname + " " + row.employee.lastname) : 'Unassigned',
                             students: []
                         };
                     }
-                    grouped[key].students.push(row);
-                });
-                this.subjects = Object.values(grouped);
 
-            } catch (e) {
-                console.error(e);
-                this.$refs.msg.show("Failed to load subjects. Please try again.", "error");
+                    organizedClasses[classId].students.push({
+                        studid: row.studid,
+                        fullname: row.studlastname + ", " + row.studfirstname,
+                        grades: {}
+                    });
+                });
+
+                this.subjects = Object.values(organizedClasses);
+                this.showSubjects = true;
+                this.$refs.msg.show("Classes loaded successfully.", "success");
+
+            } catch (error) {
+                console.error(error);
+                this.$refs.msg.show("Error loading classes.", "error");
             } finally {
                 this.loading = false;
             }
-        }
+        },
     }
 };
 </script>
