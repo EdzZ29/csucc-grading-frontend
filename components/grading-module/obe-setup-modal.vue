@@ -208,7 +208,22 @@ export default {
 
         removeCO: function (idx) {
             if (this.localOutcomes.length > 1) {
+                var removedCode = this.localOutcomes[idx].co_code
                 this.localOutcomes.splice(idx, 1)
+
+                // Auto-remove weight rows that reference the deleted CO
+                this.localWeights = this.localWeights.filter(function (w) {
+                    return w.co_code !== removedCode
+                })
+
+                // Ensure at least one weight row remains
+                if (this.localWeights.length === 0) {
+                    this.localWeights.push({
+                        co_code: this.localOutcomes[0] ? this.localOutcomes[0].co_code : 'CO1',
+                        type_id: 1,
+                        percentage: 0,
+                    })
+                }
             }
         },
 
@@ -237,6 +252,7 @@ export default {
                     section: (this.activeSubject.section || this.activeSubject.sect || 'N-A').trim(),
                     sy: this.$parent.selectedYear || '2025-2026',
                     sem: this.$parent.selectedSemester || '1st',
+                    empid: this.$parent.user.empid,
                     outcomes: this.localOutcomes,
                     /*
                      * ═══════════════════════════════════════════════════════

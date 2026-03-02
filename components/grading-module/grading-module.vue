@@ -125,7 +125,7 @@
         <div class="space-y-3">
           <div>
             <label class="text-xs font-black text-gray-400 uppercase block mb-1">Course Outcome</label>
-            <select v-model="newActivity.co_code"
+            <select v-model="newActivity.co_code" @change="onAddActivityCoChange"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
               <option v-for="co in outcomes" :key="co.co_code" :value="co.co_code">{{ co.co_code }}</option>
             </select>
@@ -137,13 +137,16 @@
           </div>
           <div>
             <label class="text-xs font-black text-gray-400 uppercase block mb-1">Assessment Type</label>
-            <!-- ✅ Changed from type_code (string) to type_id (integer FK) -->
+            <!-- Only shows types that have a TOS weight for the selected CO -->
             <select v-model="newActivity.type_id"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-              <option v-for="t in assessmentTypes" :key="t.type_id" :value="t.type_id">
+              <option v-for="t in filteredAssessmentTypes" :key="t.type_id" :value="t.type_id">
                 {{ t.code }} — {{ t.name }}
               </option>
             </select>
+            <p v-if="filteredAssessmentTypes.length === 0" class="text-xs text-red-500 mt-1">
+              No assessment types configured for this CO. Set them up in Syllabus Setup first.
+            </p>
           </div>
           <div>
             <label class="text-xs font-black text-gray-400 uppercase block mb-1">Max Score</label>
@@ -252,6 +255,36 @@ export default {
       var m = {}
         ; (this.assessmentTypes || []).forEach(function (t) { m[t.type_id] = t.code })
       return m
+    },
+
+    /* ── TOS-aware type filter ─────────────────────────────── */
+    // Builds { CO1: [1, 3], CO2: [2, 4] } from outcomes.tosWeights
+    // So the Add Activity modal only shows types that have a weight defined
+    validTypesPerCo: function () {
+      var m = {}
+        ; (this.outcomes || []).forEach(function (co) {
+          var typeIds = []
+            ; (co.tosWeights || []).forEach(function (tw) {
+              if (tw.type_id && typeIds.indexOf(tw.type_id) === -1) {
+                typeIds.push(tw.type_id)
+              }
+            })
+          m[co.co_code] = typeIds
+        })
+      return m
+    },
+
+    // Filtered assessment types for the currently selected CO in the Add Activity modal
+    filteredAssessmentTypes: function () {
+      var coCode = this.newActivity.co_code
+      var validIds = this.validTypesPerCo[coCode]
+
+      // If no TOS weights defined yet, show all types (graceful fallback)
+      if (!validIds || validIds.length === 0) return this.assessmentTypes
+
+      return (this.assessmentTypes || []).filter(function (t) {
+        return validIds.indexOf(t.type_id) !== -1
+      })
     },
 
     /* ── Table structure ───────────────────────────────────── */
@@ -559,13 +592,24 @@ export default {
         alert('Please set up Course Outcomes in Syllabus Setup first.')
         return
       }
+      var firstCo = this.outcomes[0].co_code
+      var validTypes = this.validTypesPerCo[firstCo] || []
+      var firstTypeId = validTypes.length > 0 ? validTypes[0] : null
+
       this.newActivity = {
-        co_code: this.outcomes[0].co_code,
+        co_code: firstCo,
         name: '',
-        type_id: this.assessmentTypes.length ? this.assessmentTypes[0].type_id : null,
+        type_id: firstTypeId,
         maxScore: 100,
       }
       this.showAddModal = true
+    },
+
+    // When teacher changes the CO dropdown, reset type_id to first valid type
+    onAddActivityCoChange: function () {
+      var coCode = this.newActivity.co_code
+      var validTypes = this.validTypesPerCo[coCode] || []
+      this.newActivity.type_id = validTypes.length > 0 ? validTypes[0] : null
     },
 
     confirmAddActivity: function () {
