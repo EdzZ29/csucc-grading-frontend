@@ -43,6 +43,7 @@ export default {
 
   buildModules: [
     '@nuxt/postcss8',
+    '@nuxtjs/dotenv',  // add this
   ],
 
   modules: [
@@ -51,11 +52,11 @@ export default {
   ],
 
   axios: {
-    baseURL: 'http://localhost:9000/api',
+    baseURL: process.env.BASE_URL || 'http://localhost:9000/api',
     credentials: true
   },
 
   server: {
-    port: 7000
+    port: process.env.PORT || 7000
   }
 }
