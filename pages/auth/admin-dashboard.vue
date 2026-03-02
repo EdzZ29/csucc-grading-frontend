@@ -75,7 +75,7 @@
               class="flex-1 bg-gradient-to-r from-orange400 to-orange300 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden flex flex-col justify-center min-h-[250px]">
               <div class="relative z-10 max-w-lg">
                 <h1 class="text-3xl md:text-4xl font-bold font-epundaslab mb-3 leading-tight">
-                  Welcome, Admin! 
+                  Welcome, Admin!
                 </h1>
                 <p class="text-white text-lg leading-relaxed">
                   You have full control over the system. Manage users, monitor grade submissions, and oversee system
@@ -237,7 +237,7 @@
 import axios from "axios"
 import User from "@/components/user/user.vue"
 import Profile from "@/components/profile/profile.vue"
-import GradingModule from "@/components/grading-module/grading-module.vue"
+import GradingModule from "@/components/grading-module/grading-page.vue"
 import ImportCSV from "@/components/upload/import-csv.vue"
 import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
 import ClassRecord from "@/components/class-record/class-record.vue"
