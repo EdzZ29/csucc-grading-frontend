@@ -46,7 +46,7 @@
             </th>
             <th rowspan="3"
               class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black text-xs"
-              style="min-width:80px">FINAL<br />GRADE</th>
+              style="min-width:120px">FINAL<br />GRADE</th>
           </tr>
 
           <!-- ROW 2: Task names -->
@@ -59,7 +59,8 @@
                   placeholder="Task" />
               </td>
               <td v-if="group.activities.length === 0" :key="'task-empty-' + group.co_code"
-                class="border border-gray-300 bg-gray-50 text-center text-xs text-gray-400" style="min-width:100px">—
+                class="border border-gray-300 text-center text-xs text-white font-bold opacity-60"
+                :class="group.colorClass" style="min-width:100px">—
               </td>
             </template>
           </tr>
@@ -74,7 +75,8 @@
                   placeholder="Max" />
               </td>
               <td v-if="group.activities.length === 0" :key="'max-empty-' + group.co_code"
-                class="border border-gray-300 bg-green-50" style="min-width:100px"></td>
+                class="border border-gray-300 text-center text-xs text-white font-bold opacity-40"
+                :class="group.colorClass" style="min-width:100px"></td>
             </template>
           </tr>
 
@@ -101,11 +103,15 @@
                   class="w-full text-center py-1.5 px-1 text-sm bg-transparent focus:outline-none focus:bg-blue-50" />
               </td>
               <td v-if="group.activities.length === 0" :key="'sc-empty-' + group.co_code + '-' + student.studid"
-                class="border border-gray-200" style="min-width:100px"></td>
+                class="border border-gray-200 bg-gray-100" style="min-width:100px"></td>
             </template>
 
-            <td class="border border-gray-200 text-center font-black text-sm" :class="getFinalGradeClass(student)">
-              {{ displayGrade(student) }}
+            <td class="border border-gray-200 text-center font-black text-sm px-2" :class="getFinalGradeClass(student)">
+              <div>{{ displayGrade(student) }}</div>
+              <div v-if="displayRemarks(student)" class="text-[10px] font-bold mt-0.5"
+                :class="displayRemarks(student) === 'INC' ? 'text-orange-600' : displayRemarks(student) === 'PASSED' ? 'text-green-600' : 'text-red-500'">
+                {{ displayRemarks(student) }}
+              </div>
             </td>
           </tr>
 
@@ -178,14 +184,14 @@
  */
 var TRANSMUTATION = [
   { min: 97, grade: 1.00 },
-  { min: 94, grade: 1.25 },
-  { min: 91, grade: 1.50 },
-  { min: 88, grade: 1.75 },
-  { min: 85, grade: 2.00 },
-  { min: 82, grade: 2.25 },
-  { min: 79, grade: 2.50 },
-  { min: 76, grade: 2.75 },
-  { min: 75, grade: 3.00 },
+  { min: 93, grade: 1.25 },
+  { min: 89, grade: 1.50 },
+  { min: 85, grade: 1.75 },
+  { min: 80, grade: 2.00 },
+  { min: 75, grade: 2.25 },
+  { min: 70, grade: 2.50 },
+  { min: 65, grade: 2.75 },
+  { min: 60, grade: 3.00 },
 ]
 
 export default {
@@ -532,6 +538,7 @@ export default {
               grade: row.final_numerical_grade,
               total: row.total_weighted_percent,
               remarks: row.remarks,
+              co_results: row.co_results || [],
             }
           })
         this.computedGrades = grades
@@ -580,7 +587,18 @@ export default {
     getFinalGradeClass: function (student) {
       var g = this.displayGrade(student)
       if (g === '—') return 'text-gray-400'
+      var remarks = this.displayRemarks(student)
+      if (remarks === 'INC') return 'text-orange-700 bg-orange-50'
       return parseFloat(g) <= 3.00 ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50'
+    },
+
+    /** Show remarks: PASSED / INC / FAILED — only after backend compute */
+    displayRemarks: function (student) {
+      var computed = this.computedGrades[student.studid]
+      if (computed && computed.remarks) {
+        return computed.remarks
+      }
+      return ''
     },
 
 
