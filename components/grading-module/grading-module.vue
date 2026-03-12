@@ -14,7 +14,7 @@
           {{ saving ? 'Saving...' : 'Save Scores' }}
         </button>
         <button @click="computeGrades" :disabled="computing"
-          class="bg-black text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50">
+          class="bg-orange-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50">
           {{ computing ? 'Computing...' : 'Compute & Save Grades' }}
         </button>
       </div>
@@ -45,9 +45,6 @@
               :style="{ backgroundColor: group.color }">
               {{ group.co_code }}
             </th>
-            <th rowspan="3"
-              class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black text-xs"
-              style="min-width:120px">FINAL<br />GRADE</th>
           </tr>
 
           <!-- ROW 2: Task names -->
@@ -107,17 +104,10 @@
                 class="border border-gray-200 bg-gray-100" style="min-width:100px"></td>
             </template>
 
-            <td class="border border-gray-200 text-center font-black text-sm px-2" :class="getFinalGradeClass(student)">
-              <div>{{ displayGrade(student) }}</div>
-              <div v-if="displayRemarks(student)" class="text-[10px] font-bold mt-0.5"
-                :class="displayRemarks(student) === 'INC' ? 'text-red-600' : displayRemarks(student) === 'PASSED' ? 'text-green-600' : 'text-red-500'">
-                {{ displayRemarks(student) }}
-              </div>
-            </td>
           </tr>
 
           <tr v-if="filteredStudents.length === 0">
-            <td :colspan="totalColumns + 3" class="text-center py-12 text-gray-400 text-sm italic">
+            <td :colspan="totalColumns + 2" class="text-center py-12 text-gray-400 text-sm italic">
               No students found.
             </td>
           </tr>
@@ -555,199 +545,7 @@ export default {
 
 
     /* ══════════════════════════════════════════════════════════
-     * 4. GRADE DISPLAY — AUTO-COMPUTE (matches Excel pipeline)
-     *
-     * Computes grades live as the teacher types, using TOS weights
-     * from the outcomes prop. No button click needed.
-     *
-     * Pipeline: RAW SCORE → % RATING → WEIGHTED % RATING → FINAL GRADE
-     * ══════════════════════════════════════════════════════════ */
-
-    /**
-     * Build per-activity weight map from TOS weights.
-     * TOS defines weight per CO×Type cell. We distribute equally
-     * among activities in each cell, matching the Excel.
-     */
-    getActivityWeights: function () {
-      var outcomes = this.outcomes || []
-      var coGroups = this.coGroups
-      var weights = {} // { localId: weight% }
-
-      for (var i = 0; i < outcomes.length; i++) {
-        var co = outcomes[i]
-        var coCode = co.co_code
-        var tosWeights = co.tosWeights || []
-
-        // Find activities for this CO
-        var coActivities = []
-        for (var g = 0; g < coGroups.length; g++) {
-          if (coGroups[g].co_code === coCode) {
-            coActivities = coGroups[g].activities
-            break
-          }
-        }
-
-        for (var t = 0; t < tosWeights.length; t++) {
-          var tw = tosWeights[t]
-          var twWeight = tw.weight_percentage
-
-          // Auto-detect old decimal format (0.10 for 10%) vs whole number (10)
-          if (twWeight > 0 && twWeight < 1) twWeight = twWeight * 100
-
-          // Find activities matching this type_id within this CO
-          var matching = []
-          for (var a = 0; a < coActivities.length; a++) {
-            if (coActivities[a].type_id === tw.type_id) {
-              matching.push(coActivities[a])
-            }
-          }
-
-          if (matching.length === 0) continue
-
-          // Distribute weight equally
-          var perActivity = twWeight / matching.length
-          for (var m = 0; m < matching.length; m++) {
-            var lid = matching[m].localId
-            weights[lid] = (weights[lid] || 0) + perActivity
-          }
-        }
-      }
-      return weights
-    },
-
-    /**
-     * Auto-compute grade for a student using TOS weights.
-     * Returns { grade: number, remarks: string, coResults: [...] }
-     */
-    autoComputeStudent: function (student) {
-      var actWeights = this.getActivityWeights()
-      var coGroups = this.coGroups
-      var outcomes = this.outcomes || []
-
-      // Per-activity weighted values
-      var weightedByActivity = {} // { localId: weightedValue }
-      var allActivities = []
-      for (var g = 0; g < coGroups.length; g++) {
-        for (var a = 0; a < coGroups[g].activities.length; a++) {
-          allActivities.push(coGroups[g].activities[a])
-        }
-      }
-
-      if (allActivities.length === 0) return null
-
-      for (var i = 0; i < allActivities.length; i++) {
-        var act = allActivities[i]
-        var w = actWeights[act.localId] || 0
-        if (w === 0) continue
-
-        var raw = student.scores[act.localId] || 0
-        var max = act.maxScore || 0
-        var pctRating = max > 0 ? (raw / max) * 100 : 0
-
-        // Excel: ((raw/max)*100) * weight%  (% operator = /100)
-        weightedByActivity[act.localId] = (pctRating * w) / 100
-      }
-
-      // Per-CO sums + pass check
-      var coResults = []
-      var allCosPassed = true
-
-      for (var c = 0; c < outcomes.length; c++) {
-        var co = outcomes[c]
-        var coCode = co.co_code
-
-        // Find activities for this CO
-        var coActs = []
-        for (var g2 = 0; g2 < coGroups.length; g2++) {
-          if (coGroups[g2].co_code === coCode) {
-            coActs = coGroups[g2].activities
-            break
-          }
-        }
-
-        // Sum weighted values for this CO
-        var coSum = 0
-        var coMaxWeight = 0
-        for (var a2 = 0; a2 < coActs.length; a2++) {
-          var lid = coActs[a2].localId
-          coSum += weightedByActivity[lid] || 0
-          coMaxWeight += actWeights[lid] || 0
-        }
-
-        // Excel threshold: (maxWeight * 0.6) - 0.01
-        // CO with no activities: threshold = -0.01, sum = 0 → 0 > -0.01 → PASSED
-        var threshold = (coMaxWeight * 0.6) - 0.01
-        var passed = coSum > threshold
-
-        if (!passed) allCosPassed = false
-
-        coResults.push({
-          co_code: coCode,
-          sum: Math.round(coSum * 100) / 100,
-          maxWeight: Math.round(coMaxWeight * 100) / 100,
-          passed: passed,
-        })
-      }
-
-      // Total + transmutation
-      var total = 0
-      for (var r = 0; r < coResults.length; r++) {
-        total += coResults[r].sum
-      }
-      var totalRounded = Math.round(total)
-
-      // VLOOKUP transmutation
-      var grade = 5.00
-      for (var t = 0; t < TRANSMUTATION.length; t++) {
-        if (totalRounded >= TRANSMUTATION[t].min) {
-          grade = TRANSMUTATION[t].grade
-          break
-        }
-      }
-
-      // Remarks: PASSED / INC / FAILED
-      var remarks = 'FAILED'
-      if (grade <= 3.00) {
-        remarks = allCosPassed ? 'PASSED' : 'INC'
-      }
-
-      return { grade: grade, remarks: remarks, total: totalRounded, coResults: coResults }
-    },
-
-    displayGrade: function (student) {
-      // Backend-computed grade takes priority (persisted)
-      var computed = this.computedGrades[student.studid]
-      if (computed && computed.grade != null) {
-        return computed.grade.toFixed(2)
-      }
-      // Auto-compute locally using TOS weights
-      var result = this.autoComputeStudent(student)
-      if (result) return result.grade.toFixed(2)
-      return '—'
-    },
-
-    displayRemarks: function (student) {
-      var computed = this.computedGrades[student.studid]
-      if (computed && computed.remarks) {
-        return computed.remarks
-      }
-      // Auto-compute locally
-      var result = this.autoComputeStudent(student)
-      if (result) return result.remarks
-      return ''
-    },
-
-    getFinalGradeClass: function (student) {
-      var g = this.displayGrade(student)
-      if (g === '—') return 'text-gray-400'
-      var remarks = this.displayRemarks(student)
-      if (remarks === 'INC') return 'text-red-700 bg-red-50'
-      return parseFloat(g) <= 3.00 ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50'
-    },
-
-
-    /* ══════════════════════════════════════════════════════════
-     * 5. ADD ACTIVITY — modal
+     * 4. ADD ACTIVITY — modal
      * ══════════════════════════════════════════════════════════ */
     addActivity: function () {
       if (!this.outcomes || !this.outcomes.length) {
