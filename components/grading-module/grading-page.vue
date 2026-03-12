@@ -87,7 +87,7 @@
         <!-- GRADING SHEET (OBE-powered)                    -->
         <!-- ═══════════════════════════════════════════════ -->
         <div v-if="activeSubject"
-            class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col relative animate-fade-in">
+            class="bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col relative animate-fade-in">
             <!-- Loading overlay -->
             <div v-if="loadingGradebook"
                 class="absolute inset-0 z-50 bg-white bg-opacity-90 flex flex-col items-center justify-center">

@@ -4,22 +4,22 @@
     <!-- Toolbar -->
     <div
       class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-4 flex flex-wrap gap-2 items-center justify-between">
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <button @click="addActivity"
-          class="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-800">
+          class="bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-800">
           + Add Activity
         </button>
         <button @click="saveGrades" :disabled="saving"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50">
+          class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50">
           {{ saving ? 'Saving...' : 'Save Scores' }}
         </button>
         <button @click="computeGrades" :disabled="computing"
-          class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-orange-600 disabled:opacity-50">
-          {{ computing ? 'Computing...' : 'Compute Final Grades' }}
+          class="bg-black text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50">
+          {{ computing ? 'Computing...' : 'Compute & Save Grades' }}
         </button>
       </div>
       <input v-model="searchQuery" placeholder="Search student..."
-        class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-green-400" />
+        class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-green-400" />
     </div>
 
     <!-- Loading indicator -->
@@ -41,7 +41,8 @@
               Student Name <span class="text-gray-500 font-normal">▼</span>
             </th>
             <th v-for="group in coGroups" :key="'hdr-' + group.co_code" :colspan="group.activities.length || 1"
-              :class="['border border-gray-400 px-2 py-1 text-center font-black text-white text-xs', group.colorClass]">
+              class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+              :style="{ backgroundColor: group.color }">
               {{ group.co_code }}
             </th>
             <th rowspan="3"
@@ -60,7 +61,7 @@
               </td>
               <td v-if="group.activities.length === 0" :key="'task-empty-' + group.co_code"
                 class="border border-gray-300 text-center text-xs text-white font-bold opacity-60"
-                :class="group.colorClass" style="min-width:100px">—
+                :style="{ backgroundColor: group.color, minWidth: '100px' }">—
               </td>
             </template>
           </tr>
@@ -76,7 +77,7 @@
               </td>
               <td v-if="group.activities.length === 0" :key="'max-empty-' + group.co_code"
                 class="border border-gray-300 text-center text-xs text-white font-bold opacity-40"
-                :class="group.colorClass" style="min-width:100px"></td>
+                :style="{ backgroundColor: group.color, minWidth: '100px' }"></td>
             </template>
           </tr>
 
@@ -109,7 +110,7 @@
             <td class="border border-gray-200 text-center font-black text-sm px-2" :class="getFinalGradeClass(student)">
               <div>{{ displayGrade(student) }}</div>
               <div v-if="displayRemarks(student)" class="text-[10px] font-bold mt-0.5"
-                :class="displayRemarks(student) === 'INC' ? 'text-orange-600' : displayRemarks(student) === 'PASSED' ? 'text-green-600' : 'text-red-500'">
+                :class="displayRemarks(student) === 'INC' ? 'text-red-600' : displayRemarks(student) === 'PASSED' ? 'text-green-600' : 'text-red-500'">
                 {{ displayRemarks(student) }}
               </div>
             </td>
@@ -221,8 +222,8 @@ export default {
       computing: false,
 
       coColors: [
-        'bg-green-500', 'bg-teal-500', 'bg-blue-500', 'bg-purple-500',
-        'bg-pink-500', 'bg-orange-500', 'bg-red-500', 'bg-indigo-500',
+        '#22c55e', '#14b8a6', '#3b82f6', '#a855f7',
+        '#ec4899', '#f97316', '#ef4444', '#6366f1',
       ],
     }
   },
@@ -300,7 +301,7 @@ export default {
         return {
           co_id: co.co_id,
           co_code: co.co_code,
-          colorClass: self.coColors[idx % self.coColors.length],
+          color: self.coColors[idx % self.coColors.length],
           activities: self.activitiesMap[co.co_code] || [],
         }
       })
@@ -554,51 +555,194 @@ export default {
 
 
     /* ══════════════════════════════════════════════════════════
-     * 4. GRADE DISPLAY
+     * 4. GRADE DISPLAY — AUTO-COMPUTE (matches Excel pipeline)
      *
-     * Priority: backend-computed grade  →  local preview  →  "—"
+     * Computes grades live as the teacher types, using TOS weights
+     * from the outcomes prop. No button click needed.
      *
-     * Local preview is a simple unweighted % → transmutation.
-     * It does NOT use TOS weights so it won't match the official
-     * grade — it's only here for quick visual feedback while typing.
+     * Pipeline: RAW SCORE → % RATING → WEIGHTED % RATING → FINAL GRADE
      * ══════════════════════════════════════════════════════════ */
+
+    /**
+     * Build per-activity weight map from TOS weights.
+     * TOS defines weight per CO×Type cell. We distribute equally
+     * among activities in each cell, matching the Excel.
+     */
+    getActivityWeights: function () {
+      var outcomes = this.outcomes || []
+      var coGroups = this.coGroups
+      var weights = {} // { localId: weight% }
+
+      for (var i = 0; i < outcomes.length; i++) {
+        var co = outcomes[i]
+        var coCode = co.co_code
+        var tosWeights = co.tosWeights || []
+
+        // Find activities for this CO
+        var coActivities = []
+        for (var g = 0; g < coGroups.length; g++) {
+          if (coGroups[g].co_code === coCode) {
+            coActivities = coGroups[g].activities
+            break
+          }
+        }
+
+        for (var t = 0; t < tosWeights.length; t++) {
+          var tw = tosWeights[t]
+          var twWeight = tw.weight_percentage
+
+          // Auto-detect old decimal format (0.10 for 10%) vs whole number (10)
+          if (twWeight > 0 && twWeight < 1) twWeight = twWeight * 100
+
+          // Find activities matching this type_id within this CO
+          var matching = []
+          for (var a = 0; a < coActivities.length; a++) {
+            if (coActivities[a].type_id === tw.type_id) {
+              matching.push(coActivities[a])
+            }
+          }
+
+          if (matching.length === 0) continue
+
+          // Distribute weight equally
+          var perActivity = twWeight / matching.length
+          for (var m = 0; m < matching.length; m++) {
+            var lid = matching[m].localId
+            weights[lid] = (weights[lid] || 0) + perActivity
+          }
+        }
+      }
+      return weights
+    },
+
+    /**
+     * Auto-compute grade for a student using TOS weights.
+     * Returns { grade: number, remarks: string, coResults: [...] }
+     */
+    autoComputeStudent: function (student) {
+      var actWeights = this.getActivityWeights()
+      var coGroups = this.coGroups
+      var outcomes = this.outcomes || []
+
+      // Per-activity weighted values
+      var weightedByActivity = {} // { localId: weightedValue }
+      var allActivities = []
+      for (var g = 0; g < coGroups.length; g++) {
+        for (var a = 0; a < coGroups[g].activities.length; a++) {
+          allActivities.push(coGroups[g].activities[a])
+        }
+      }
+
+      if (allActivities.length === 0) return null
+
+      for (var i = 0; i < allActivities.length; i++) {
+        var act = allActivities[i]
+        var w = actWeights[act.localId] || 0
+        if (w === 0) continue
+
+        var raw = student.scores[act.localId] || 0
+        var max = act.maxScore || 0
+        var pctRating = max > 0 ? (raw / max) * 100 : 0
+
+        // Excel: ((raw/max)*100) * weight%  (% operator = /100)
+        weightedByActivity[act.localId] = (pctRating * w) / 100
+      }
+
+      // Per-CO sums + pass check
+      var coResults = []
+      var allCosPassed = true
+
+      for (var c = 0; c < outcomes.length; c++) {
+        var co = outcomes[c]
+        var coCode = co.co_code
+
+        // Find activities for this CO
+        var coActs = []
+        for (var g2 = 0; g2 < coGroups.length; g2++) {
+          if (coGroups[g2].co_code === coCode) {
+            coActs = coGroups[g2].activities
+            break
+          }
+        }
+
+        // Sum weighted values for this CO
+        var coSum = 0
+        var coMaxWeight = 0
+        for (var a2 = 0; a2 < coActs.length; a2++) {
+          var lid = coActs[a2].localId
+          coSum += weightedByActivity[lid] || 0
+          coMaxWeight += actWeights[lid] || 0
+        }
+
+        // Excel threshold: (maxWeight * 0.6) - 0.01
+        // CO with no activities: threshold = -0.01, sum = 0 → 0 > -0.01 → PASSED
+        var threshold = (coMaxWeight * 0.6) - 0.01
+        var passed = coSum > threshold
+
+        if (!passed) allCosPassed = false
+
+        coResults.push({
+          co_code: coCode,
+          sum: Math.round(coSum * 100) / 100,
+          maxWeight: Math.round(coMaxWeight * 100) / 100,
+          passed: passed,
+        })
+      }
+
+      // Total + transmutation
+      var total = 0
+      for (var r = 0; r < coResults.length; r++) {
+        total += coResults[r].sum
+      }
+      var totalRounded = Math.round(total)
+
+      // VLOOKUP transmutation
+      var grade = 5.00
+      for (var t = 0; t < TRANSMUTATION.length; t++) {
+        if (totalRounded >= TRANSMUTATION[t].min) {
+          grade = TRANSMUTATION[t].grade
+          break
+        }
+      }
+
+      // Remarks: PASSED / INC / FAILED
+      var remarks = 'FAILED'
+      if (grade <= 3.00) {
+        remarks = allCosPassed ? 'PASSED' : 'INC'
+      }
+
+      return { grade: grade, remarks: remarks, total: totalRounded, coResults: coResults }
+    },
+
     displayGrade: function (student) {
+      // Backend-computed grade takes priority (persisted)
       var computed = this.computedGrades[student.studid]
       if (computed && computed.grade != null) {
         return computed.grade.toFixed(2)
       }
-      return this.localGradePreview(student)
+      // Auto-compute locally using TOS weights
+      var result = this.autoComputeStudent(student)
+      if (result) return result.grade.toFixed(2)
+      return '—'
     },
 
-    localGradePreview: function (student) {
-      var all = this.coGroups.reduce(function (arr, g) { return arr.concat(g.activities) }, [])
-      if (!all.length) return '—'
-      var totalMax = all.reduce(function (s, a) { return s + (a.maxScore || 0) }, 0)
-      if (!totalMax) return '—'
-      var totalScore = all.reduce(function (s, a) { return s + (student.scores[a.localId] || 0) }, 0)
-      var pct = (totalScore / totalMax) * 100
-
-      for (var i = 0; i < TRANSMUTATION.length; i++) {
-        if (pct >= TRANSMUTATION[i].min) return TRANSMUTATION[i].grade.toFixed(2)
+    displayRemarks: function (student) {
+      var computed = this.computedGrades[student.studid]
+      if (computed && computed.remarks) {
+        return computed.remarks
       }
-      return '5.00'
+      // Auto-compute locally
+      var result = this.autoComputeStudent(student)
+      if (result) return result.remarks
+      return ''
     },
 
     getFinalGradeClass: function (student) {
       var g = this.displayGrade(student)
       if (g === '—') return 'text-gray-400'
       var remarks = this.displayRemarks(student)
-      if (remarks === 'INC') return 'text-orange-700 bg-orange-50'
+      if (remarks === 'INC') return 'text-red-700 bg-red-50'
       return parseFloat(g) <= 3.00 ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50'
-    },
-
-    /** Show remarks: PASSED / INC / FAILED — only after backend compute */
-    displayRemarks: function (student) {
-      var computed = this.computedGrades[student.studid]
-      if (computed && computed.remarks) {
-        return computed.remarks
-      }
-      return ''
     },
 
 
