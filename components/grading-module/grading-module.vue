@@ -14,7 +14,7 @@
           {{ saving ? 'Saving...' : 'Save Scores' }}
         </button>
         <button @click="computeGrades" :disabled="computing"
-          class="bg-orange-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50">
+          class="bg-black text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-orange-600 disabled:opacity-50">
           {{ computing ? 'Computing...' : 'Compute & Save Grades' }}
         </button>
       </div>
