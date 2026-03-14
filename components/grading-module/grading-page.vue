@@ -42,7 +42,7 @@
             </div>
 
             <button @click="loadClassesFromDatabase" :disabled="loading"
-                class="h-10 px-6 bg-orange400 text-white rounded-lg hover:bg-orange300 font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+                class="h-10 px-6 bg-green-700 text-white rounded-lg hover:bg-green-800 font-bold text-sm flex items-center gap-2 disabled:opacity-50">
                 {{ loading ? 'Loading...' : 'Display Classes' }}
             </button>
 
@@ -64,10 +64,10 @@
 
             <div v-for="(subject, index) in subjects" :key="index" @click="openGradingSheet(subject)"
                 class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md cursor-pointer group">
-                <div class="bg-orange400 p-4 border-b border-green-100">
+                <div class="bg-green-700 p-4 border-b border-green-100">
                     <div class="flex justify-between items-start">
                         <h3 class="font-bold text-white text-lg">{{ subject.subjcode }}</h3>
-                        <span class="bg-white text-orange400 text-xs px-2 py-1 rounded font-bold">
+                        <span class="bg-white text-green-700 text-xs px-2 py-1 rounded font-bold">
                             {{ subject.section }}
                         </span>
                     </div>
@@ -78,7 +78,7 @@
                 </div>
                 <div class="p-4 flex justify-between items-center text-sm text-gray-500">
                     <span>{{ subject.students.length }} Students</span>
-                    <span class="text-orange400 font-semibold group-hover:underline">Open Sheet &rarr;</span>
+                    <span class="text-green-700 font-semibold group-hover:underline">Open Sheet &rarr;</span>
                 </div>
             </div>
         </div>
@@ -99,11 +99,11 @@
             <div class="bg-black700 text-white px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex-1">
                     <h2 class="text-lg font-bold flex items-center gap-2">
-                        <span class="bg-orange400 text-xs px-2 py-0.5 rounded">{{ activeSubject.subjcode }}</span>
+                        <span class="bg-green-700 text-xs px-2 py-0.5 rounded">{{ activeSubject.subjcode }}</span>
                         {{ activeSubject.section }}
                     </h2>
                     <div class="mt-1 flex items-center gap-2 text-sm">
-                        <span class="text-orange400 font-bold">Instructor:</span>
+                        <span class="text-green-700 font-bold">Instructor:</span>
                         <span class="text-white">{{ activeSubject.instructor }}</span>
                     </div>
                 </div>
