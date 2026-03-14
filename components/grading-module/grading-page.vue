@@ -7,6 +7,305 @@
             @save="handleObeSetupSave" />
 
         <!-- ═══════════════════════════════════════════════ -->
+        <!-- CLASS RECORD MODAL (integrated)                 -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div v-if="showClassRecord"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-2 md:p-4">
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-fade-in">
+
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            Class Record
+                            <span v-if="activeSubject"
+                                class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                {{ activeSubject.subjcode }} — Sec {{ activeSubject.section }}
+                            </span>
+                        </h2>
+                        <p class="text-gray-400 text-xs mt-0.5">
+                            {{ activeSubject ? activeSubject.instructor : '' }} •
+                            {{ activeSubject ? activeSubject.students.length : 0 }} Students
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- Tab Buttons -->
+                        <div class="flex gap-1 bg-gray-700/60 rounded-xl p-1">
+                            <button v-for="tab in recordTabs" :key="tab.id"
+                                @click="classRecordActiveTab = tab.id"
+                                :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap',
+                                    classRecordActiveTab === tab.id
+                                        ? 'bg-white text-gray-800 shadow'
+                                        : 'text-gray-300 hover:text-white']">
+                                {{ tab.label }}
+                            </button>
+                        </div>
+                        <button @click="showClassRecord = false"
+                            class="text-white hover:bg-gray-700 rounded-full p-2 transition-colors ml-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div v-if="loadingRecord" class="flex-1 flex flex-col items-center justify-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-orange-500 border-gray-200 mb-4">
+                    </div>
+                    <p class="text-gray-500 text-sm">Loading class record...</p>
+                </div>
+
+                <!-- No Data -->
+                <div v-else-if="gradeData.length === 0"
+                    class="flex-1 flex items-center justify-center text-gray-400">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-lg font-medium mb-1">No computed grades found</p>
+                        <p class="text-sm text-gray-400">Grades must be computed in the Grading Sheet first.</p>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div v-else class="flex-1 flex flex-col overflow-hidden">
+
+                    <!-- Search + count -->
+                    <div
+                        class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
+                        <input v-model="searchRecordQuery" placeholder="Search student..." type="text"
+                            class="w-full max-w-xs px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                        <span class="text-xs text-gray-500 ml-4 shrink-0">
+                            {{ filteredRecordData.length }} students
+                        </span>
+                    </div>
+
+                    <div class="overflow-auto flex-1">
+                        <table class="w-full text-xs border-collapse whitespace-nowrap"
+                            style="min-width: max-content;">
+
+                            <!-- ═══ RAW SCORE ═══ -->
+                            <template v-if="classRecordActiveTab === 'raw'">
+                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                    <tr>
+                                        <th rowspan="2"
+                                            class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
+                                            style="min-width:40px">No.</th>
+                                        <th rowspan="2"
+                                            class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
+                                            style="min-width:200px">Student Name</th>
+                                        <th v-for="co in recordCoHeaders" :key="'rh-' + co.co_code"
+                                            :colspan="co.count || 1"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            :style="{ backgroundColor: co.color }">
+                                            {{ co.co_code }}
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th v-for="act in recordActivityHeaders" :key="'ra-' + act.activity_id"
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
+                                            style="min-width:80px">
+                                            <div>{{ act.activity_name }}</div>
+                                            <div class="text-green-600 font-black">{{ act.max_score }}</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, idx) in filteredRecordData" :key="'r-' + row.studid"
+                                        :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                        <td class="sticky left-0 z-10 border border-gray-200 px-2 py-1.5 text-center font-bold text-gray-400"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
+                                        <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
+                                        </td>
+                                        <td v-for="rs in row.raw_scores"
+                                            :key="'rs-' + rs.activity_id + row.studid"
+                                            class="border border-gray-200 text-center py-1.5 text-sm">
+                                            {{ rs.score !== null ? rs.score : '' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+
+                            <!-- ═══ % RATING ═══ -->
+                            <template v-if="classRecordActiveTab === 'percent'">
+                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                    <tr>
+                                        <th rowspan="2"
+                                            class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
+                                            style="min-width:40px">No.</th>
+                                        <th rowspan="2"
+                                            class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
+                                            style="min-width:200px">Student Name</th>
+                                        <th v-for="co in recordCoHeaders" :key="'ph-' + co.co_code"
+                                            :colspan="co.count || 1"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            :style="{ backgroundColor: co.color }">
+                                            {{ co.co_code }}
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th v-for="act in recordActivityHeaders" :key="'pa-' + act.activity_id"
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
+                                            style="min-width:80px">
+                                            {{ act.activity_name }}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, idx) in filteredRecordData" :key="'p-' + row.studid"
+                                        :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                        <td class="sticky left-0 z-10 border border-gray-200 px-2 py-1.5 text-center font-bold text-gray-400"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
+                                        <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
+                                        </td>
+                                        <td v-for="pr in row.percent_ratings"
+                                            :key="'pr-' + pr.activity_id + row.studid"
+                                            class="border border-gray-200 text-center py-1.5 text-sm"
+                                            :class="pr.percent !== null && pr.percent < 60 ? 'text-red-600 font-bold' : ''">
+                                            {{ pr.percent !== null ? pr.percent.toFixed(1) + '%' : '' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+
+                            <!-- ═══ WEIGHTED % RATING ═══ -->
+                            <template v-if="classRecordActiveTab === 'weighted'">
+                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                    <tr>
+                                        <th rowspan="2"
+                                            class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
+                                            style="min-width:40px">No.</th>
+                                        <th rowspan="2"
+                                            class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
+                                            style="min-width:200px">Student Name</th>
+                                        <th v-for="co in recordCoHeaders" :key="'wh-' + co.co_code"
+                                            :colspan="co.count || 1"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            :style="{ backgroundColor: co.color }">
+                                            {{ co.co_code }} ({{ co.weight }}%)
+                                        </th>
+                                        <th rowspan="2"
+                                            class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:70px">TOTAL</th>
+                                    </tr>
+                                    <tr>
+                                        <th v-for="act in recordActivityHeaders" :key="'wa-' + act.activity_id"
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
+                                            style="min-width:80px">
+                                            <div>{{ act.activity_name }}</div>
+                                            <div class="text-blue-600 text-[10px]">{{ act.weight }}%</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, idx) in filteredRecordData" :key="'w-' + row.studid"
+                                        :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                        <td class="sticky left-0 z-10 border border-gray-200 px-2 py-1.5 text-center font-bold text-gray-400"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
+                                        <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
+                                        </td>
+                                        <td v-for="wr in row.weighted_ratings"
+                                            :key="'wr-' + wr.activity_id + row.studid"
+                                            class="border border-gray-200 text-center py-1.5 text-sm">
+                                            {{ wr.weighted_value !== undefined ? wr.weighted_value.toFixed(2) : '' }}
+                                        </td>
+                                        <td class="border border-gray-200 text-center py-1.5 font-black text-sm bg-gray-50">
+                                            {{ row.total_weighted_percent }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+
+                            <!-- ═══ FINAL GRADE ═══ -->
+                            <template v-if="classRecordActiveTab === 'final'">
+                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                    <tr>
+                                        <th class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
+                                            style="min-width:40px">No.</th>
+                                        <th class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
+                                            style="min-width:200px">Student Name</th>
+                                        <th v-for="co in recordCoResultHeaders" :key="'fh-' + co.co_code" colspan="2"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            :style="{ backgroundColor: co.color }">
+                                            {{ co.co_code }}
+                                        </th>
+                                        <th class="bg-gray-600 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:60px">Total</th>
+                                        <th class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:60px">Grade</th>
+                                        <th class="bg-gray-800 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:80px">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, idx) in filteredRecordData" :key="'f-' + row.studid"
+                                        :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                                        <td class="sticky left-0 z-10 border border-gray-200 px-2 py-2 text-center font-bold text-gray-400"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
+                                        <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-2 font-medium text-gray-800"
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
+                                        </td>
+                                        <template v-for="cr in row.co_results">
+                                            <td :key="'cs-' + cr.co_code + row.studid"
+                                                class="border border-gray-200 text-center py-2 text-sm">
+                                                {{ cr.sum_weighted.toFixed(1) }}
+                                            </td>
+                                            <td :key="'cp-' + cr.co_code + row.studid"
+                                                class="border border-gray-200 text-center py-2 text-xs font-bold"
+                                                :class="cr.passed ? 'text-green-600' : 'text-red-600'">
+                                                {{ cr.passed ? 'PASSED' : '-' }}
+                                            </td>
+                                        </template>
+                                        <td class="border border-gray-200 text-center py-2 font-black text-sm bg-gray-50">
+                                            {{ row.total_weighted_percent }}
+                                        </td>
+                                        <td class="border border-gray-200 text-center py-2 font-black text-lg"
+                                            :class="row.final_numerical_grade <= 3.0 ? 'text-green-700' : 'text-red-600'">
+                                            {{ row.final_numerical_grade ? row.final_numerical_grade.toFixed(2) : '' }}
+                                        </td>
+                                        <td class="border border-gray-200 text-center py-2 font-black text-xs uppercase"
+                                            :class="row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
+                                            {{ row.remarks || '' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+
+                        </table>
+                    </div>
+
+                    <!-- Summary bar — Final Grade tab only -->
+                    <div v-if="classRecordActiveTab === 'final'"
+                        class="p-3 bg-gray-50 border-t flex flex-wrap gap-6 text-xs shrink-0">
+                        <div><span class="text-gray-500">Total Students:</span>
+                            <span class="font-bold text-gray-800 ml-1">{{ filteredRecordData.length }}</span>
+                        </div>
+                        <div><span class="text-gray-500">Passed:</span>
+                            <span class="font-bold text-green-700 ml-1">{{ recordPassedCount }}</span>
+                        </div>
+                        <div><span class="text-gray-500">Failed:</span>
+                            <span class="font-bold text-red-600 ml-1">{{ recordFailedCount }}</span>
+                        </div>
+                        <div><span class="text-gray-500">INC:</span>
+                            <span class="font-bold text-red-600 ml-1">{{ recordIncCount }}</span>
+                        </div>
+                        <div><span class="text-gray-500">Pass Rate:</span>
+                            <span class="font-bold text-green-700 ml-1">{{ recordPassRate }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
         <!-- HEADER                                           -->
         <!-- ═══════════════════════════════════════════════ -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -33,7 +332,8 @@
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
             <div class="flex items-center gap-2 mb-4">
                 <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Academic Period</h2>
             </div>
@@ -47,8 +347,10 @@
                             <option value="" disabled>Select Year</option>
                             <option v-for="year in academicYears" :key="year" :value="year">{{ year }}</option>
                         </select>
-                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
@@ -61,8 +363,10 @@
                             <option value="" disabled>Select Semester</option>
                             <option v-for="sem in semesters" :key="sem" :value="sem">{{ sem }}</option>
                         </select>
-                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
@@ -70,7 +374,8 @@
                 <button @click="loadClassesFromDatabase" :disabled="loading"
                     class="h-12 px-8 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl hover:from-orange-500 hover:to-orange-600 font-bold text-sm flex items-center gap-2 disabled:opacity-50 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                     <svg v-if="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                     </svg>
                     {{ loading ? 'Loading...' : 'Display Classes' }}
                 </button>
@@ -78,7 +383,8 @@
                 <button v-if="activeSubject" @click="closeGradingSheet"
                     class="h-12 px-6 bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 font-bold text-sm flex items-center gap-2 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     Close Grading Sheet
                 </button>
@@ -94,8 +400,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-if="subjects.length === 0"
                     class="col-span-full text-center py-16 text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                     <p class="text-lg mb-2">No classes found</p>
                     <p class="text-sm">Select a different academic period or contact administrator</p>
@@ -106,7 +414,7 @@
                     <div class="bg-gradient-to-r from-orange-400 to-orange-500 p-5 relative overflow-hidden">
                         <!-- Decorative pattern -->
                         <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-8 -mt-8"></div>
-                        
+
                         <div class="flex justify-between items-start relative z-10">
                             <h3 class="font-bold text-white text-xl">{{ subject.subjcode }}</h3>
                             <div class="flex gap-2">
@@ -118,17 +426,21 @@
                         <p class="text-sm text-white/80 mt-2 line-clamp-2 relative z-10">{{ subject.description }}</p>
                         <div class="mt-4 flex items-center gap-2 text-xs text-white/70 relative z-10">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             <span class="font-medium">{{ subject.instructor }}</span>
                         </div>
                     </div>
                     <div class="p-5 flex justify-between items-center">
                         <span class="text-sm font-medium text-gray-600">{{ subject.students.length }} Students</span>
-                        <span class="text-orange-600 font-semibold text-sm group-hover:underline flex items-center gap-1">
+                        <span
+                            class="text-orange-600 font-semibold text-sm group-hover:underline flex items-center gap-1">
                             Open Sheet
-                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
                             </svg>
                         </span>
                     </div>
@@ -141,12 +453,14 @@
         <!-- ═══════════════════════════════════════════════ -->
         <div v-if="activeSubject"
             class="bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col relative animate-fade-in overflow-hidden">
-            
+
             <!-- Loading overlay with OBE theme -->
             <div v-if="loadingGradebook"
                 class="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
                 <div class="bg-white p-8 rounded-2xl shadow-2xl text-center">
-                    <div class="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mb-4 mx-auto"></div>
+                    <div
+                        class="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mb-4 mx-auto">
+                    </div>
                     <p class="text-gray-800 font-bold text-xl mb-2">Loading OBE Gradebook</p>
                     <p class="text-gray-400 text-sm">Please wait while we prepare your data...</p>
                 </div>
@@ -154,14 +468,17 @@
 
             <!-- Header bar -->
             <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+
+                    <!-- Subject info -->
                     <div class="flex items-center gap-4">
-                        
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <h2 class="text-xl font-bold flex items-center gap-2">
                                     {{ activeSubject.subjcode }}
-                                    <span class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">Sec {{ activeSubject.section }}</span>
+                                    <span
+                                        class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">Sec {{
+                                            activeSubject.section }}</span>
                                 </h2>
                             </div>
                             <div class="flex items-center gap-3 text-sm">
@@ -173,12 +490,51 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-2">
+                    <!-- Action buttons -->
+                    <div class="flex flex-wrap gap-2">
+
+                        <!-- ── Class Record tab buttons ── -->
+                        <button @click="openClassRecord('raw')"
+                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Raw Score
+                        </button>
+                        <button @click="openClassRecord('percent')"
+                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            </svg>
+                            % Rating
+                        </button>
+                        <button @click="openClassRecord('weighted')"
+                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                            </svg>
+                            Weighted %
+                        </button>
+                        <button @click="openClassRecord('final')"
+                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-orange-400 bg-orange-500 hover:bg-orange-600 text-white shadow-md">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Final Grade
+                        </button>
+
+                        <!-- ── OBE Syllabus Setup ── -->
                         <button @click="showObeModal = true"
-                            class="px-5 py-2.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl text-sm font-bold hover:from-orange-500 hover:to-orange-600 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                            class="px-5 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl text-xs font-bold hover:from-orange-500 hover:to-orange-600 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             OBE Syllabus Setup
                         </button>
@@ -224,6 +580,7 @@ export default {
             // ── Loading states ────────────────────────────────
             loading: false,
             loadingGradebook: false,
+            loadingRecord: false,
 
             // ── Data ──────────────────────────────────────────
             user: null,
@@ -237,11 +594,134 @@ export default {
             // ── UI toggles ────────────────────────────────────
             showSubjects: false,
             showObeModal: false,
+
+            // ── Integrated Class Record ───────────────────────
+            showClassRecord: false,
+            classRecordActiveTab: 'raw',
+            gradeData: [],
+            searchRecordQuery: '',
+
+            recordTabs: [
+                { id: 'raw',      label: 'Raw Score'  },
+                { id: 'percent',  label: '% Rating'   },
+                { id: 'weighted', label: 'Weighted %' },
+                { id: 'final',    label: 'Final Grade' },
+            ],
+
+            coColors: [
+                '#22c55e', '#14b8a6', '#3b82f6', '#a855f7',
+                '#ec4899', '#f97316', '#ef4444', '#6366f1',
+            ],
         }
     },
 
     async mounted() {
         await this.getUserInfo()
+    },
+
+    computed: {
+
+        /* ══════════════════════════════════════════════════════════
+         * CLASS RECORD — Activity column headers
+         * Built from the first student's raw_scores array
+         * ══════════════════════════════════════════════════════════ */
+        recordActivityHeaders: function () {
+            if (!this.gradeData.length) return []
+            var self = this
+            var first = this.gradeData[0]
+            var coIdToCode = {}
+                ; (this.courseOutcomes || []).forEach(function (co) { coIdToCode[co.co_id] = co.co_code })
+
+            var weightMap = {}
+            if (first.weighted_ratings) {
+                first.weighted_ratings.forEach(function (wr) {
+                    weightMap[wr.activity_id] = wr.weight_percentage
+                })
+            }
+
+            return (first.raw_scores || []).map(function (rs) {
+                return {
+                    activity_id:   rs.activity_id,
+                    activity_name: rs.activity_name,
+                    co_id:         rs.co_id,
+                    co_code:       coIdToCode[rs.co_id] || 'N/A',
+                    max_score:     rs.max_score,
+                    weight:        weightMap[rs.activity_id] || 0,
+                }
+            })
+        },
+
+        /* ══════════════════════════════════════════════════════════
+         * CLASS RECORD — CO header spans
+         * ══════════════════════════════════════════════════════════ */
+        recordCoHeaders: function () {
+            var acts = this.recordActivityHeaders
+            if (!acts.length) return []
+            var self = this
+
+            var counts  = {}
+            var weights = {}
+            acts.forEach(function (a) {
+                counts[a.co_code]  = (counts[a.co_code]  || 0) + 1
+                weights[a.co_code] = (weights[a.co_code] || 0) + a.weight
+            })
+
+            var headers = []
+                ; (this.courseOutcomes || []).forEach(function (co, idx) {
+                    if (counts[co.co_code]) {
+                        headers.push({
+                            co_code: co.co_code,
+                            count:   counts[co.co_code],
+                            weight:  Math.round((weights[co.co_code] || 0) * 100) / 100,
+                            color:   self.coColors[idx % self.coColors.length],
+                        })
+                    }
+                })
+            return headers
+        },
+
+        /* ══════════════════════════════════════════════════════════
+         * CLASS RECORD — CO headers for Final Grade tab
+         * ══════════════════════════════════════════════════════════ */
+        recordCoResultHeaders: function () {
+            if (!this.gradeData.length || !this.gradeData[0].co_results) return []
+            var self = this
+            return this.gradeData[0].co_results.map(function (cr, idx) {
+                return {
+                    co_code: cr.co_code,
+                    color:   self.coColors[idx % self.coColors.length],
+                }
+            })
+        },
+
+        /* ══════════════════════════════════════════════════════════
+         * CLASS RECORD — Filtered rows
+         * ══════════════════════════════════════════════════════════ */
+        filteredRecordData: function () {
+            if (!this.searchRecordQuery) return this.gradeData
+            var q = this.searchRecordQuery.toLowerCase()
+            return this.gradeData.filter(function (r) {
+                return r.student_name.toLowerCase().indexOf(q) !== -1 ||
+                    (r.studid || '').toLowerCase().indexOf(q) !== -1
+            })
+        },
+
+        /* ══════════════════════════════════════════════════════════
+         * CLASS RECORD — Summary counters
+         * ══════════════════════════════════════════════════════════ */
+        recordPassedCount: function () {
+            return this.filteredRecordData.filter(function (r) { return r.remarks === 'PASSED' }).length
+        },
+        recordFailedCount: function () {
+            return this.filteredRecordData.filter(function (r) { return r.remarks === 'FAILED' }).length
+        },
+        recordIncCount: function () {
+            return this.filteredRecordData.filter(function (r) { return r.remarks === 'INC' }).length
+        },
+        recordPassRate: function () {
+            if (!this.filteredRecordData.length) return 0
+            return Math.round((this.recordPassedCount / this.filteredRecordData.length) * 100)
+        },
     },
 
     methods: {
@@ -270,6 +750,8 @@ export default {
 
             this.loading = true
             this.activeSubject = null
+            this.gradeData = []
+            this.showClassRecord = false
 
             try {
                 var url = '/masterlist/filter/' + this.selectedYear + '/' + this.selectedSemester
@@ -328,6 +810,7 @@ export default {
         openGradingSheet: async function (subject) {
             this.loadingGradebook = true
             this.activeSubject = subject
+            this.gradeData = []     // clear stale record data from previous class
 
             try {
                 // ── 1. Fetch assessment types ────────────────────
@@ -395,6 +878,37 @@ export default {
         closeGradingSheet: function () {
             this.activeSubject = null
             this.courseOutcomes = []
+            this.gradeData = []
+            this.showClassRecord = false
+        },
+
+        /* ══════════════════════════════════════════════════════════
+         * OPEN CLASS RECORD MODAL
+         * Accepts the tab to land on: 'raw' | 'percent' | 'weighted' | 'final'
+         * Always fetches fresh data so scores saved just before are reflected.
+         * ══════════════════════════════════════════════════════════ */
+        openClassRecord: async function (tab) {
+            this.classRecordActiveTab = tab || 'raw'
+            this.showClassRecord = true
+            this.searchRecordQuery = ''
+            this.loadingRecord = true
+            this.gradeData = []     // always refresh
+
+            try {
+                var res = await this.$axios.post('/class-activity/compute-grades', {
+                    empid:    this.user ? this.user.empid : null,
+                    subjcode: this.activeSubject.subjcode,
+                    section:  (this.activeSubject.section || '').trim(),
+                    sy:       this.selectedYear,
+                    sem:      this.selectedSemester,
+                })
+                this.gradeData = res.data || []
+            } catch (e) {
+                console.error('Failed to load class record:', e)
+                this.gradeData = []
+            } finally {
+                this.loadingRecord = false
+            }
         },
 
         /* ══════════════════════════════════════════════════════════
