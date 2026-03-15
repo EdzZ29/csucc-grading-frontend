@@ -231,9 +231,11 @@
 <script>
 import axios from "axios"
 import Profile from "@/components/profile/profile.vue"
-import GradingModule from "@/components/grading-module/grading-module.vue"
+// ── Changed: import the full GradingPage (grading-page.vue) instead of grading-module.vue
+// grading-page.vue includes the grading sheet, OBE syllabus setup, and the
+// integrated class-record modal (Raw Score / % Rating / Weighted % / Final Grade).
+import GradingPage from "@/components/grading-module/grading-page.vue"
 import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
-import ClassRecord from "@/components/class-record/class-record.vue"
 
 export default {
   middleware: 'auth',
@@ -246,11 +248,11 @@ export default {
       showScrollTop: false,
       activePage: { name: "Dashboard", component: null },
       menuItems: [
-        { name: "Dashboard", component: null, icon: require("../../assets/image/dashboard-sidebar.png") },
-        { name: "Grading Module", component: GradingModule, icon: require("../../assets/image/grading-module.png") },
+        { name: "Dashboard",          component: null,             icon: require("../../assets/image/dashboard-sidebar.png") },
+        // ── Changed: component is now GradingPage (was GradingModule)
+        { name: "Grading Module",     component: GradingPage,      icon: require("../../assets/image/grading-module.png") },
         { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
-        { name: "Class Record", component: ClassRecord, icon: require("../../assets/image/grading-module.png") },
-        { name: "Profile", component: Profile, icon: require("../../assets/image/user-sidebar.png") },
+        { name: "Profile",            component: Profile,           icon: require("../../assets/image/user-sidebar.png") },
       ],
       masterlistStats: {
         count: 0,
