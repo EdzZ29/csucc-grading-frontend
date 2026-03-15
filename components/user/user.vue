@@ -1,257 +1,397 @@
 <template>
-  <div class="text-gray-800">
+  <div class="font-inria min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-4 md:p-6 lg:p-8">
     <SuccessMessage ref="successMessage" />
 
-    <!-- Search form -->
-    <form @submit.prevent class="max-w-md mb-10 mx-auto sm:mx-0">
-      <label
-        for="default-search"
-        class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-        >Search</label
-      >
-      <div class="relative">
-        <input
-          v-model="searchQuery"
-          type="search"
-          id="default-search"
-          class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-700 focus:border-green-800 outline-none"
-          placeholder="Search by name, role, or email"
-        />
-        <button
-          type="submit"
-          class="text-white absolute right-2 bottom-2 bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        >
-          Search
-        </button>
+    <!-- Header with decorative element - Consistent with other modules -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-3 md:gap-4">
+      <div class="flex items-center gap-3 md:gap-4">
+        <div class="w-1 h-10 md:w-1.5 md:h-12 bg-gradient-to-b from-orange-400 to-orange-500 rounded-full"></div>
+        <div>
+          <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold font-epundaslab text-gray-800">User Management</h1>
+          <p class="text-xs sm:text-sm text-gray-500 flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
+            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></span>
+            <span>Manage system users and permissions</span>
+          </p>
+        </div>
       </div>
-    </form>
-
-    <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6"
-    >
-      <h1
-        class="text-3xl font-epundaslab font-bold text-gray-900 dark:text-white mb-2"
-      >
-        User Management
-      </h1>
+      
+      <!-- Create User Button - Consistent with other modules -->
       <button
         @click="toggleForm"
-        class="w-full sm:w-auto px-4 py-2 mb-2 text-white bg-green-700 hover:bg-green-800 transition rounded-lg"
+        class="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
       >
-        {{ showForm ? "Close" : "Create User" }}
+        <svg v-if="!showForm" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        {{ showForm ? "Close Form" : "Create User" }}
       </button>
     </div>
 
-    <!-- Create User Form -->
-    <div v-if="showForm" class="mb-8">
-      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Create User</h2>
-
-        <form @submit.prevent="submitForm" class="space-y-6">
-          <div v-if="errors.general" class="text-red-600">
-            {{ errors.general }}
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block mb-2 text-sm font-medium">First Name</label>
-              <input
-                v-model.trim="form.firstname"
-                type="text"
-                class="w-full p-2.5 rounded-lg border"
-              />
-              <p v-if="errors.firstname" class="text-red-600">
-                {{ errors.firstname }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block mb-2 text-sm font-medium">Middlename</label>
-              <input
-                v-model.trim="form.middlename"
-                type="text"
-                class="w-full p-2.5 rounded-lg border"
-              />
-              <p v-if="errors.middlename" class="text-red-600">
-                {{ errors.middlename }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block mb-2 text-sm font-medium">Last Name</label>
-              <input
-                v-model.trim="form.lastname"
-                type="text"
-                class="w-full p-2.5 rounded-lg border"
-              />
-              <p v-if="errors.lastname" class="text-red-600">
-                {{ errors.lastname }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block mb-2 text-sm font-medium">Extname</label>
-              <input
-                v-model.trim="form.extname"
-                type="text"
-                class="w-full p-2.5 rounded-lg border"
-              />
-              <p v-if="errors.extname" class="text-red-600">
-                {{ errors.extname }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block mb-2 text-sm font-medium">Role</label>
-              <select
-                v-model="form.role"
-                class="w-full p-2.5 rounded-lg border"
-              >
-                <option value="Admin">Admin</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Dean">Dean</option>
-                <option value="Chancellor">Chancellor</option>
-                <option value="Guidance">Guidance</option>
-              </select>
-              <p v-if="errors.role" class="text-red-600">{{ errors.role }}</p>
-            </div>
-
-            <div>
-              <label class="block mb-2 text-sm font-medium">Email</label>
-              <input
-                v-model.trim="form.email"
-                type="email"
-                class="w-full p-2.5 rounded-lg border"
-              />
-              <p v-if="errors.email" class="text-red-600">{{ errors.email }}</p>
-            </div>
-          </div>
-
-          <div>
-            <label class="block mb-2 text-sm font-medium">Password</label>
-            <input
-              v-model="form.password"
-              type="password"
-              class="w-full p-2.5 rounded-lg border"
-            />
-            <p v-if="errors.password" class="text-red-600">
-              {{ errors.password }}
-            </p>
-          </div>
-
-          <div>
-            <label class="block mb-2 text-sm font-medium"
-              >Confirm Password</label
-            >
-            <input
-              v-model="form.password_confirm"
-              type="password"
-              class="w-full p-2.5 rounded-lg border"
-            />
-            <p v-if="errors.password_confirm" class="text-red-600">
-              {{ errors.password_confirm }}
-            </p>
-          </div>
-
+    <!-- Search Bar - Redesigned to match module style -->
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 p-4 sm:p-5 mb-6 md:mb-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Search Users</h2>
+        </div>
+        <div class="relative flex-1 w-full">
+          <input
+            v-model="searchQuery"
+            type="search"
+            class="block w-full p-3 sm:p-4 text-sm text-gray-900 border border-gray-200 rounded-lg sm:rounded-xl bg-gray-50 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none pr-24"
+            placeholder="Search by name, role, or email..."
+          />
           <button
-            type="submit"
-            class="w-full sm:w-auto px-6 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg"
-            :disabled="loading"
+            type="button"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm"
           >
-            {{ loading ? "Saving..." : "Save User" }}
+            Search
           </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- User Table -->
-    <div class="overflow-x-auto dark:bg-gray-800 shadow-md rounded-lg">
-      <!-- Desktop -->
-      <table
-        class="hidden sm:table min-w-full text-sm text-left text-gray-500 dark:text-gray-400"
-      >
-        <thead
-          class="text-xs text-white uppercase bg-green-700 dark:bg-gray-700"
-        >
-          <tr>
-            <th class="px-6 py-3">Role</th>
-            <th class="px-6 py-3">First Name</th>
-            <th class="px-6 py-3">Last Name</th>
-            <th class="px-6 py-3">Email</th>
-            <th class="px-6 py-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white">
-          <tr
-            v-for="user in filteredUsers"
-            :key="user.id"
-            class="border-b dark:border-gray-700"
-          >
-            <td class="px-6 py-4">{{ user.role }}</td>
-            <td class="px-6 py-4">{{ user.firstname }}</td>
-            <td class="px-6 py-4">{{ user.lastname }}</td>
-            <td class="px-6 py-4">{{ user.email }}</td>
-            <td class="px-6 py-4 text-right">
-              <button
-                @click="openDeleteModal(user)"
-                class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Mobile Cards -->
-      <div class="sm:hidden divide-y divide-gray-200 dark:divide-gray-700 mt-4">
-        <div
-          v-for="user in filteredUsers"
-          :key="user.id"
-          class="p-4 rounded-lg shadow mb-4"
-        >
-          <p><strong>Role:</strong> {{ user.role }}</p>
-          <p><strong>First Name:</strong> {{ user.firstname }}</p>
-          <p><strong>Last Name:</strong> {{ user.lastname }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          <div class="mt-3">
-            <button
-              @click="openDeleteModal(user)"
-              class="w-full px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              Delete
-            </button>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Delete Modal -->
+    <!-- Create User Form - Redesigned -->
+    <div v-if="showForm" class="mb-8 animate-fade-in">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-r from-gray-800 to-gray-900 px-4 sm:px-6 py-3 sm:py-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+            <h2 class="text-base sm:text-lg font-bold text-white">Create New User</h2>
+          </div>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-4 sm:p-6">
+          <form @submit.prevent="submitForm" class="space-y-6">
+            <div v-if="errors.general" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {{ errors.general }}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <!-- First Name -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">First Name</label>
+                <input
+                  v-model.trim="form.firstname"
+                  type="text"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="Enter first name"
+                />
+                <p v-if="errors.firstname" class="text-red-500 text-xs mt-1">{{ errors.firstname }}</p>
+              </div>
+
+              <!-- Middle Name -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Middle Name</label>
+                <input
+                  v-model.trim="form.middlename"
+                  type="text"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="Enter middle name"
+                />
+                <p v-if="errors.middlename" class="text-red-500 text-xs mt-1">{{ errors.middlename }}</p>
+              </div>
+
+              <!-- Last Name -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Last Name</label>
+                <input
+                  v-model.trim="form.lastname"
+                  type="text"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="Enter last name"
+                />
+                <p v-if="errors.lastname" class="text-red-500 text-xs mt-1">{{ errors.lastname }}</p>
+              </div>
+
+              <!-- Extension Name -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Extension</label>
+                <input
+                  v-model.trim="form.extname"
+                  type="text"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="e.g., Jr., III"
+                />
+                <p v-if="errors.extname" class="text-red-500 text-xs mt-1">{{ errors.extname }}</p>
+              </div>
+
+              <!-- Email -->
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
+                <input
+                  v-model.trim="form.email"
+                  type="email"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="user@example.com"
+                />
+                <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+              </div>
+
+              <!-- Role -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Role</label>
+                <select
+                  v-model="form.role"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                >
+                  <option value="Admin">Admin</option>
+                  <option value="Instructor">Instructor</option>
+                  <option value="Dean">Dean</option>
+                  <option value="Chancellor">Chancellor</option>
+                  <option value="Guidance">Guidance</option>
+                </select>
+                <p v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</p>
+              </div>
+
+              <!-- Password -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+                <div class="relative">
+                  <input
+                    v-model="form.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50 pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg v-if="!showPassword" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  </button>
+                </div>
+                <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+              </div>
+
+              <!-- Confirm Password -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Confirm Password</label>
+                <input
+                  v-model="form.password_confirm"
+                  type="password"
+                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  placeholder="••••••••"
+                />
+                <p v-if="errors.password_confirm" class="text-red-500 text-xs mt-1">{{ errors.password_confirm }}</p>
+              </div>
+            </div>
+
+            <!-- Password Strength Indicator -->
+            <div v-if="form.password" class="mt-2">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full transition-all duration-300"
+                    :class="[
+                      form.password.length < 6 ? 'w-1/3 bg-red-400' :
+                      form.password.length < 10 ? 'w-2/3 bg-yellow-400' :
+                      'w-full bg-green-400'
+                    ]"
+                  ></div>
+                </div>
+                <span class="text-xs text-gray-400">
+                  {{ form.password.length < 6 ? 'Weak' : form.password.length < 10 ? 'Medium' : 'Strong' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Password Match Indicator -->
+            <div v-if="form.password && form.password_confirm" class="text-xs flex items-center gap-1">
+              <svg v-if="form.password === form.password_confirm" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg v-else class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span :class="form.password === form.password_confirm ? 'text-green-600' : 'text-red-500'">
+                {{ form.password === form.password_confirm ? 'Passwords match' : 'Passwords do not match' }}
+              </span>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                @click="toggleForm"
+                class="px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+                :disabled="loading"
+              >
+                <svg v-if="loading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ loading ? "Saving..." : "Save User" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users List Header -->
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">System Users</h2>
+      <span class="ml-auto text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-medium">
+        {{ filteredUsers.length }} users
+      </span>
+    </div>
+
+    <!-- User Table/Cards - Redesigned -->
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Desktop Table -->
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+            <tr>
+              <th class="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Role</th>
+              <th class="px-6 py-4 font-semibold text-xs uppercase tracking-wider">First Name</th>
+              <th class="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Last Name</th>
+              <th class="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Email</th>
+              <th class="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr
+              v-for="(user, index) in filteredUsers"
+              :key="user.id"
+              class="hover:bg-orange-50/50 transition-colors"
+              :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'"
+            >
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td class="px-6 py-4 font-medium text-gray-800">{{ user.firstname }}</td>
+              <td class="px-6 py-4 text-gray-600">{{ user.lastname }}</td>
+              <td class="px-6 py-4 text-gray-500">{{ user.email }}</td>
+              <td class="px-6 py-4 text-right">
+                <button
+                  @click="openDeleteModal(user)"
+                  class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-xs font-medium shadow-sm hover:shadow flex items-center gap-1 ml-auto"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div class="sm:hidden p-4 space-y-4">
+        <div
+          v-for="user in filteredUsers"
+          :key="user.id"
+          class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
+              {{ user.role }}
+            </span>
+            <button
+              @click="openDeleteModal(user)"
+              class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span class="text-sm text-gray-800">{{ user.firstname }} {{ user.lastname }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm text-gray-500 truncate">{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="filteredUsers.length === 0" class="text-center py-12 px-4">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <p class="text-gray-400 text-sm mb-2">No users found</p>
+        <p class="text-xs text-gray-300">Try adjusting your search or create a new user</p>
+      </div>
+    </div>
+
+    <!-- Delete Modal - Redesigned -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 backdrop-blur-sm"
     >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md"
-      >
-        <h3 class="text-lg font-semibold mb-4">Delete User?</h3>
-        <p class="mb-6">
-          {{ userToDelete?.firstname }} {{ userToDelete?.lastname }} ({{
-            userToDelete?.email
-          }})
-        </p>
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 w-full max-w-md transform transition-all">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-gray-800">Delete User</h3>
+            <p class="text-xs sm:text-sm text-gray-500">This action cannot be undone</p>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-5">
+          <p class="text-sm text-gray-700 mb-2">You are about to delete:</p>
+          <p class="font-medium text-gray-800">{{ userToDelete?.firstname }} {{ userToDelete?.lastname }}</p>
+          <p class="text-xs text-gray-500 mt-1">{{ userToDelete?.email }}</p>
+        </div>
+
         <div class="flex flex-col sm:flex-row justify-end gap-3">
           <button
             @click="closeDeleteModal"
-            class="w-full sm:w-auto px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+            class="w-full sm:w-auto px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all"
           >
             Cancel
           </button>
           <button
             @click="confirmDelete"
-            class="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+            class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg text-sm font-bold hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
-            Delete
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Delete User
           </button>
         </div>
       </div>
@@ -272,12 +412,15 @@ export default {
     return {
       showForm: false,
       showDeleteModal: false,
+      showPassword: false,
       users: [],
       userToDelete: null,
       form: {
-        first_name: "",
-        last_name: "",
-        role: "INSTRUCTOR",
+        firstname: "",
+        middlename: "",
+        lastname: "",
+        extname: "",
+        role: "Instructor",
         email: "",
         password: "",
         password_confirm: "",
@@ -328,9 +471,11 @@ export default {
         await this.fetchUsers();
         this.showForm = false;
         this.form = {
-          first_name: "",
-          last_name: "",
-          role: "INSTRUCTOR",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          extname: "",
+          role: "Instructor",
           email: "",
           password: "",
           password_confirm: "",
@@ -371,3 +516,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
