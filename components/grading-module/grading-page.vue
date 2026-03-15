@@ -253,7 +253,7 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-2 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
-                                        <template v-for="cr in row.co_results">
+                                        <template v-for="cr in sortedCoResults(row.co_results)">
                                             <td :key="'cs-' + cr.co_code + row.studid"
                                                 class="border border-gray-200 text-center py-2 text-sm">
                                                 {{ cr.sum_weighted.toFixed(1) }}
@@ -682,14 +682,29 @@ export default {
 
         /* ══════════════════════════════════════════════════════════
          * CLASS RECORD — CO headers for Final Grade tab
+         * Sorted by courseOutcomes order so CO1 CO2 CO3 CO4 is preserved.
          * ══════════════════════════════════════════════════════════ */
         recordCoResultHeaders: function () {
             if (!this.gradeData.length || !this.gradeData[0].co_results) return []
             var self = this
-            return this.gradeData[0].co_results.map(function (cr, idx) {
+
+            // Build a position map from courseOutcomes (CO1=0, CO2=1, CO3=2 …)
+            var orderMap = {}
+            ;(this.courseOutcomes || []).forEach(function (co, idx) {
+                orderMap[co.co_code] = idx
+            })
+
+            // Copy and sort by that position; unknown codes fall to the end
+            var sorted = this.gradeData[0].co_results.slice().sort(function (a, b) {
+                var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
+                var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
+                return ai - bi
+            })
+
+            return sorted.map(function (cr, idx) {
                 return {
                     co_code: cr.co_code,
-                    color:   self.coColors[idx % self.coColors.length],
+                    color:   self.coColors[orderMap[cr.co_code] !== undefined ? orderMap[cr.co_code] % self.coColors.length : idx % self.coColors.length],
                 }
             })
         },
@@ -725,6 +740,23 @@ export default {
     },
 
     methods: {
+
+        /* ══════════════════════════════════════════════════════════
+         * SORT CO RESULTS — helper used in the Final Grade tbody
+         * so each row's cells match the sorted header order.
+         * ══════════════════════════════════════════════════════════ */
+        sortedCoResults: function (coResults) {
+            if (!coResults) return []
+            var orderMap = {}
+            ;(this.courseOutcomes || []).forEach(function (co, idx) {
+                orderMap[co.co_code] = idx
+            })
+            return coResults.slice().sort(function (a, b) {
+                var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
+                var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
+                return ai - bi
+            })
+        },
 
         /* ══════════════════════════════════════════════════════════
          * AUTH
