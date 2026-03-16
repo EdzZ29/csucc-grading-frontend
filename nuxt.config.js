@@ -49,15 +49,22 @@ export default {
     '@nuxtjs/axios',
   ],
 
-  // BASE_URL must point to your deployed NestJS Railway URL in production
+  // ── publicRuntimeConfig is read at RUNTIME (not baked in at build time) ──
+  // This means Railway's BASE_URL env variable will work correctly
+  publicRuntimeConfig: {
+    axios: {
+      baseURL: process.env.BASE_URL || 'http://localhost:9000/api',
+    }
+  },
+
+  // ── Keep this for local dev compatibility ─────────────────────────────────
   axios: {
     baseURL: process.env.BASE_URL || 'http://localhost:9000/api',
     credentials: true,
   },
 
-  // Railway injects PORT automatically
   server: {
     port: process.env.PORT || 7000,
-    host: '0.0.0.0',   // required on Railway — listens on all interfaces
+    host: '0.0.0.0',
   },
 }
