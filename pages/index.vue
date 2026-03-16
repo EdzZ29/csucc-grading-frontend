@@ -61,7 +61,6 @@
               <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
             </div>
 
-
             <button type="submit"
               class="w-full text-white bg-orange400 hover:bg-orange300 focus:ring-2 focus:outline-none focus:ring-black700 font-medium rounded-lg text-sm px-5 py-3 text-center shadow-md transition-all duration-200 transform hover:-translate-y-0.5">
               Login
@@ -80,7 +79,6 @@
 
 <script>
 import * as yup from "yup";
-import axios from "axios";
 import SuccessMessage from "@/components/success-message.vue";
 
 export default {
@@ -100,42 +98,37 @@ export default {
     async validateField(field) {
       try {
         await this.schema.validateAt(field, this.form);
-        // Using Vue 2 reactivity syntax based on your original code ($set)
         this.$set(this.errors, field, "");
       } catch (err) {
         this.$set(this.errors, field, err.message);
       }
     },
 
-async onSubmit() {
+    async onSubmit() {
       this.errors = {};
       this.backendError = "";
 
       try {
         await this.schema.validate(this.form, { abortEarly: false });
 
-        // 1. Login Request
-        const loginRes = await axios.post("http://localhost:9000/api/auth/login", {
+        // ── Use this.$axios so it reads BASE_URL from nuxt.config publicRuntimeConfig ──
+        const loginRes = await this.$axios.post("/auth/login", {
           email: this.form.email,
           password: this.form.password,
         }, { withCredentials: true });
 
-        // 2. IMPORTANT: Fetch User Data immediately using the new session
-        const userRes = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true });
+        const userRes = await this.$axios.get("/auth/user", { withCredentials: true });
 
-        // 3. Save User to Store & Cookie (Using the action we created in step 1)
         this.$store.dispatch('login', userRes.data);
 
         this.$refs.successMsg.show("Successfully logged in!", "success");
 
-        // 4. Redirect using Router (SPA Navigation) instead of window.location
         setTimeout(() => {
-          // Ensure path starts with /
           let path = loginRes.data.redirect;
           if (!path.startsWith('/')) {
             path = '/' + path;
           }
-          console.log(path)
+          console.log(path);
           this.$router.push(path);
         }, 1000);
 
