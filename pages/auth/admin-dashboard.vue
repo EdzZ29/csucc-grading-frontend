@@ -386,130 +386,124 @@
 
 
   <script>
-  import axios from "axios"
-  import User from "@/components/user/user.vue"
-  import Profile from "@/components/profile/profile.vue"
-  import GradingModule from "@/components/grading-module/grading-page.vue"
-  import ImportCSV from "@/components/upload/import-csv.vue"
-  import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
-  import ClassRecord from "@/components/class-record/class-record.vue"
+import User from "@/components/user/user.vue"
+import Profile from "@/components/profile/profile.vue"
+import GradingModule from "@/components/grading-module/grading-page.vue"
+import ImportCSV from "@/components/upload/import-csv.vue"
+import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
+import ClassRecord from "@/components/class-record/class-record.vue"
 
-  export default {
-    middleware: "auth",
-    data() {
-      return {
-        user: null,
-        sidebarOpen: false,
-        showLogoutModal: false,
-        modalAnimation: false,
-        showScrollTop: false,
-        // Dashboard is now custom handled in template
-        activePage: { name: "Dashboard", component: null },
-        menuItems: [
-          { name: "Dashboard", component: null, icon: require("../../assets/image/dashboard-sidebar.png") },
-          { name: "Grading Module", component: GradingModule, icon: require("../../assets/image/grading-module.png") },
-          { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
-          // { name: "Class Record", component: ClassRecord, icon: require("../../assets/image/grading-module.png") },
-          { name: "User", component: User, icon: require("../../assets/image/multiple-users-silhouette.png") },
-          { name: "Profile", component: Profile, icon: require("../../assets/image/user-sidebar.png") },
-          { name: "Import CSV", component: ImportCSV, icon: require("../../assets/image/import.png") },
-        ],
-        masterlistStats: {
-          count: 0,
-          latest: null
-        }
-      }
-    },
-    computed: {
-      currentDate() {
-        return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      },
-      currentMonth() {
-        return new Date().toLocaleDateString('en-US', { month: 'long' });
-      },
-      currentYear() {
-        return new Date().getFullYear();
-      },
-      currentDay() {
-        return new Date().getDate();
-      }
-    },
-    async mounted() {
-      try {
-        const res = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true })
-        this.user = res.data
-
-        // Fetch System Stats
-        this.fetchDashboardStats();
-      } catch (err) {
-        console.error("Failed to fetch user:", err)
-      }
-      window.addEventListener("scroll", this.handleScroll)
-    },
-    beforeUnmount() {
-      window.removeEventListener("scroll", this.handleScroll)
-    },
-    methods: {
-      async fetchDashboardStats() {
-        try {
-          // Admin gets ALL masterlists
-          const res = await axios.get("http://localhost:9000/api/masterlist/all", { withCredentials: true });
-          const lists = res.data;
-
-          // Calculate Unique Classes
-          const uniqueClasses = new Set();
-          lists.forEach(item => {
-            if (item.subjcode && item.section) {
-              uniqueClasses.add(`${item.subjcode}-${item.section}`);
-            }
-          });
-
-          this.masterlistStats.count = uniqueClasses.size;
-
-          if (lists.length > 0) {
-            lists.sort((a, b) => b.masterlist_id - a.masterlist_id);
-            this.masterlistStats.latest = lists[0];
-          }
-        } catch (e) {
-          console.error("Failed to load stats", e);
-        }
-      },
-      toggleSidebar() {
-        this.sidebarOpen = !this.sidebarOpen
-      },
-      setActivePage(item) {
-        this.activePage = item;
-        this.sidebarOpen = false;
-        if (item.name === 'Dashboard') {
-          this.fetchDashboardStats();
-        }
-      },
-      showLogout() {
-        this.showLogoutModal = true
-        setTimeout(() => (this.modalAnimation = true), 10)
-      },
-      cancelLogout() {
-        this.modalAnimation = false
-        setTimeout(() => (this.showLogoutModal = false), 300)
-      },
-      async confirmLogout() {
-        try {
-          await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
-          this.user = null
-          window.location.href = "/"
-        } catch (err) {
-          console.error("Logout failed:", err)
-        }
-      },
-      handleScroll() {
-        this.showScrollTop = window.scrollY > 200
-      },
-      scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" })
+export default {
+  middleware: "auth",
+  data() {
+    return {
+      user: null,
+      sidebarOpen: false,
+      showLogoutModal: false,
+      modalAnimation: false,
+      showScrollTop: false,
+      activePage: { name: "Dashboard", component: null },
+      menuItems: [
+        { name: "Dashboard", component: null, icon: require("../../assets/image/dashboard-sidebar.png") },
+        { name: "Grading Module", component: GradingModule, icon: require("../../assets/image/grading-module.png") },
+        { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
+        { name: "User", component: User, icon: require("../../assets/image/multiple-users-silhouette.png") },
+        { name: "Profile", component: Profile, icon: require("../../assets/image/user-sidebar.png") },
+        { name: "Import CSV", component: ImportCSV, icon: require("../../assets/image/import.png") },
+      ],
+      masterlistStats: {
+        count: 0,
+        latest: null
       }
     }
+  },
+  computed: {
+    currentDate() {
+      return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    currentMonth() {
+      return new Date().toLocaleDateString('en-US', { month: 'long' });
+    },
+    currentYear() {
+      return new Date().getFullYear();
+    },
+    currentDay() {
+      return new Date().getDate();
+    }
+  },
+  async mounted() {
+    try {
+      const res = await this.$axios.get("/auth/user", { withCredentials: true })
+      this.user = res.data
+      this.fetchDashboardStats()
+    } catch (err) {
+      console.error("Failed to fetch user:", err)
+    }
+    window.addEventListener("scroll", this.handleScroll)
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.handleScroll)
+  },
+  methods: {
+    async fetchDashboardStats() {
+      try {
+        const res = await this.$axios.get("/masterlist/all", { withCredentials: true })
+        const lists = res.data
+
+        const uniqueClasses = new Set()
+        lists.forEach(item => {
+          if (item.subjcode && item.section) {
+            uniqueClasses.add(`${item.subjcode}-${item.section}`)
+          }
+        })
+
+        this.masterlistStats.count = uniqueClasses.size
+
+        if (lists.length > 0) {
+          lists.sort((a, b) => b.masterlist_id - a.masterlist_id)
+          this.masterlistStats.latest = lists[0]
+        }
+      } catch (e) {
+        console.error("Failed to load stats", e)
+      }
+    },
+    toggleSidebar() {
+      this.sidebarOpen = !this.sidebarOpen
+    },
+    setActivePage(item) {
+      this.activePage = item
+      this.sidebarOpen = false
+      if (item.name === 'Dashboard') {
+        this.fetchDashboardStats()
+      }
+    },
+    showLogout() {
+      this.showLogoutModal = true
+      setTimeout(() => (this.modalAnimation = true), 10)
+    },
+    cancelLogout() {
+      this.modalAnimation = false
+      setTimeout(() => (this.showLogoutModal = false), 300)
+    },
+    async confirmLogout() {
+      try {
+        await this.$axios.post("/auth/logout", {}, { withCredentials: true })
+        this.$store.dispatch('logout')
+        this.user = null
+        window.location.href = "/"
+      } catch (err) {
+        console.error("Logout failed:", err)
+      }
+    },
+    handleScroll() {
+      this.showScrollTop = window.scrollY > 200
+    },
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
   }
-  </script>
+}
+</script>
 
   <style scoped>
   .animate-fade-in {

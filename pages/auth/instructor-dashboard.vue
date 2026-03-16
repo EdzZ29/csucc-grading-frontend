@@ -339,11 +339,10 @@
 </template>
 
 <script>
-import axios from "axios"
 import Profile from "@/components/profile/profile.vue"
 import GradingPage from "@/components/grading-module/grading-page.vue"
 import StudentMonitoring from "@/components/student-monitoring/student-monitoring.vue"
-
+ 
 export default {
   middleware: 'auth',
   data() {
@@ -382,7 +381,7 @@ export default {
   },
   async mounted() {
     try {
-      const res = await axios.get("http://localhost:9000/api/auth/user", { withCredentials: true })
+      const res = await this.$axios.get("/auth/user", { withCredentials: true })
       this.user = res.data
       this.fetchDashboardStats()
     } catch (err) {
@@ -396,18 +395,18 @@ export default {
   methods: {
     async fetchDashboardStats() {
       try {
-        const res = await axios.get("http://localhost:9000/api/masterlist/all", { withCredentials: true })
+        const res = await this.$axios.get("/masterlist/all", { withCredentials: true })
         const lists = res.data
-
+ 
         const uniqueClasses = new Set()
         lists.forEach(item => {
           if (item.subjcode && item.section) {
             uniqueClasses.add(`${item.subjcode}-${item.section}`)
           }
         })
-
+ 
         this.masterlistStats.count = uniqueClasses.size
-
+ 
         if (lists.length > 0) {
           lists.sort((a, b) => b.masterlist_id - a.masterlist_id)
           this.masterlistStats.latest = lists[0]
@@ -436,7 +435,7 @@ export default {
     },
     async confirmLogout() {
       try {
-        await axios.post("http://localhost:9000/api/auth/logout", {}, { withCredentials: true })
+        await this.$axios.post("/auth/logout", {}, { withCredentials: true })
         this.$store.dispatch('logout')
         this.user = null
         window.location.href = "/"

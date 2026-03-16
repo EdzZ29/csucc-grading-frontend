@@ -65,6 +65,8 @@ export default {
 
   server: {
     port: process.env.PORT || 7000,
-    host: '0.0.0.0',
+    // Use 0.0.0.0 only in production (Railway needs it)
+    // Locally this keeps it as localhost
+    host: process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost',
   },
 }
