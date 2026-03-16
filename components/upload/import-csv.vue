@@ -314,6 +314,24 @@ div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
 }
 </style>
 
+<style scoped>
+/* Always-visible slim scrollbar inside the table wrapper */
+div[style*="overflow-x: auto"]::-webkit-scrollbar {
+  height: 8px;
+}
+div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+}
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
+
 <script setup>
 import { ref, computed } from "vue"
 import axios from "axios"

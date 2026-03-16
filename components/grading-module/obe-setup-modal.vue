@@ -4,7 +4,7 @@
         <div
             class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-6xl h-full max-h-[90vh] overflow-hidden font-inria animate-fade-in flex flex-col">
 
-            <!-- Modal Header - Orange gradient to match theme -->
+            <!-- Modal Header -->
             <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -14,7 +14,18 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-base sm:text-lg md:text-xl font-bold font-epundaslab">OBE Syllabus Setup</h2>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base sm:text-lg md:text-xl font-bold font-epundaslab">OBE Syllabus Setup</h2>
+                            <!-- Lock badge shown when syllabus is locked -->
+                            <span v-if="isLocked"
+                                class="flex items-center gap-1 bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/30">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                LOCKED
+                            </span>
+                        </div>
                         <p class="text-xs text-white/80 mt-0.5 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-green-300 rounded-full"></span>
                             {{ activeSubject ? activeSubject.subjcode : 'No Subject Selected' }} • Section: {{ activeSubject ? (activeSubject.section || activeSubject.sect) : 'N/A' }}
@@ -29,11 +40,40 @@
                 </button>
             </div>
 
+            <!-- ═══ LOCKED BANNER ═══ -->
+            <div v-if="isLocked"
+                class="bg-amber-50 border-b border-amber-200 px-5 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-amber-800">Syllabus is locked — grading data is protected</p>
+                        <p class="text-[10px] text-amber-600 mt-0.5">
+                            This syllabus has already been saved. Editing and re-saving will <strong>reset all grading sheet scores</strong>.
+                            Unlock only if you are sure no scores have been entered yet.
+                        </p>
+                    </div>
+                </div>
+                <button @click="requestUnlock"
+                    class="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
+                    Unlock to Edit
+                </button>
+            </div>
+
             <!-- Modal Body -->
             <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1 bg-gradient-to-br from-gray-50 to-gray-100">
-                
-                <!-- Add Assessment Type Section - Redesigned -->
-                <div class="mb-6 sm:mb-8 p-4 sm:p-5 bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+
+                <!-- Add Assessment Type Section -->
+                <div class="mb-6 sm:mb-8 p-4 sm:p-5 bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4"
+                    :class="{ 'opacity-50 pointer-events-none select-none': isLocked }">
                     <div class="flex items-center gap-3 w-full lg:w-auto">
                         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,16 +85,18 @@
                             <p class="text-xs sm:text-sm text-gray-600">Add New Assessment Type</p>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                         <div class="flex gap-2 flex-1">
                             <input v-model="newType.name" placeholder="Name (e.g. Field Trip)"
-                                class="text-xs sm:text-sm p-2.5 border border-gray-200 rounded-lg bg-gray-50 flex-1 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none" />
+                                :disabled="isLocked"
+                                class="text-xs sm:text-sm p-2.5 border border-gray-200 rounded-lg bg-gray-50 flex-1 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none disabled:cursor-not-allowed" />
                             <input v-model="newType.code" placeholder="Code"
-                                class="text-xs sm:text-sm p-2.5 border border-gray-200 rounded-lg bg-gray-50 w-20 sm:w-24 uppercase focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none" />
+                                :disabled="isLocked"
+                                class="text-xs sm:text-sm p-2.5 border border-gray-200 rounded-lg bg-gray-50 w-20 sm:w-24 uppercase focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none disabled:cursor-not-allowed" />
                         </div>
-                        <button @click="addNewAssessmentType"
-                            class="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs sm:text-sm rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <button @click="addNewAssessmentType" :disabled="isLocked"
+                            class="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs sm:text-sm rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
@@ -65,7 +107,7 @@
 
                 <!-- Main Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
-                    
+
                     <!-- Left Column - Course Outcomes -->
                     <div class="lg:col-span-5 flex flex-col">
                         <div class="flex justify-between items-center mb-4 sm:mb-6">
@@ -73,8 +115,8 @@
                                 <div class="w-1 h-6 bg-orange-400 rounded-full"></div>
                                 <h4 class="font-bold text-gray-700 text-sm sm:text-base">Course Outcomes</h4>
                             </div>
-                            <button @click="addCO"
-                                class="px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-200 transition-colors flex items-center gap-1">
+                            <button @click="addCO" :disabled="isLocked"
+                                class="px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-200 transition-colors flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -84,9 +126,18 @@
 
                         <div class="space-y-4">
                             <div v-for="(co, idx) in localOutcomes" :key="'co-card-' + idx"
-                                class="p-4 sm:p-5 bg-white rounded-xl border border-gray-200 shadow-sm relative transition-all hover:shadow-md hover:border-orange-300 group">
-                                
-                                <button @click="removeCO(idx)"
+                                class="p-4 sm:p-5 bg-white rounded-xl border border-gray-200 shadow-sm relative transition-all group"
+                                :class="isLocked ? 'opacity-70' : 'hover:shadow-md hover:border-orange-300'">
+
+                                <!-- Lock overlay icon on each card when locked -->
+                                <div v-if="isLocked" class="absolute top-3 right-3 text-gray-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+
+                                <button v-if="!isLocked" @click="removeCO(idx)"
                                     class="absolute top-3 right-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full w-7 h-7 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -96,14 +147,18 @@
                                 <div class="mb-3">
                                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Outcome Code</label>
                                     <input v-model="co.co_code" placeholder="e.g., CO1"
-                                        class="font-bold text-base sm:text-lg w-full bg-transparent border-b-2 border-gray-100 focus:border-orange-400 outline-none uppercase transition-colors" />
+                                        :disabled="isLocked"
+                                        :class="isLocked ? 'cursor-not-allowed text-gray-500 border-gray-100' : 'focus:border-orange-400'"
+                                        class="font-bold text-base sm:text-lg w-full bg-transparent border-b-2 border-gray-100 outline-none uppercase transition-colors" />
                                 </div>
 
                                 <div>
                                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description</label>
                                     <textarea v-model="co.description" placeholder="Describe the course outcome..."
                                         rows="3"
-                                        class="text-xs sm:text-sm w-full bg-gray-50 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none resize-none"></textarea>
+                                        :disabled="isLocked"
+                                        :class="isLocked ? 'cursor-not-allowed text-gray-500' : 'focus:ring-2 focus:ring-orange-400 focus:border-transparent'"
+                                        class="text-xs sm:text-sm w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none resize-none"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -116,8 +171,8 @@
                                 <div class="w-1 h-6 bg-blue-400 rounded-full"></div>
                                 <h4 class="font-bold text-gray-700 text-sm sm:text-base">Weight Matrix (TOS)</h4>
                             </div>
-                            <button @click="addWeight"
-                                class="px-3 py-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-1">
+                            <button @click="addWeight" :disabled="isLocked"
+                                class="px-3 py-1.5 bg-blue-100 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -125,8 +180,9 @@
                             </button>
                         </div>
 
-                        <!-- Table Container -->
-                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <!-- Table -->
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                            :class="{ 'opacity-70': isLocked }">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm">
                                     <thead>
@@ -134,22 +190,25 @@
                                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Outcome</th>
                                             <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Assessment Type</th>
                                             <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Weight %</th>
-                                            <th class="px-4 py-3 text-center w-10"></th>
+                                            <th v-if="!isLocked" class="px-4 py-3 text-center w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
                                         <tr v-for="(w, idx) in localWeights" :key="'tos-row-' + idx"
-                                            class="hover:bg-orange-50/30 transition-colors">
+                                            class="transition-colors"
+                                            :class="isLocked ? '' : 'hover:bg-orange-50/30'">
                                             <td class="px-4 py-3">
-                                                <select v-model="w.co_code"
-                                                    class="bg-transparent font-medium text-gray-700 outline-none cursor-pointer text-xs sm:text-sm">
+                                                <select v-model="w.co_code" :disabled="isLocked"
+                                                    class="bg-transparent font-medium text-gray-700 outline-none text-xs sm:text-sm"
+                                                    :class="isLocked ? 'cursor-not-allowed' : 'cursor-pointer'">
                                                     <option v-for="(co, coIdx) in localOutcomes" :key="'sel-co-' + coIdx"
                                                         :value="co.co_code">{{ co.co_code }}</option>
                                                 </select>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <select v-model="w.type_id"
-                                                    class="bg-transparent w-full text-gray-600 outline-none cursor-pointer text-xs sm:text-sm">
+                                                <select v-model="w.type_id" :disabled="isLocked"
+                                                    class="bg-transparent w-full text-gray-600 outline-none text-xs sm:text-sm"
+                                                    :class="isLocked ? 'cursor-not-allowed' : 'cursor-pointer'">
                                                     <option v-for="type in assessmentTypes" :key="'sel-type-' + type.type_id" :value="type.type_id">
                                                         [{{ type.code }}] {{ type.name }}
                                                     </option>
@@ -158,15 +217,16 @@
                                             <td class="px-4 py-3 text-right">
                                                 <div class="flex items-center justify-end gap-1">
                                                     <input type="number" v-model.number="w.percentage"
-                                                        class="w-16 text-right font-bold text-orange-600 bg-orange-50/50 rounded-lg p-1.5 focus:ring-2 focus:ring-orange-400 outline-none text-xs sm:text-sm" 
+                                                        :disabled="isLocked"
+                                                        class="w-16 text-right font-bold text-orange-600 bg-orange-50/50 rounded-lg p-1.5 outline-none text-xs sm:text-sm"
+                                                        :class="isLocked ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-orange-400'"
                                                         min="0" max="100" step="1" />
                                                     <span class="text-gray-400 text-xs">%</span>
                                                 </div>
                                             </td>
-                                            <td class="px-4 py-3 text-center">
+                                            <td v-if="!isLocked" class="px-4 py-3 text-center">
                                                 <button @click="removeWeight(idx)"
-                                                    class="text-gray-300 hover:text-red-500 transition-colors p-1"
-                                                    title="Remove weight row">
+                                                    class="text-gray-300 hover:text-red-500 transition-colors p-1">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -203,8 +263,8 @@
                                 </span>
                             </div>
                         </div>
-                        
-                        <!-- Error Message Toast (New) -->
+
+                        <!-- Error toast -->
                         <div v-if="showWeightError" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 animate-fade-in">
                             <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -224,15 +284,27 @@
             <div class="bg-white border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-end gap-3 shrink-0">
                 <button @click="$emit('close')"
                     class="w-full sm:w-auto px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
-                    Cancel
+                    {{ isLocked ? 'Close' : 'Cancel' }}
                 </button>
-                <button @click="submitSyllabus" :disabled="totalWeight !== 100"
+
+                <!-- Save button — hidden when locked -->
+                <button v-if="!isLocked" @click="submitSyllabus" :disabled="totalWeight !== 100"
                     class="w-full sm:w-auto px-6 sm:px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
                     Confirm & Save Syllabus
                 </button>
+
+                <!-- Locked replacement button -->
+                <div v-else
+                    class="w-full sm:w-auto px-6 sm:px-8 py-2.5 bg-gray-100 text-gray-400 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-not-allowed border border-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Syllabus Saved & Locked
+                </div>
             </div>
         </div>
     </div>
@@ -251,7 +323,12 @@ export default {
             localWeights: [{ co_code: 'CO1', type_id: 1, percentage: 0 }],
             assessmentTypes: [],
             newType: { name: '', code: '' },
-            showWeightError: false, // New data property for error toast
+            showWeightError: false,
+
+            // ── Lock state ────────────────────────────────────────
+            // true  = existing syllabus loaded; form is read-only
+            // false = new syllabus (no data yet) or user explicitly unlocked
+            isLocked: false,
         }
     },
     computed: {
@@ -264,19 +341,33 @@ export default {
     watch: {
         isOpen: async function (val) {
             if (val) {
-                this.showWeightError = false; // Reset error when modal opens
+                this.showWeightError = false
+                this.isLocked = false   // reset before load; loadExistingSyllabus will re-set it
                 await this.fetchTypes()
                 await this.loadExistingSyllabus()
             }
         },
-        // Watch totalWeight to hide error when it becomes 100%
-        totalWeight: function(newVal) {
-            if (newVal === 100) {
-                this.showWeightError = false;
-            }
-        }
+        totalWeight: function (newVal) {
+            if (newVal === 100) this.showWeightError = false
+        },
     },
     methods: {
+
+        /* ══════════════════════════════════════════════════════════
+         * UNLOCK — warn the user clearly before allowing edits
+         * ══════════════════════════════════════════════════════════ */
+        requestUnlock: function () {
+            var confirmed = window.confirm(
+                '⚠️  WARNING\n\n' +
+                'Unlocking the syllabus and saving again will RESET all scores in the Grading Sheet for this class.\n\n' +
+                'Only unlock if NO scores have been entered yet.\n\n' +
+                'Are you sure you want to unlock and edit?'
+            )
+            if (confirmed) {
+                this.isLocked = false
+            }
+        },
+
         fetchTypes: async function () {
             try {
                 var res = await this.$axios.get('/obe/assessment-types')
@@ -295,13 +386,9 @@ export default {
             if (this.localOutcomes.length > 1) {
                 var removedCode = this.localOutcomes[idx].co_code
                 this.localOutcomes.splice(idx, 1)
-
-                // Auto-remove weight rows that reference the deleted CO
                 this.localWeights = this.localWeights.filter(function (w) {
                     return w.co_code !== removedCode
                 })
-
-                // Ensure at least one weight row remains
                 if (this.localWeights.length === 0) {
                     this.localWeights.push({
                         co_code: this.localOutcomes[0] ? this.localOutcomes[0].co_code : 'CO1',
@@ -327,17 +414,8 @@ export default {
 
         submitSyllabus: async function () {
             if (this.totalWeight !== 100) {
-                // Show error toast instead of/in addition to alert
-                this.showWeightError = true;
-                
-                // Optional: Scroll to validation card to draw attention
-                const validationCard = document.querySelector('[class*="border-red-200"]');
-                if (validationCard) {
-                    validationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                
-                // Still keep alert for immediate feedback
-                alert('Total weight must equal 100% before saving.');
+                this.showWeightError = true
+                alert('Total weight must equal 100% before saving.')
                 return
             }
 
@@ -349,20 +427,6 @@ export default {
                     sem: this.$parent.selectedSemester || '1st',
                     empid: this.$parent.user.empid,
                     outcomes: this.localOutcomes,
-                    /*
-                     * ═══════════════════════════════════════════════════════
-                     * CRITICAL FIX: Send whole numbers, NOT decimals.
-                     *
-                     * The backend compute formula is:
-                     *   weighted = (avgPercent * weight_percentage) / 100
-                     *
-                     * With whole number 10:  (84 * 10) / 100 = 8.4   ✓
-                     * With decimal 0.10:     (84 * 0.10) / 100 = 0.084 ✗
-                     *
-                     * OLD CODE (BUG):  weight_percentage: w.percentage / 100
-                     * FIXED:           weight_percentage: w.percentage
-                     * ═══════════════════════════════════════════════════════
-                     */
                     weights: this.localWeights.map(function (w) {
                         return {
                             co_code: w.co_code,
@@ -374,6 +438,10 @@ export default {
 
                 await this.$axios.post('/obe/course-outcome/batch', payload)
                 alert('Syllabus logic saved successfully!')
+
+                // ── Lock immediately after a successful save ──────
+                this.isLocked = true
+
                 this.$emit('save')
             } catch (e) {
                 console.error(e)
@@ -411,12 +479,10 @@ export default {
                 var res = await this.$axios.get(url)
                 var data = res.data
 
-                // Reset arrays to avoid stacking old data on re-open
                 this.localOutcomes = []
                 this.localWeights = []
 
                 if (data && data.length > 0) {
-                    // Deduplicate by co_id
                     var coMap = new Map()
                     data.forEach(function (c) {
                         if (!coMap.has(c.co_id)) coMap.set(c.co_id, c)
@@ -427,25 +493,10 @@ export default {
                         return { co_code: co.co_code, description: co.description }
                     })
 
-                    // Flatten weights from deduplicated COs
                     var allWeights = []
                     uniqueCOs.forEach(function (co) {
                         if (co.tosWeights && co.tosWeights.length > 0) {
                             co.tosWeights.forEach(function (tw) {
-                                /*
-                                 * ═══════════════════════════════════════════
-                                 * AUTO-DETECT storage format.
-                                 *
-                                 * Old modal stored decimals:  0.10 for 10%
-                                 * New modal stores whole:     10   for 10%
-                                 *
-                                 * Detection: check if ALL weight values
-                                 * in this syllabus are < 1 — if so, it's
-                                 * old decimal format, multiply × 100 for display.
-                                 *
-                                 * We defer this until after collecting all weights.
-                                 * ═══════════════════════════════════════════
-                                 */
                                 allWeights.push({
                                     co_code: co.co_code,
                                     type_id: tw.type_id,
@@ -456,11 +507,7 @@ export default {
                     })
 
                     if (allWeights.length > 0) {
-                        // Check if ALL raw values are < 1 → old decimal format
-                        var allDecimal = allWeights.every(function (w) {
-                            return w.rawWeight < 1
-                        })
-
+                        var allDecimal = allWeights.every(function (w) { return w.rawWeight < 1 })
                         this.localWeights = allWeights.map(function (w) {
                             return {
                                 co_code: w.co_code,
@@ -477,14 +524,21 @@ export default {
                             percentage: 0,
                         }]
                     }
+
+                    // ── Existing data found → lock the form ──────────
+                    this.isLocked = true
+
                 } else {
+                    // No existing syllabus → start fresh, unlocked
                     this.localOutcomes = [{ co_code: 'CO1', description: '' }]
                     this.localWeights = [{ co_code: 'CO1', type_id: 1, percentage: 0 }]
+                    this.isLocked = false
                 }
             } catch (e) {
                 console.error('Syllabus fetch failed', e)
                 this.localOutcomes = [{ co_code: 'CO1', description: '' }]
                 this.localWeights = [{ co_code: 'CO1', type_id: 1, percentage: 0 }]
+                this.isLocked = false
             }
         },
     },
@@ -492,39 +546,14 @@ export default {
 </script>
 
 <style scoped>
-.overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-.font-black {
-    font-weight: 900;
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
+.overflow-y-auto::-webkit-scrollbar { width: 6px; }
+.overflow-y-auto::-webkit-scrollbar-track { background: transparent; }
+.overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.overflow-y-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.font-black { font-weight: 900; }
+.animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0);    }
 }
 </style>
