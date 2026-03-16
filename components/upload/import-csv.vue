@@ -105,7 +105,6 @@
 
         <!-- Controls -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 md:mt-8" v-if="rows && rows.length">
-
           <div class="w-full sm:w-auto flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
             <label for="typeSelect" class="text-xs sm:text-sm font-medium text-gray-600 ml-1 sm:ml-2 whitespace-nowrap">Class Type:</label>
             <select v-model="selectedType" id="typeSelect" :disabled="isUploading"
@@ -148,12 +147,8 @@
           </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════ -->
-        <!-- DATA PREVIEW TABLE — fixed responsive           -->
-        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Data Preview Table -->
         <div class="preview mt-6 md:mt-8" v-if="rows && rows.length && !isUploading">
-
-          <!-- Section label + badge -->
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,14 +162,9 @@
             </span>
           </div>
 
-
-          <!-- Table wrapper — scrollbar lives INSIDE the bordered box -->
           <div class="w-full rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <!-- This inner div is what scrolls; its scrollbar sits inside the border -->
             <div style="overflow-x: auto; overflow-y: hidden; width: 100%; scrollbar-width: thin; scrollbar-color: #d1d5db transparent;">
               <table class="text-xs border-collapse bg-white" style="min-width: max-content; table-layout: auto;">
-
-                <!-- HEAD -->
                 <thead>
                   <tr class="border-b-2 border-gray-200 bg-white">
                     <th v-for="(h, i) in headers" :key="i"
@@ -188,8 +178,6 @@
                     </th>
                   </tr>
                 </thead>
-
-                <!-- BODY -->
                 <tbody>
                   <tr v-for="(row, r) in previewRows" :key="r"
                     class="transition-colors"
@@ -217,8 +205,6 @@
     <div v-if="showModal"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-3 sm:p-4 backdrop-blur-sm">
       <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-lg w-full mx-auto overflow-hidden transform transition-all">
-
-        <!-- Modal Header -->
         <div class="p-4 sm:p-5 border-b flex justify-between items-center"
           :class="modalData.failedCount > 0 ? 'bg-orange-50' : 'bg-green-50'">
           <h3 class="font-bold text-base sm:text-lg flex items-center gap-2"
@@ -240,7 +226,6 @@
           </button>
         </div>
 
-        <!-- Modal Body -->
         <div class="p-4 sm:p-6">
           <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div class="text-center p-3 sm:p-4 bg-green-50 rounded-lg sm:rounded-xl border border-green-100">
@@ -284,7 +269,6 @@
           </div>
         </div>
 
-        <!-- Modal Footer -->
         <div class="p-4 sm:p-5 border-t bg-gray-50 flex justify-end">
           <button type="button" @click="closeModal"
             class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-800 text-white rounded-lg sm:rounded-xl hover:bg-gray-700 transition shadow-md font-medium text-xs sm:text-sm">
@@ -296,299 +280,173 @@
   </div>
 </template>
 
-<style scoped>
-/* Always-visible slim scrollbar inside the table wrapper */
-div[style*="overflow-x: auto"]::-webkit-scrollbar {
-  height: 8px;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-top: 1px solid #e2e8f0;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-</style>
-
-<style scoped>
-/* Always-visible slim scrollbar inside the table wrapper */
-div[style*="overflow-x: auto"]::-webkit-scrollbar {
-  height: 8px;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-top: 1px solid #e2e8f0;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-</style>
-
-<script setup>
-import { ref, computed } from "vue"
-import axios from "axios"
-
-const fileInput = ref(null)
-const rows = ref([])
-const headers = ref([])
-const fileName = ref("")
-const isDragging = ref(false)
-const isUploading = ref(false)
-const showModal = ref(false)
-const modalData = ref({ successCount: 0, failedCount: 0, errors: [] })
-
-// ✅ New Selected Type (Default 'Lec')
-const selectedType = ref("Lec")
-
-const previewRows = computed(() => (rows.value || []).slice(0, 5))
-
-// --- 1. CSV Parsing Logic ---
-function splitCsvLine(line) {
-  const parts = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
-  return parts.map(p => {
-    let v = p.trim()
-    if (v.startsWith('"') && v.endsWith('"')) {
-      v = v.slice(1, -1).replace(/""/g, '"')
+<script>
+// ── Options API so we can use this.$axios (no composition-api plugin needed) ──
+export default {
+  data() {
+    return {
+      fileInput: null,
+      rows: [],
+      headers: [],
+      fileName: "",
+      isDragging: false,
+      isUploading: false,
+      showModal: false,
+      modalData: { successCount: 0, failedCount: 0, errors: [] },
+      selectedType: "Lec",
     }
-    return v
-  })
-}
-
-function parseCsv(text) {
-  const lines = text
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .split("\n")
-    .filter((l, idx, arr) => !(l.trim() === "" && idx === arr.length - 1))
-
-  if (lines.length === 0) return []
-  return lines.map(line => splitCsvLine(line))
-}
-
-// --- 2. Handle File ---
-async function handleFile(e) {
-  isDragging.value = false
-  const f = e.target?.files ? e.target.files[0] : e
-  if (!f) return
-
-  if (!f.name.toLowerCase().endsWith(".csv")) {
-    alert("Please upload a valid .csv file.");
-    return;
-  }
-
-  try {
-    const text = await f.text()
-    const parsed = parseCsv(text)
-
-    if (!parsed || parsed.length === 0) {
-      alert("CSV appears empty or could not be parsed.");
-      return
+  },
+  computed: {
+    previewRows() {
+      return (this.rows || []).slice(0, 5)
     }
+  },
+  mounted() {
+    this.fileInput = this.$refs.fileInput
+  },
+  methods: {
+    splitCsvLine(line) {
+      const parts = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
+      return parts.map(p => {
+        let v = p.trim()
+        if (v.startsWith('"') && v.endsWith('"')) {
+          v = v.slice(1, -1).replace(/""/g, '"')
+        }
+        return v
+      })
+    },
 
-    headers.value = parsed[0] || []
-    rows.value = parsed.slice(1) || []
-    fileName.value = f.name
-  } catch (err) {
-    alert("Failed to parse file: " + err.message);
-  }
+    parseCsv(text) {
+      const lines = text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .split("\n")
+        .filter((l, idx, arr) => !(l.trim() === "" && idx === arr.length - 1))
+      if (lines.length === 0) return []
+      return lines.map(line => this.splitCsvLine(line))
+    },
 
-  if (fileInput.value) fileInput.value.value = null;
-}
+    async handleFile(e) {
+      this.isDragging = false
+      const f = e.target?.files ? e.target.files[0] : e
+      if (!f) return
 
-function handleDrop(e) {
-  if (isUploading.value) return;
-  isDragging.value = false;
-  const f = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) handleFile(f);
-}
-
-function clear() {
-  rows.value = [];
-  headers.value = [];
-  fileName.value = "";
-  if (fileInput.value) fileInput.value.value = null;
-}
-
-function closeModal() {
-  showModal.value = false;
-  if (modalData.value.successCount > 0 && modalData.value.failedCount === 0) {
-    clear();
-  }
-}
-
-// --- 3. Preview Download ---
-function downloadPreview() {
-  // Add 'type' header
-  const exportHeaders = [...headers.value, 'type'];
-
-  // Add 'type' value to each row
-  const exportRows = rows.value.map(row => [...row, selectedType.value]);
-
-  const allData = [exportHeaders, ...exportRows];
-
-  const csvContent = allData.map(row =>
-    row.map(c => {
-      if (c == null) return ""
-      const s = String(c)
-      if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-        return '"' + s.replace(/"/g, '""') + '"'
+      if (!f.name.toLowerCase().endsWith(".csv")) {
+        alert("Please upload a valid .csv file.")
+        return
       }
-      return s
-    }).join(",")
-  ).join("\n");
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `preview_${fileName.value || 'data.csv'}`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+      try {
+        const text = await f.text()
+        const parsed = this.parseCsv(text)
+        if (!parsed || parsed.length === 0) {
+          alert("CSV appears empty or could not be parsed.")
+          return
+        }
+        this.headers = parsed[0] || []
+        this.rows = parsed.slice(1) || []
+        this.fileName = f.name
+      } catch (err) {
+        alert("Failed to parse file: " + err.message)
+      }
 
-// --- 4. Upload to Server ---
-async function uploadToServer() {
-  if (!rows.value || rows.value.length === 0) return;
-  isUploading.value = true;
+      if (this.$refs.fileInput) this.$refs.fileInput.value = null
+    },
 
-  try {
-    // ✅ Add 'type' to headers
-    const newHeaders = [...headers.value, 'type'];
+    handleDrop(e) {
+      if (this.isUploading) return
+      this.isDragging = false
+      const f = e.dataTransfer.files && e.dataTransfer.files[0]
+      if (f) this.handleFile(f)
+    },
 
-    // ✅ Add selectedType value to every row
-    const newRows = rows.value.map(row => [...row, selectedType.value]);
+    clear() {
+      this.rows = []
+      this.headers = []
+      this.fileName = ""
+      if (this.$refs.fileInput) this.$refs.fileInput.value = null
+    },
 
-    const payload = { headers: newHeaders, rows: newRows };
+    closeModal() {
+      this.showModal = false
+      if (this.modalData.successCount > 0 && this.modalData.failedCount === 0) {
+        this.clear()
+      }
+    },
 
-    const response = await axios.post(
-      "http://localhost:9000/api/masterlist/import",
-      payload,
-      { withCredentials: true }
-    );
+    downloadPreview() {
+      const exportHeaders = [...this.headers, 'type']
+      const exportRows = this.rows.map(row => [...row, this.selectedType])
+      const allData = [exportHeaders, ...exportRows]
 
-    modalData.value = {
-      successCount: response.data.successCount || 0,
-      failedCount: response.data.failedCount || 0,
-      errors: response.data.errors || []
-    };
+      const csvContent = allData.map(row =>
+        row.map(c => {
+          if (c == null) return ""
+          const s = String(c)
+          if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+            return '"' + s.replace(/"/g, '""') + '"'
+          }
+          return s
+        }).join(",")
+      ).join("\n")
 
-    if (response.data.message && !response.data.successCount && !response.data.failedCount) {
-      modalData.value.successCount = rows.value.length;
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.setAttribute("href", url)
+      link.setAttribute("download", `preview_${this.fileName || 'data.csv'}`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
+
+    async uploadToServer() {
+      if (!this.rows || this.rows.length === 0) return
+      this.isUploading = true
+
+      try {
+        const newHeaders = [...this.headers, 'type']
+        const newRows = this.rows.map(row => [...row, this.selectedType])
+        const payload = { headers: newHeaders, rows: newRows }
+
+        // ── this.$axios reads BASE_URL from nuxt.config publicRuntimeConfig ──
+        const response = await this.$axios.post("/masterlist/import", payload, {
+          withCredentials: true
+        })
+
+        this.modalData = {
+          successCount: response.data.successCount || 0,
+          failedCount: response.data.failedCount || 0,
+          errors: response.data.errors || []
+        }
+
+        if (response.data.message && !response.data.successCount && !response.data.failedCount) {
+          this.modalData.successCount = this.rows.length
+        }
+
+        this.showModal = true
+
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || "Unknown error"
+        this.modalData = {
+          successCount: 0,
+          failedCount: this.rows.length,
+          errors: [{ row: 0, reason: msg }]
+        }
+        this.showModal = true
+      } finally {
+        this.isUploading = false
+      }
     }
-
-    showModal.value = true;
-
-  } catch (err) {
-    const msg = err.response?.data?.message || err.message || "Unknown error";
-    modalData.value = {
-      successCount: 0,
-      failedCount: rows.value.length,
-      errors: [{ row: 0, reason: msg }]
-    };
-    showModal.value = true;
-  } finally {
-    isUploading.value = false;
   }
 }
 </script>
 
 <style scoped>
-.import-csv {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
+div[style*="overflow-x: auto"]::-webkit-scrollbar { height: 8px; }
+div[style*="overflow-x: auto"]::-webkit-scrollbar-track { background: #f1f5f9; border-top: 1px solid #e2e8f0; }
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-.dropzone {
-  min-height: 250px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  cursor: pointer;
-  padding: 2rem;
-  background-color: #f9fafb;
-}
-
-.dropzone:hover {
-  border-color: #16a34a;
-}
-
-.dropzone.cursor-not-allowed:hover {
-  border-color: #d1d5db;
-}
-
-.dropzone.active-drag {
-  border-color: #16a34a;
-  background-color: #f0fdf4;
-}
-
-.upload-btn {
-  background-color: #16a34a;
-  color: white;
-}
-
-.upload-btn:hover {
-  background-color: #15803d;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-  }
-
-  thead {
-    display: none;
-  }
-
-  tr {
-    margin-bottom: 1rem;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.75rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  td {
-    border: none;
-    padding: 0.5rem 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f3f4f6;
-    text-align: right;
-  }
-
-  td:last-child {
-    border-bottom: none;
-  }
-
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #374151;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    text-align: left;
-    margin-right: 1rem;
-  }
-}
+.dropzone { min-height: 250px; display: flex; align-items: center; justify-content: center; }
 </style>
