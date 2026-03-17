@@ -63,8 +63,8 @@
         <!-- System Info -->
         <div class="mt-auto pt-8">
           <div class="bg-black700/30 rounded-lg p-3">
-            <p class="text-xs text-white text-center font-inria">CSU Grading System v2.0</p>
-            <p class="text-[10px] text-orange100 text-center mt-1">A.Y. 2024-2025</p>
+            <p class="text-xs text-black700 text-center font-inria">CSU Grading System v2.0</p>
+            <p class="text-[10px] text-orange400 text-center mt-1">A.Y. 2024-2025</p>
           </div>
         </div>
       </div>
