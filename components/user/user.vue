@@ -401,7 +401,7 @@
 
 <script>
 import SuccessMessage from "@/components/success-message.vue";
- 
+
 export default {
   name: "UserManagement",
   components: { SuccessMessage },
@@ -495,11 +495,13 @@ export default {
     async confirmDelete() {
       if (!this.userToDelete) return;
       try {
+        // ── FIX: use empid (primary key) not id ──
         await this.$axios.delete(
-          `/auth/admin/delete-users/${this.userToDelete.id}`,
+          `/auth/admin/delete-users/${this.userToDelete.empid}`,
           { withCredentials: true }
         );
-        this.users = this.users.filter((u) => u.id !== this.userToDelete.id);
+        // ── FIX: filter by empid not id ──
+        this.users = this.users.filter((u) => u.empid !== this.userToDelete.empid);
         this.closeDeleteModal();
         this.$refs.successMessage.show("User deleted successfully!", "success");
       } catch (err) {
