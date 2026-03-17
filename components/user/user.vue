@@ -400,11 +400,8 @@
 </template>
 
 <script>
-import axios from "axios";
 import SuccessMessage from "@/components/success-message.vue";
-
-const API_BASE = "http://localhost:9000/api";
-
+ 
 export default {
   name: "UserManagement",
   components: { SuccessMessage },
@@ -450,7 +447,7 @@ export default {
     },
     async fetchUsers() {
       try {
-        const res = await axios.get(`${API_BASE}/auth/admin/users`, {
+        const res = await this.$axios.get("/auth/admin/users", {
           withCredentials: true,
         });
         this.users = Array.isArray(res.data) ? res.data : res.data.users || [];
@@ -462,8 +459,8 @@ export default {
       this.errors = {};
       this.loading = true;
       try {
-        await axios.post(
-          `${API_BASE}/auth/admin/create-users/store`,
+        await this.$axios.post(
+          "/auth/admin/create-users/store",
           this.form,
           { withCredentials: true }
         );
@@ -498,8 +495,8 @@ export default {
     async confirmDelete() {
       if (!this.userToDelete) return;
       try {
-        await axios.delete(
-          `${API_BASE}/auth/admin/delete-users/${this.userToDelete.id}`,
+        await this.$axios.delete(
+          `/auth/admin/delete-users/${this.userToDelete.id}`,
           { withCredentials: true }
         );
         this.users = this.users.filter((u) => u.id !== this.userToDelete.id);
@@ -516,6 +513,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .animate-fade-in {
