@@ -297,60 +297,53 @@
 </template>
 
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import SuccessMessage from '@/components/success-message.vue';
-
-const user = ref(null);
-const password = ref('');
-const passwordConfirm = ref('');
-const messageRef = ref(null);
-
-const fetchUser = async () => {
-  try {
-    const response = await axios.get('http://localhost:9000/api/auth/user', {
-      withCredentials: true
-    });
-    user.value = response.data;
-  } catch (err) {
-    console.error(err);
-    messageRef.value?.show('Failed to load user data', 'error');
-  }
+<script>
+import SuccessMessage from "@/components/success-message.vue";
+ 
+export default {
+  name: "ProfilePage",
+  components: { SuccessMessage },
+  props: {
+    user: { type: Object, default: null }
+  },
+  data() {
+    return {
+      password: "",
+      passwordConfirm: "",
+    };
+  },
+  methods: {
+    async updatePassword() {
+      if (!this.password || !this.passwordConfirm) {
+        this.$refs.messageRef.show("Please fill both password fields.", "error");
+        return;
+      }
+      if (this.password !== this.passwordConfirm) {
+        this.$refs.messageRef.show("Passwords do not match!", "error");
+        return;
+      }
+ 
+      try {
+        await this.$axios.put(
+          "/auth/user/update-password",
+          {
+            password: this.password,
+            password_confirm: this.passwordConfirm,
+          },
+          { withCredentials: true }
+        );
+ 
+        this.$refs.messageRef.show("Password updated successfully!", "success");
+        this.password = "";
+        this.passwordConfirm = "";
+      } catch (err) {
+        console.error(err);
+        this.$refs.messageRef.show(
+          err.response?.data?.message || "Failed to update password.",
+          "error"
+        );
+      }
+    },
+  },
 };
-
-const updatePassword = async () => {
-  if (!password.value || !passwordConfirm.value) {
-    messageRef.value?.show('Please fill both password fields.', 'error');
-    return;
-  }
-  if (password.value !== passwordConfirm.value) {
-    messageRef.value?.show('Passwords do not match!', 'error');
-    return;
-  }
-
-  try {
-    // No ID needed in URL, backend gets it from cookie/token
-    await axios.put(
-      `http://localhost:9000/api/auth/user/update-password`,
-      {
-        password: password.value,
-        password_confirm: passwordConfirm.value
-      },
-      { withCredentials: true }
-    );
-
-    messageRef.value?.show('Password updated successfully!', 'success');
-    password.value = '';
-    passwordConfirm.value = '';
-  } catch (err) {
-    console.error(err);
-    messageRef.value?.show(
-      err.response?.data?.message || 'Failed to update password.',
-      'error'
-    );
-  }
-};
-
-onMounted(fetchUser);
 </script>
