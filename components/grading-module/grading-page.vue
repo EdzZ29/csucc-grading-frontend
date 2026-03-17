@@ -569,45 +569,30 @@ export default {
 
     data: function () {
         return {
-            // ── Dropdown options ──────────────────────────────
             academicYears: ['2024-2025', '2025-2026', '2026-2027'],
             semesters: ['1st', '2nd', 'Summer'],
-
-            // ── Selections ────────────────────────────────────
             selectedYear: '',
             selectedSemester: '',
-
-            // ── Loading states ────────────────────────────────
             loading: false,
             loadingGradebook: false,
             loadingRecord: false,
-
-            // ── Data ──────────────────────────────────────────
             user: null,
             subjects: [],
             activeSubject: null,
-
-            // OBE data — passed as props to child components
             courseOutcomes: [],
             assessmentTypes: [],
-
-            // ── UI toggles ────────────────────────────────────
             showSubjects: false,
             showObeModal: false,
-
-            // ── Integrated Class Record ───────────────────────
             showClassRecord: false,
             classRecordActiveTab: 'raw',
             gradeData: [],
             searchRecordQuery: '',
-
             recordTabs: [
-                { id: 'raw',      label: 'Raw Score'  },
-                { id: 'percent',  label: '% Rating'   },
-                { id: 'weighted', label: 'Weighted %' },
+                { id: 'raw',      label: 'Raw Score'   },
+                { id: 'percent',  label: '% Rating'    },
+                { id: 'weighted', label: 'Weighted %'  },
                 { id: 'final',    label: 'Final Grade' },
             ],
-
             coColors: [
                 '#22c55e', '#14b8a6', '#3b82f6', '#a855f7',
                 '#ec4899', '#f97316', '#ef4444', '#6366f1',
@@ -621,16 +606,12 @@ export default {
 
     computed: {
 
-        /* ══════════════════════════════════════════════════════════
-         * CLASS RECORD — Activity column headers
-         * Built from the first student's raw_scores array
-         * ══════════════════════════════════════════════════════════ */
         recordActivityHeaders: function () {
             if (!this.gradeData.length) return []
             var self = this
             var first = this.gradeData[0]
             var coIdToCode = {}
-                ; (this.courseOutcomes || []).forEach(function (co) { coIdToCode[co.co_id] = co.co_code })
+            ;(this.courseOutcomes || []).forEach(function (co) { coIdToCode[co.co_id] = co.co_code })
 
             var weightMap = {}
             if (first.weighted_ratings) {
@@ -651,56 +632,40 @@ export default {
             })
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * CLASS RECORD — CO header spans
-         * ══════════════════════════════════════════════════════════ */
         recordCoHeaders: function () {
             var acts = this.recordActivityHeaders
             if (!acts.length) return []
             var self = this
-
             var counts  = {}
             var weights = {}
             acts.forEach(function (a) {
                 counts[a.co_code]  = (counts[a.co_code]  || 0) + 1
                 weights[a.co_code] = (weights[a.co_code] || 0) + a.weight
             })
-
             var headers = []
-                ; (this.courseOutcomes || []).forEach(function (co, idx) {
-                    if (counts[co.co_code]) {
-                        headers.push({
-                            co_code: co.co_code,
-                            count:   counts[co.co_code],
-                            weight:  Math.round((weights[co.co_code] || 0) * 100) / 100,
-                            color:   self.coColors[idx % self.coColors.length],
-                        })
-                    }
-                })
+            ;(this.courseOutcomes || []).forEach(function (co, idx) {
+                if (counts[co.co_code]) {
+                    headers.push({
+                        co_code: co.co_code,
+                        count:   counts[co.co_code],
+                        weight:  Math.round((weights[co.co_code] || 0) * 100) / 100,
+                        color:   self.coColors[idx % self.coColors.length],
+                    })
+                }
+            })
             return headers
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * CLASS RECORD — CO headers for Final Grade tab
-         * Sorted by courseOutcomes order so CO1 CO2 CO3 CO4 is preserved.
-         * ══════════════════════════════════════════════════════════ */
         recordCoResultHeaders: function () {
             if (!this.gradeData.length || !this.gradeData[0].co_results) return []
             var self = this
-
-            // Build a position map from courseOutcomes (CO1=0, CO2=1, CO3=2 …)
             var orderMap = {}
-            ;(this.courseOutcomes || []).forEach(function (co, idx) {
-                orderMap[co.co_code] = idx
-            })
-
-            // Copy and sort by that position; unknown codes fall to the end
+            ;(this.courseOutcomes || []).forEach(function (co, idx) { orderMap[co.co_code] = idx })
             var sorted = this.gradeData[0].co_results.slice().sort(function (a, b) {
                 var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
                 var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
                 return ai - bi
             })
-
             return sorted.map(function (cr, idx) {
                 return {
                     co_code: cr.co_code,
@@ -709,9 +674,6 @@ export default {
             })
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * CLASS RECORD — Filtered rows
-         * ══════════════════════════════════════════════════════════ */
         filteredRecordData: function () {
             if (!this.searchRecordQuery) return this.gradeData
             var q = this.searchRecordQuery.toLowerCase()
@@ -721,9 +683,6 @@ export default {
             })
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * CLASS RECORD — Summary counters
-         * ══════════════════════════════════════════════════════════ */
         recordPassedCount: function () {
             return this.filteredRecordData.filter(function (r) { return r.remarks === 'PASSED' }).length
         },
@@ -741,16 +700,10 @@ export default {
 
     methods: {
 
-        /* ══════════════════════════════════════════════════════════
-         * SORT CO RESULTS — helper used in the Final Grade tbody
-         * so each row's cells match the sorted header order.
-         * ══════════════════════════════════════════════════════════ */
         sortedCoResults: function (coResults) {
             if (!coResults) return []
             var orderMap = {}
-            ;(this.courseOutcomes || []).forEach(function (co, idx) {
-                orderMap[co.co_code] = idx
-            })
+            ;(this.courseOutcomes || []).forEach(function (co, idx) { orderMap[co.co_code] = idx })
             return coResults.slice().sort(function (a, b) {
                 var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
                 var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
@@ -758,9 +711,6 @@ export default {
             })
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * AUTH
-         * ══════════════════════════════════════════════════════════ */
         getUserInfo: async function () {
             try {
                 var res = await this.$axios.get('/auth/user')
@@ -770,16 +720,11 @@ export default {
             }
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * LOAD CLASSES — identical to old flow
-         * Groups flat masterlist rows into subject cards
-         * ══════════════════════════════════════════════════════════ */
         loadClassesFromDatabase: async function () {
             if (!this.selectedYear || !this.selectedSemester) {
                 this.$refs.msg.show('Please select Academic Year and Semester.', 'error')
                 return
             }
-
             this.loading = true
             this.activeSubject = null
             this.gradeData = []
@@ -796,12 +741,9 @@ export default {
                     return
                 }
 
-                // Group flat rows by subject+section
                 var organizedClasses = {}
-
                 res.data.forEach(function (row) {
                     var classId = row.subjcode + '-' + row.section
-
                     if (!organizedClasses[classId]) {
                         organizedClasses[classId] = {
                             subjcode: row.subjcode,
@@ -813,7 +755,6 @@ export default {
                             students: [],
                         }
                     }
-
                     organizedClasses[classId].students.push({
                         masterlist_id: row.masterlist_id,
                         studid: row.studid,
@@ -835,30 +776,24 @@ export default {
             }
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * OPEN GRADING SHEET — loads OBE syllabus + assessment types
-         * then shows the GradingSheet child component
-         * ══════════════════════════════════════════════════════════ */
+        // ── FIXED: activeSubject set LAST after all data is ready ──────────
         openGradingSheet: async function (subject) {
             this.loadingGradebook = true
-            this.activeSubject = subject
-            this.gradeData = []     // clear stale record data from previous class
+            this.gradeData = []
+            this.courseOutcomes = []
+            this.assessmentTypes = []
 
             try {
-                // ── 1. Fetch assessment types ────────────────────
                 await this.fetchAssessmentTypes()
-
-                // ── 2. Fetch syllabus (course outcomes + TOS weights) ─
-                await this.fetchSyllabus()
-
+                await this.fetchSyllabusForSubject(subject)
+                // Set activeSubject LAST — GradingSheet watcher fires here
+                // with coIdToCode and typeIdToCode already populated
+                this.activeSubject = subject
             } catch (e) {
                 console.error('Error loading grading sheet:', e)
             } finally {
                 this.loadingGradebook = false
             }
-
-            // The GradingSheet child will auto-load its gradebook
-            // via its watch on activeSubject
         },
 
         fetchAssessmentTypes: async function () {
@@ -871,25 +806,20 @@ export default {
             }
         },
 
-        fetchSyllabus: async function () {
-            if (!this.user || !this.activeSubject) {
+        // ── NEW: accepts subject as param so it works before activeSubject is set ──
+        fetchSyllabusForSubject: async function (subject) {
+            if (!this.user || !subject) {
                 this.courseOutcomes = []
                 return
             }
-
             try {
                 var empid = this.user.empid
-                var subj = encodeURIComponent(this.activeSubject.subjcode)
-                var sect = encodeURIComponent(
-                    (this.activeSubject.section || '').trim()
-                )
-
+                var subj = encodeURIComponent(subject.subjcode)
+                var sect = encodeURIComponent((subject.section || '').trim())
                 var url = '/obe/syllabus/' + empid + '/' + subj + '/' + sect
                 var res = await this.$axios.get(url)
                 var data = res.data
-
                 if (data && data.length > 0) {
-                    // Deduplicate by co_id
                     var coMap = new Map()
                     data.forEach(function (c) {
                         if (!coMap.has(c.co_id)) coMap.set(c.co_id, c)
@@ -904,9 +834,11 @@ export default {
             }
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * CLOSE
-         * ══════════════════════════════════════════════════════════ */
+        // ── kept for handleObeSetupSave compatibility ──────────────────────
+        fetchSyllabus: async function () {
+            await this.fetchSyllabusForSubject(this.activeSubject)
+        },
+
         closeGradingSheet: function () {
             this.activeSubject = null
             this.courseOutcomes = []
@@ -914,17 +846,12 @@ export default {
             this.showClassRecord = false
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * OPEN CLASS RECORD MODAL
-         * Accepts the tab to land on: 'raw' | 'percent' | 'weighted' | 'final'
-         * Always fetches fresh data so scores saved just before are reflected.
-         * ══════════════════════════════════════════════════════════ */
         openClassRecord: async function (tab) {
             this.classRecordActiveTab = tab || 'raw'
             this.showClassRecord = true
             this.searchRecordQuery = ''
             this.loadingRecord = true
-            this.gradeData = []     // always refresh
+            this.gradeData = []
 
             try {
                 var res = await this.$axios.post('/class-activity/compute-grades', {
@@ -943,27 +870,19 @@ export default {
             }
         },
 
-        /* ══════════════════════════════════════════════════════════
-         * EVENT HANDLERS from child modals
-         * ══════════════════════════════════════════════════════════ */
-
-        /** Called when OBE Setup Modal saves successfully */
         handleObeSetupSave: async function () {
             this.showObeModal = false
             this.$refs.msg.show('Syllabus saved successfully!', 'success')
-
-            // Reload outcomes so the grading sheet picks up the new COs
             await this.fetchSyllabus()
-
-            // Reload the grading sheet data with new CO structure
             if (this.$refs.gradingSheet) {
                 this.$refs.gradingSheet.loadGradebook()
             }
         },
-
     },
 }
 </script>
+
+
 
 <style scoped>
 .animate-fade-in {
