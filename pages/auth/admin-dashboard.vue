@@ -2,7 +2,7 @@
     <div class="flex bg-gray-50 font-inria min-h-screen">
       <!-- Sidebar with orange gradient - borders removed -->
       <aside :class="[
-        'fixed top-0 left-0 z-40 w-64 h-full lg:h-screen bg-gradient-to-b from-orange400 to-orange300 text-white shadow-xl transform transition-transform duration-300 ease-in-out overflow-y-auto',
+        'fixed top-0 left-0 z-40 w-64 h-full lg:h-screen bg-white border-r-2 border-gray-300 text-black700 shadow-xl transform transition-transform duration-300 ease-in-out overflow-y-auto',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0'
       ]" aria-label="Sidebar">
@@ -11,13 +11,13 @@
           <!-- Profile Card - border removed -->
           <div class="flex flex-col items-center text-center mb-6 bg-white/10 rounded-xl p-5">
             <div class="relative">
-              <img src="../../assets/image/user.png" class="w-24 h-24 mb-3 rounded-full border-4 border-white shadow-lg" alt="User Avatar">
+              <img :src="profilePicture || require('../../assets/image/user.png')" class="w-24 h-24 mb-3 rounded-full border-4 border-white shadow-lg object-cover" alt="User Avatar">
               <span class="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></span>
             </div>
-            <h2 class="text-xl font-epundaslab font-semibold text-white">
+            <h2 class="text-xl font-epundaslab font-semibold text-black700">
               {{ user?.firstname + ' ' + user?.lastname || "Guest" }}
             </h2>
-            <span class="text-xs bg-black700/30 px-4 py-1.5 rounded-full mt-2 text-white font-inria">{{ user?.role || "No role" }}</span>
+            <span class="text-xs bg-black700/30 px-4 py-1.5 rounded-full mt-2 text-black700 font-inria">{{ user?.role || "No role" }}</span>
           </div>
 
           <!-- Divider - border removed, just a line -->
@@ -33,24 +33,24 @@
           <!-- Navigation Menu -->
           <ul class="space-y-1 font-inria">
             <li v-for="item in menuItems" :key="item.name">
-              <a href="#" @click.prevent="setActivePage(item)" :class="[
-                'flex items-center p-3 rounded-lg group transition-all duration-200',
-                activePage.name === item.name
-                  ? 'bg-black700 text-white shadow-md'
-                  : 'text-white hover:bg-orange200 hover:text-white'
-              ]">
-                <img :src="item.icon" class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100" alt="icon" />
-                <span class="font-medium">{{ item.name }}</span>
-                <span v-if="item.name === 'Dashboard'" class="ml-auto bg-orange200 text-black700 text-[10px] px-2 py-1 rounded-full">Home</span>
-              </a>
-            </li>
+            <a href="#" @click.prevent="setActivePage(item)" :class="[
+              'flex items-center p-3 rounded-lg group transition-all duration-200',
+              activePage.name === item.name
+                ? 'bg-black700 text-white shadow-md'
+                : 'text-black700 hover:bg-orange400 hover:text-white'
+            ]">
+              <img :src="item.icon" class="nav-icon w-5 h-5 mr-3" alt="icon" />
+              <span class="font-medium">{{ item.name }}</span>
+              
+            </a>
+          </li>
 
             <!-- Logout -->
             <li class="pt-4 mt-4 border-t border-white/20">
               <a href="#" @click.prevent="showLogout"
                 class="flex items-center p-3 rounded-lg text-red-100 hover:bg-red-600/30 hover:text-white transition-all duration-200 group">
-                <img src="../../assets/image/logout.png" class="w-5 h-5 mr-3 opacity-80 group-hover:opacity-100" alt="logout icon" />
-                <span class="font-medium">Logout</span>
+                <img src="../../assets/image/logout.png" class="logout-icon w-5 h-5 mr-3" alt="logout icon" />
+                <span class="font-medium text-black700">Logout</span>
               </a>
             </li>
           </ul>
@@ -69,7 +69,7 @@
       <div class="flex-1 flex flex-col lg:ml-64 min-h-screen transition-all duration-300 bg-gray-50">
 
         <!-- Top Navigation - border removed -->
-        <nav class="bg-white sticky top-0 z-30 shadow-sm">
+        <nav class="bg-white sticky top-0 z-30 shadow-sm border-gray-300 border-b-2">
           <div class="flex justify-between items-center px-6 py-3">
             <div class="flex items-center gap-4">
               <button @click="toggleSidebar"
@@ -418,6 +418,15 @@ export default {
     }
   },
   computed: {
+      // ── reads profile picture from localStorage (set in profile.vue) ──
+    profilePicture() {
+      if (!this.user?.empid) return null
+      try {
+        return localStorage.getItem('profile_pic_' + this.user.empid) || null
+      } catch (e) {
+        return null
+      }
+    },
     currentDate() {
       return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     },
@@ -521,4 +530,29 @@ export default {
       transform: translateY(0);
     }
   }
+  
+  /* Default: black icon */
+.nav-icon {
+  filter: brightness(0);
+}
+
+/* Active nav item: white icon */
+.bg-black700 .nav-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Hover: white icon */
+a:hover .nav-icon {
+  filter: brightness(0) invert(1);
+}
+/* Default: red-ish black */
+/* Default: black */
+.logout-icon {
+  filter: brightness(0);
+}
+
+/* Hover: red */
+a:hover .logout-icon {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(100%) saturate(700%) hue-rotate(330deg);
+}
   </style>

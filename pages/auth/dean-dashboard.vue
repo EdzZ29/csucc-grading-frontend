@@ -89,7 +89,7 @@
                   d="M2 4.75h15v1.5H2v-1.5zm0 10.5h8v1.5H2v-1.5zM2 10h15v1.5H2V10z" />
               </svg>
             </button>
-            <img src="../../assets/image/header-logo.png" class="h-14 w-auto" alt="Logo" />
+            <img src="../../assets/image/ceit-logo.png" class="h-14 w-auto" alt="Logo" />
             <div class="hidden md:block">
               <p class="font-epundaslab font-semibold text-black700">College of Engineering and Information Technology</p>
               <p class="text-xs text-gray-500 font-inria">Academic Records Management</p>
@@ -234,7 +234,7 @@
         <div class="w-full max-w-full mx-auto p-4 md:py-6">
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <img src="../../assets/image/header-logo.png" class="h-12" alt="Logo" />
+              <img src="../../assets/image/ceit-logo.png" class="h-12" alt="Logo" />
               <div class="text-xs text-gray-500 font-inria">
                 <p class="font-roboto font-bold text-black700">Caraga State University</p>
                 <p>Ampayon, Butuan City</p>
