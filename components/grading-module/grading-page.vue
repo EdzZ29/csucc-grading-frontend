@@ -569,7 +569,7 @@ export default {
 
     data: function () {
         return {
-            academicYears: ['2024-2025', '2025-2026', '2026-2027'],
+            academicYears: ['2024-2025', '2025-2026', '2026-2027' , '2027-2028' , '2028-2029' , '2029-2030'],
             semesters: ['1st', '2nd', 'Summer'],
             selectedYear: '',
             selectedSemester: '',
