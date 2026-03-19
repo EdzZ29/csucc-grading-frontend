@@ -2,7 +2,7 @@
   <div class="font-inria min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-4 md:p-6 lg:p-8">
     <SuccessMessage ref="successMessage" />
 
-    <!-- Header with decorative element - Consistent with other modules -->
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-3 md:gap-4">
       <div class="flex items-center gap-3 md:gap-4">
         <div class="w-1 h-10 md:w-1.5 md:h-12 bg-gradient-to-b from-orange-400 to-orange-500 rounded-full"></div>
@@ -14,8 +14,7 @@
           </p>
         </div>
       </div>
-      
-      <!-- Create User Button - Consistent with other modules -->
+
       <button
         @click="toggleForm"
         class="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
@@ -30,7 +29,7 @@
       </button>
     </div>
 
-    <!-- Search Bar - Redesigned to match module style -->
+    <!-- Search Bar -->
     <div class="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 p-4 sm:p-5 mb-6 md:mb-8">
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div class="flex items-center gap-2">
@@ -56,10 +55,9 @@
       </div>
     </div>
 
-    <!-- Create User Form - Redesigned -->
+    <!-- Create User Form -->
     <div v-if="showForm" class="mb-8 animate-fade-in">
       <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-        <!-- Form Header -->
         <div class="bg-gradient-to-r from-gray-800 to-gray-900 px-4 sm:px-6 py-3 sm:py-4">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg flex items-center justify-center">
@@ -71,180 +69,190 @@
           </div>
         </div>
 
-        <!-- Form Body -->
         <div class="p-4 sm:p-6">
-          <form @submit.prevent="submitForm" class="space-y-6">
-            <div v-if="errors.general" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {{ errors.general }}
+          <!-- Error Banner — shows the real backend error message -->
+          <div v-if="errors.general" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-start gap-2">
+              <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p class="text-red-700 text-sm font-medium">{{ errors.general }}</p>
+                <p v-if="errors.detail" class="text-red-500 text-xs mt-1">{{ errors.detail }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <!-- First Name -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">First Name *</label>
+              <input
+                v-model.trim="form.firstname"
+                type="text"
+                class="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                :class="errors.firstname ? 'border-red-300' : 'border-gray-200'"
+                placeholder="Enter first name"
+              />
+              <p v-if="errors.firstname" class="text-red-500 text-xs mt-1">{{ errors.firstname }}</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <!-- First Name -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">First Name</label>
+            <!-- Middle Name -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Middle Name</label>
+              <input
+                v-model.trim="form.middlename"
+                type="text"
+                class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                placeholder="Enter middle name"
+              />
+            </div>
+
+            <!-- Last Name -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Last Name *</label>
+              <input
+                v-model.trim="form.lastname"
+                type="text"
+                class="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                :class="errors.lastname ? 'border-red-300' : 'border-gray-200'"
+                placeholder="Enter last name"
+              />
+              <p v-if="errors.lastname" class="text-red-500 text-xs mt-1">{{ errors.lastname }}</p>
+            </div>
+
+            <!-- Extension Name -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Extension</label>
+              <input
+                v-model.trim="form.extname"
+                type="text"
+                class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                placeholder="e.g., Jr., III"
+              />
+            </div>
+
+            <!-- Email -->
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email Address *</label>
+              <input
+                v-model.trim="form.email"
+                type="email"
+                class="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                :class="errors.email ? 'border-red-300' : 'border-gray-200'"
+                placeholder="user@example.com"
+              />
+              <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+            </div>
+
+            <!-- Role -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Role *</label>
+              <select
+                v-model="form.role"
+                class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+              >
+                <option value="Admin">Admin</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Dean">Dean</option>
+                <option value="Chancellor">Chancellor</option>
+                <option value="Guidance">Guidance</option>
+              </select>
+              <p v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</p>
+            </div>
+
+            <!-- Password -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password *</label>
+              <div class="relative">
                 <input
-                  v-model.trim="form.firstname"
-                  type="text"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                  placeholder="Enter first name"
-                />
-                <p v-if="errors.firstname" class="text-red-500 text-xs mt-1">{{ errors.firstname }}</p>
-              </div>
-
-              <!-- Middle Name -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Middle Name</label>
-                <input
-                  v-model.trim="form.middlename"
-                  type="text"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                  placeholder="Enter middle name"
-                />
-                <p v-if="errors.middlename" class="text-red-500 text-xs mt-1">{{ errors.middlename }}</p>
-              </div>
-
-              <!-- Last Name -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Last Name</label>
-                <input
-                  v-model.trim="form.lastname"
-                  type="text"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                  placeholder="Enter last name"
-                />
-                <p v-if="errors.lastname" class="text-red-500 text-xs mt-1">{{ errors.lastname }}</p>
-              </div>
-
-              <!-- Extension Name -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Extension</label>
-                <input
-                  v-model.trim="form.extname"
-                  type="text"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                  placeholder="e.g., Jr., III"
-                />
-                <p v-if="errors.extname" class="text-red-500 text-xs mt-1">{{ errors.extname }}</p>
-              </div>
-
-              <!-- Email -->
-              <div class="md:col-span-2">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
-                <input
-                  v-model.trim="form.email"
-                  type="email"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                  placeholder="user@example.com"
-                />
-                <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
-              </div>
-
-              <!-- Role -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Role</label>
-                <select
-                  v-model="form.role"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
-                >
-                  <option value="Admin">Admin</option>
-                  <option value="Instructor">Instructor</option>
-                  <option value="Dean">Dean</option>
-                  <option value="Chancellor">Chancellor</option>
-                  <option value="Guidance">Guidance</option>
-                </select>
-                <p v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</p>
-              </div>
-
-              <!-- Password -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password</label>
-                <div class="relative">
-                  <input
-                    v-model="form.password"
-                    :type="showPassword ? 'text' : 'password'"
-                    class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50 pr-10"
-                    placeholder="••••••••"
-                  />
-                  <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <svg v-if="!showPassword" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  </button>
-                </div>
-                <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
-              </div>
-
-              <!-- Confirm Password -->
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Confirm Password</label>
-                <input
-                  v-model="form.password_confirm"
-                  type="password"
-                  class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50 pr-10"
+                  :class="errors.password ? 'border-red-300' : 'border-gray-200'"
                   placeholder="••••••••"
                 />
-                <p v-if="errors.password_confirm" class="text-red-500 text-xs mt-1">{{ errors.password_confirm }}</p>
+                <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg v-if="!showPassword" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  </svg>
+                </button>
               </div>
+              <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
             </div>
 
-            <!-- Password Strength Indicator -->
-            <div v-if="form.password" class="mt-2">
-              <div class="flex items-center gap-2">
-                <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full transition-all duration-300"
-                    :class="[
-                      form.password.length < 6 ? 'w-1/3 bg-red-400' :
-                      form.password.length < 10 ? 'w-2/3 bg-yellow-400' :
-                      'w-full bg-green-400'
-                    ]"
-                  ></div>
-                </div>
-                <span class="text-xs text-gray-400">
-                  {{ form.password.length < 6 ? 'Weak' : form.password.length < 10 ? 'Medium' : 'Strong' }}
-                </span>
-              </div>
+            <!-- Confirm Password -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Confirm Password *</label>
+              <input
+                v-model="form.password_confirm"
+                type="password"
+                class="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-gray-50"
+                :class="errors.password_confirm ? 'border-red-300' : 'border-gray-200'"
+                placeholder="••••••••"
+              />
+              <p v-if="errors.password_confirm" class="text-red-500 text-xs mt-1">{{ errors.password_confirm }}</p>
             </div>
+          </div>
 
-            <!-- Password Match Indicator -->
-            <div v-if="form.password && form.password_confirm" class="text-xs flex items-center gap-1">
-              <svg v-if="form.password === form.password_confirm" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <svg v-else class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span :class="form.password === form.password_confirm ? 'text-green-600' : 'text-red-500'">
-                {{ form.password === form.password_confirm ? 'Passwords match' : 'Passwords do not match' }}
+          <!-- Password Strength -->
+          <div v-if="form.password" class="mt-4">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full transition-all duration-300"
+                  :class="[
+                    form.password.length < 6 ? 'w-1/3 bg-red-400' :
+                    form.password.length < 10 ? 'w-2/3 bg-yellow-400' :
+                    'w-full bg-green-400'
+                  ]"
+                ></div>
+              </div>
+              <span class="text-xs text-gray-400">
+                {{ form.password.length < 6 ? 'Weak' : form.password.length < 10 ? 'Medium' : 'Strong' }}
               </span>
             </div>
+          </div>
 
-            <!-- Form Actions -->
-            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                @click="toggleForm"
-                class="px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
-                :disabled="loading"
-              >
-                <svg v-if="loading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {{ loading ? "Saving..." : "Save User" }}
-              </button>
-            </div>
-          </form>
+          <!-- Password Match -->
+          <div v-if="form.password && form.password_confirm" class="text-xs flex items-center gap-1 mt-2">
+            <svg v-if="form.password === form.password_confirm" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg v-else class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span :class="form.password === form.password_confirm ? 'text-green-600' : 'text-red-500'">
+              {{ form.password === form.password_confirm ? 'Passwords match' : 'Passwords do not match' }}
+            </span>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 mt-4 border-t border-gray-100">
+            <button
+              type="button"
+              @click="toggleForm"
+              class="px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              @click="submitForm"
+              class="px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
+              :disabled="loading"
+            >
+              <svg v-if="loading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ loading ? "Saving..." : "Save User" }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -260,9 +268,9 @@
       </span>
     </div>
 
-    <!-- User Table/Cards - Redesigned -->
+    <!-- User Table -->
     <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-      <!-- Desktop Table -->
+      <!-- Desktop -->
       <div class="hidden sm:block overflow-x-auto">
         <table class="w-full text-sm text-left">
           <thead class="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
@@ -277,7 +285,7 @@
           <tbody class="divide-y divide-gray-100">
             <tr
               v-for="(user, index) in filteredUsers"
-              :key="user.id"
+              :key="user.empid || user.id"
               class="hover:bg-orange-50/50 transition-colors"
               :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'"
             >
@@ -305,11 +313,11 @@
         </table>
       </div>
 
-      <!-- Mobile Cards -->
+      <!-- Mobile -->
       <div class="sm:hidden p-4 space-y-4">
         <div
           v-for="user in filteredUsers"
-          :key="user.id"
+          :key="user.empid || user.id"
           class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all"
         >
           <div class="flex items-center justify-between mb-3">
@@ -325,7 +333,6 @@
               </svg>
             </button>
           </div>
-          
           <div class="space-y-2">
             <div class="flex items-center gap-2">
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +351,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="filteredUsers.length === 0" class="text-center py-12 px-4">
+      <div v-if="filteredUsers.length === 0 && !loading" class="text-center py-12 px-4">
         <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
@@ -353,7 +360,7 @@
       </div>
     </div>
 
-    <!-- Delete Modal - Redesigned -->
+    <!-- Delete Modal -->
     <div
       v-if="showDeleteModal"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 backdrop-blur-sm"
@@ -405,6 +412,7 @@ import SuccessMessage from "@/components/success-message.vue";
 export default {
   name: "UserManagement",
   components: { SuccessMessage },
+
   data() {
     return {
       showForm: false,
@@ -427,109 +435,204 @@ export default {
       searchQuery: "",
     };
   },
+
   computed: {
     filteredUsers() {
       if (!this.searchQuery) return this.users;
       const q = this.searchQuery.toLowerCase();
       return this.users.filter(
-        (user) =>
-          (user.firstname && user.firstname.toLowerCase().includes(q)) ||
-          (user.lastname && user.lastname.toLowerCase().includes(q)) ||
-          (user.role && user.role.toLowerCase().includes(q)) ||
-          (user.email && user.email.toLowerCase().includes(q))
+        (u) =>
+          (u.firstname && u.firstname.toLowerCase().includes(q)) ||
+          (u.lastname && u.lastname.toLowerCase().includes(q)) ||
+          (u.role && u.role.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q))
       );
     },
   },
+
   methods: {
     toggleForm() {
       this.showForm = !this.showForm;
       this.errors = {};
     },
+
+    // ── CLIENT-SIDE VALIDATION ────────────────────────────────────────
+    // Run this before sending to the server so Railway never rejects
+    // a request due to missing/invalid fields.
+    validateForm() {
+      const e = {};
+      if (!this.form.firstname) e.firstname = "First name is required.";
+      if (!this.form.lastname)  e.lastname  = "Last name is required.";
+      if (!this.form.email)     e.email     = "Email is required.";
+      if (!this.form.role)      e.role      = "Role is required.";
+
+      if (!this.form.password) {
+        e.password = "Password is required.";
+      } else if (this.form.password.length < 6) {
+        e.password = "Password must be at least 6 characters.";
+      }
+
+      if (!this.form.password_confirm) {
+        e.password_confirm = "Please confirm your password.";
+      } else if (this.form.password !== this.form.password_confirm) {
+        e.password_confirm = "Passwords do not match.";
+      }
+
+      // basic email format check
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (this.form.email && !emailRe.test(this.form.email)) {
+        e.email = "Please enter a valid email address.";
+      }
+
+      this.errors = e;
+      return Object.keys(e).length === 0;
+    },
+
     async fetchUsers() {
       try {
         const res = await this.$axios.get("/auth/admin/users", {
           withCredentials: true,
         });
-        this.users = Array.isArray(res.data) ? res.data : res.data.users || [];
+        this.users = Array.isArray(res.data)
+          ? res.data
+          : res.data.users || [];
       } catch (err) {
-        console.error("Failed to fetch users", err);
+        console.error("Failed to fetch users:", err);
       }
     },
+
     async submitForm() {
-      this.errors = {};
+      // 1. Client-side validation first
+      if (!this.validateForm()) return;
+
       this.loading = true;
+      this.errors  = {};
+
+      // 2. Build a clean payload — only send what the backend expects,
+      //    no extra keys that might confuse NestJS validation pipes.
+      const payload = {
+        firstname:        this.form.firstname,
+        middlename:       this.form.middlename  || "",
+        lastname:         this.form.lastname,
+        extname:          this.form.extname     || "",
+        role:             this.form.role,
+        email:            this.form.email.toLowerCase().trim(),
+        password:         this.form.password,
+        password_confirm: this.form.password_confirm,
+      };
+
       try {
+        // 3. Explicit Content-Type header — Railway sometimes strips it
         await this.$axios.post(
           "/auth/admin/create-users/store",
-          this.form,
-          { withCredentials: true }
+          payload,
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
         );
+
         this.$refs.successMessage.show("User created successfully!", "success");
         await this.fetchUsers();
         this.showForm = false;
-        this.form = {
-          firstname: "",
-          middlename: "",
-          lastname: "",
-          extname: "",
-          role: "Instructor",
-          email: "",
-          password: "",
-          password_confirm: "",
-        };
+        this.resetForm();
+
       } catch (err) {
-        const payload = err.response?.data;
-        this.errors.general = payload?.message || "An error occurred.";
+        // 4. Deep error extraction — covers all NestJS error shapes
+        const res  = err.response;
+        const data = res?.data;
+
+        console.error("Create user error:", {
+          status:  res?.status,
+          data,
+        });
+
+        if (!res) {
+          // Network error — no response at all (CORS, timeout, DNS)
+          this.errors.general =
+            "Cannot reach the server. Check your internet connection or try again.";
+          this.errors.detail =
+            "If this works locally but not on Railway, check CORS settings and environment variables.";
+          return;
+        }
+
+        // NestJS class-validator returns { message: string[] } on 400
+        if (Array.isArray(data?.message)) {
+          this.errors.general = data.message.join(" | ");
+        } else if (typeof data?.message === "string") {
+          this.errors.general = data.message;
+        } else if (typeof data?.error === "string") {
+          this.errors.general = data.error;
+        } else {
+          // Unknown shape — show status so user can report it
+          this.errors.general =
+            `Request failed (HTTP ${res.status}). Please check Railway backend logs.`;
+        }
+
       } finally {
         this.loading = false;
       }
     },
+
+    resetForm() {
+      this.form = {
+        firstname:        "",
+        middlename:       "",
+        lastname:         "",
+        extname:          "",
+        role:             "Instructor",
+        email:            "",
+        password:         "",
+        password_confirm: "",
+      };
+    },
+
     openDeleteModal(user) {
-      this.userToDelete = user;
+      this.userToDelete  = user;
       this.showDeleteModal = true;
     },
+
     closeDeleteModal() {
-      this.userToDelete = null;
+      this.userToDelete    = null;
       this.showDeleteModal = false;
     },
+
     async confirmDelete() {
       if (!this.userToDelete) return;
+      // Use empid as primary key (matches backend route /delete-users/:empid)
+      const id = this.userToDelete.empid ?? this.userToDelete.id;
       try {
-        // ── FIX: use empid (primary key) not id ──
         await this.$axios.delete(
-          `/auth/admin/delete-users/${this.userToDelete.empid}`,
+          `/auth/admin/delete-users/${id}`,
           { withCredentials: true }
         );
-        // ── FIX: filter by empid not id ──
-        this.users = this.users.filter((u) => u.empid !== this.userToDelete.empid);
+        this.users = this.users.filter(
+          (u) => (u.empid ?? u.id) !== id
+        );
         this.closeDeleteModal();
         this.$refs.successMessage.show("User deleted successfully!", "success");
       } catch (err) {
-        console.error("Delete failed", err);
-        this.$refs.successMessage.show("Failed to delete user", "error");
+        console.error("Delete failed:", err);
+        this.$refs.successMessage.show(
+          `Failed to delete user (${err.response?.status ?? "no response"})`,
+          "error"
+        );
       }
     },
   },
+
   mounted() {
     this.fetchUsers();
   },
 };
 </script>
 
-
 <style scoped>
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 </style>
