@@ -789,7 +789,7 @@ export default {
       activePage: { name: "Dashboard", component: null },
       menuItems: [
         { name: "Dashboard",          component: null,              icon: require("../../assets/image/dashboard-sidebar.png") },
-        { name: "Grading Module",     component: GradingModule,     icon: require("../../assets/image/grading-module.png") },
+        // { name: "Grading Module",     component: GradingModule,     icon: require("../../assets/image/grading-module.png") },
         // { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
         { name: "User",               component: User,              icon: require("../../assets/image/multiple-users-silhouette.png") },
         { name: "Profile",            component: Profile,           icon: require("../../assets/image/user-sidebar.png") },
