@@ -1037,7 +1037,7 @@ export default {
       menuItems: [
         { name: "Dashboard",          component: null,              icon: require("../../assets/image/dashboard-sidebar.png") },
         { name: "Grading Module",     component: GradingPage,       icon: require("../../assets/image/grading-module.png") },
-        { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
+        // { name: "Student Monitoring", component: StudentMonitoring, icon: require("../../assets/image/student-monitoring.png") },
         { name: "Profile",            component: Profile,           icon: require("../../assets/image/user-sidebar.png") },
       ],
       masterlistStats: {
