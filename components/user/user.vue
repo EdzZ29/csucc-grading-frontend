@@ -155,7 +155,7 @@
                 <option value="Admin">Admin</option>
                 <option value="Instructor">Instructor</option>
                 <option value="Dean">Dean</option>
-                <option value="Chancellor">Chancellor</option>
+                <option value="Chairperson">Chairperson</option>
                 <option value="Guidance">Guidance</option>
               </select>
               <p v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</p>

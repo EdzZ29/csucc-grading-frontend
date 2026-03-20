@@ -17,7 +17,7 @@ export default function ({ store, redirect, route }) {
         'Admin': '/auth/admin-dashboard',
         'Instructor': '/auth/instructor-dashboard',
         'Dean': '/auth/dean-dashboard',
-        'Chancellor': '/auth/chancellor-dashboard',
+        'Chairperson': '/auth/chairperson-dashboard',
         'Guidance': '/auth/guidance-dashboard'
     }
 
