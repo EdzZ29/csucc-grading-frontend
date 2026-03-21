@@ -78,11 +78,11 @@
             <thead>
               <tr>
                 <th rowspan="3"
-                  class="sticky left-0 z-30 bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700 px-2 py-3 text-center font-black text-white text-xs uppercase tracking-wider w-[40px]"
-                  style="width:40px">#</th>
+                  class="sticky left-0 z-10 bg-gray-900 border border-gray-700 px-2 py-3 text-center font-black text-white text-xs uppercase tracking-wider"
+                  style="width:40px; min-width:40px; background:#111827">#</th>
                 <th rowspan="3"
-                  class="sticky left-[40px] z-30 bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700 px-4 py-3 text-left font-black text-white text-xs uppercase tracking-wider w-[200px]"
-                  style="width:200px">
+                  class="sticky left-[40px] z-10 border border-gray-700 px-4 py-3 text-left font-black text-white text-xs uppercase tracking-wider"
+                  style="width:200px; min-width:200px; background:#111827">
                   Student Name
                   <svg class="w-3 h-3 inline ml-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -316,7 +316,7 @@
           </div>
 
           <!-- ─── Individual rubric panel ─── -->
-          <div v-for="(rubric, rIdx) in rubricsList" :key="'rubric-' + rIdx"
+          <div v-for="(rubric, rIdx) in rubricsList" :key="rubric.id"
             class="bg-white rounded-2xl border-2 shadow-md overflow-hidden"
             :class="rubric.saved ? 'border-green-400' : 'border-orange-200'">
 
@@ -370,7 +370,6 @@
                 <div class="w-full lg:w-40">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">CO</label>
                   <select v-model="rubric.selectedCo" @change="onRubricCoChange(rIdx)"
-                    :disabled="rubric.saved"
                     class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="">— CO —</option>
                     <option v-for="co in outcomes" :key="co.co_code" :value="co.co_code">{{ co.co_code }}</option>
@@ -381,7 +380,6 @@
                 <div class="w-full lg:w-60">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Assessment Type</label>
                   <select v-model="rubric.selectedTypeId"
-                    :disabled="rubric.saved"
                     class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="">— Type —</option>
                     <option v-for="t in getRubricFilteredTypes(rubric.selectedCo)" :key="t.type_id" :value="t.type_id">
@@ -394,7 +392,6 @@
                 <div class="w-full lg:w-52">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Activity Name</label>
                   <input v-model="rubric.activityName" placeholder="e.g. Lab Activity 1"
-                    :disabled="rubric.saved"
                     class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
                 </div>
 
@@ -406,28 +403,24 @@
                     Rubric Criteria <span class="text-orange-300 font-normal">(label · max)</span>
                   </label>
                   <div class="flex flex-wrap gap-1.5 items-center">
-                    <div v-for="(crit, cIdx) in rubric.criteria" :key="'c-' + rIdx + '-' + cIdx"
+                    <div v-for="(crit, cIdx) in rubric.criteria" :key="'c-' + rubric.id + '-' + cIdx"
                       class="flex items-center gap-1 bg-white border border-orange-200 rounded-lg px-2 py-1 shadow-sm">
-                      <input v-model="crit.label" placeholder="Label"
-                        :disabled="rubric.saved"
-                        class="w-24 text-xs font-bold text-gray-700 focus:outline-none border-b border-dashed border-orange-300 bg-transparent disabled:border-transparent" />
+                      <span class="text-xs font-bold text-gray-700">{{ crit.label }}</span>
                       <span class="text-[10px] text-gray-400">·</span>
-                      <input type="number" v-model.number="crit.maxScore" min="0"
-                        :disabled="rubric.saved"
-                        class="w-10 text-xs text-center font-bold text-orange-700 focus:outline-none border border-orange-200 rounded px-1 py-0.5 bg-orange-50 disabled:opacity-60" />
-                      <button v-if="!rubric.saved" @click="removeCriterionFromRubric(rIdx, cIdx)"
-                        class="text-gray-300 hover:text-red-500 transition-colors">
+                      <span class="text-xs text-center font-bold text-orange-700 bg-orange-50 px-1 py-0.5 rounded">{{ crit.maxScore }}</span>
+                      <button @click="removeCriterionFromRubric(rIdx, cIdx)"
+                        class="text-gray-300 hover:text-red-500 transition-colors ml-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                       </button>
                     </div>
-                    <button v-if="!rubric.saved" @click="addCriterionToRubric(rIdx)"
+                    <button @click="openCriteriaModal(rIdx)"
                       class="flex items-center gap-1 px-2.5 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-colors">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                       </svg>
-                      Add
+                      Add Label and Max
                     </button>
                   </div>
                 </div>
@@ -501,7 +494,6 @@
                         v-model.number="rubric.scores[student.studid][cIdx]"
                         :max="crit.maxScore"
                         :min="0"
-                        :disabled="rubric.saved"
                         @input="clampRubricScore(rIdx, student.studid, cIdx, crit.maxScore)"
                         class="w-full py-2 px-2 text-sm text-center bg-transparent focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-400 transition-all disabled:text-gray-400 disabled:cursor-not-allowed"
                         :class="{
@@ -540,23 +532,20 @@
                 <span v-else>Save to add this rubric as an activity in the Grading Sheet.</span>
               </p>
               <button @click="saveRubricPanel(rIdx)"
-                :disabled="rubric.saving || rubric.saved || !rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim() || rubric.criteria.length === 0"
+                :disabled="rubric.saving || !rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim() || rubric.criteria.length === 0"
                 class="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 :class="rubric.saved
-                  ? 'bg-green-100 text-green-700 border border-green-300'
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
                   : 'bg-orange-500 hover:bg-orange-600 text-white'">
                 <svg v-if="rubric.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                <svg v-else-if="rubric.saved" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                 </svg>
-                {{ rubric.saving ? 'Saving...' : rubric.saved ? 'Saved' : 'Save to Grading Sheet' }}
+                {{ rubric.saving ? 'Saving...' : rubric.saved ? 'Update Score' : 'Save Score' }}
               </button>
             </div>
           </div>
@@ -575,6 +564,37 @@
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ADD CRITERIA MODAL
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4" style="z-index: 99999;">
+      <div class="bg-white rounded-xl shadow-xl p-5 w-full max-w-sm animate-slideIn">
+        <h3 class="text-sm font-epundaslab font-bold text-gray-800 mb-4 tracking-wider">Add Label & Max</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Criterion Label</label>
+            <input v-model="criteriaModal.label" placeholder="e.g. Accuracy"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Max Score</label>
+            <input type="number" v-model.number="criteriaModal.maxScore" min="1"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+          <button @click="criteriaModal.open = false"
+            class="px-4 py-2 text-xs text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button @click="confirmCriteriaModal"
+            class="px-4 py-2 bg-orange-500 text-white rounded-lg text-xs font-bold hover:bg-orange-600 shadow-sm transition-all">
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
 
@@ -626,12 +646,16 @@ export default {
 
       // ── Laboratory Rubrics state ──────────────────────────────────
       // rubricsList: array of independent rubric panels.
-      // Each panel: { selectedCo, selectedTypeId, activityName,
-      //               criteria: [{label, maxScore}],
-      //               scores: { studid: [val,...] },
-      //               saving, saved }
       showRubricsModal: false,
       rubricsList: [],
+
+      // ── Add Criteria Modal state
+      criteriaModal: {
+        open: false,
+        rIdx: -1,
+        label: '',
+        maxScore: 10
+      },
     }
   },
 
@@ -717,9 +741,37 @@ export default {
           (s.studid || '').toLowerCase().indexOf(q) !== -1
       })
     },
+    rubricsStorageKey: function () {
+      if (!this.subjcode || !this.section) return null;
+      var emp = this.empid || 'user';
+      return 'csucc_rubrics_' + emp + '_' + this.subjcode + '_' + this.section;
+    },
+    anyModalOpen: function () {
+      return this.showAddModal || this.showRubricsModal || (this.criteriaModal && this.criteriaModal.open)
+    },
   },
 
   watch: {
+    anyModalOpen: function (newVal) {
+      if (typeof document !== 'undefined') {
+        if (newVal) {
+          document.body.style.overflow = 'hidden'
+        } else {
+          document.body.style.overflow = ''
+        }
+      }
+    },
+    rubricsList: {
+      deep: true,
+      handler: function (newVal) {
+        if (!this.rubricsStorageKey) return;
+        if (typeof window !== 'undefined') {
+          if (newVal && newVal.length > 0) {
+            localStorage.setItem(this.rubricsStorageKey, JSON.stringify(newVal));
+          }
+        }
+      }
+    },
     activeSubject: {
       immediate: true,
       handler: function (val) {
@@ -971,6 +1023,8 @@ export default {
       var validTypes = self.validTypesPerCo[firstCo] || []
       var firstType  = typeId || (validTypes.length ? validTypes[0] : '')
       return {
+        id: 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        activity_id: undefined,
         selectedCo:     firstCo,
         selectedTypeId: firstType,
         activityName:   '',
@@ -1011,13 +1065,53 @@ export default {
       return rubric.scores[studid].reduce(function (sum, v) { return sum + (Number(v) || 0) }, 0)
     },
 
+    // ── Heavy Persistence: Restore completely stored rubrics ────────
+    restoreRubrics: function () {
+      if (!this.rubricsStorageKey || typeof window === 'undefined') return false;
+      var stored = localStorage.getItem(this.rubricsStorageKey);
+      if (stored) {
+        try {
+          var parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            var self = this;
+            parsed.forEach(function (rubric) {
+              if (!rubric.scores) rubric.scores = {};
+              self.localStudents.forEach(function (s) {
+                if (!rubric.scores[s.studid]) {
+                  rubric.scores[s.studid] = rubric.criteria.map(function () { return null; });
+                }
+              });
+            });
+            this.rubricsList = parsed;
+            return true;
+          }
+        } catch (e) { console.error('Error parsing rubrics from localStorage', e); }
+      }
+      return false;
+    },
+
     openRubricsModal: function () {
       if (!this.outcomes || !this.outcomes.length) {
         alert('Please set up Course Outcomes in Syllabus Setup first.')
         return
       }
-      // Start with one blank rubric panel
-      this.rubricsList = [this._makeRubricPanel()]
+      // Only set a blank panel if list is completely empty so it IS NOT gone across modal opens!
+      if (this.rubricsList.length === 0) {
+        var restored = this.restoreRubrics();
+        if (!restored) {
+          this.rubricsList = [this._makeRubricPanel()];
+        }
+      } else {
+        // If we already hold state, run reconciliation anyway just to be extremely safe about new students
+        var self = this;
+        this.rubricsList.forEach(function (rubric) {
+          self.localStudents.forEach(function (s) {
+            if (!rubric.scores[s.studid]) {
+              self.$set(rubric.scores, s.studid, rubric.criteria.map(function () { return null; }));
+            }
+          });
+        });
+      }
       this.showRubricsModal = true
     },
 
@@ -1037,17 +1131,33 @@ export default {
       this.$set(this.rubricsList[rIdx], 'selectedTypeId', validTypes.length ? validTypes[0] : '')
     },
 
-    // Add blank criterion to a specific panel
-    addCriterionToRubric: function (rIdx) {
-      var rubric = this.rubricsList[rIdx]
-      rubric.criteria.push({ label: '', maxScore: 0 })
-      var self = this
+    // New: Open criteria modal instead of inline add
+    openCriteriaModal: function(rIdx) {
+      this.criteriaModal.rIdx = rIdx;
+      this.criteriaModal.label = '';
+      this.criteriaModal.maxScore = 10;
+      this.criteriaModal.open = true;
+    },
+
+    confirmCriteriaModal: function() {
+      if (!this.criteriaModal.label.trim() || Number(this.criteriaModal.maxScore) <= 0) {
+        alert('Please enter a valid criteria label and max score > 0.')
+        return;
+      }
+      var rIdx = this.criteriaModal.rIdx;
+      var rubric = this.rubricsList[rIdx];
+      rubric.criteria.push({
+        label: this.criteriaModal.label.trim(),
+        maxScore: Number(this.criteriaModal.maxScore)
+      })
+      var self = this;
       self.localStudents.forEach(function (s) {
         if (!rubric.scores[s.studid]) {
-          self.$set(rubric.scores, s.studid, [])
+          self.$set(rubric.scores, s.studid, []);
         }
-        rubric.scores[s.studid].push(null)
-      })
+        rubric.scores[s.studid].push(null);
+      });
+      this.criteriaModal.open = false;
     },
 
     // Remove criterion from a specific panel
@@ -1125,7 +1235,7 @@ export default {
           empid:     this.empid,
           activities: [
             {
-              activity_id: undefined,
+              activity_id: rubric.activity_id,
               name:        rubric.activityName.trim(),
               maxScore:    totalMax,
               co_id:       this.coCodeToId[rubric.selectedCo] || null,
@@ -1140,7 +1250,15 @@ export default {
           ],
         }
 
-        await this.$axios.post('/class-activity/save-gradebook', payload)
+        var res = await this.$axios.post('/class-activity/save-gradebook', payload)
+
+        // Resync dynamic properties backward to perfectly match any new data generated by TypeORM
+        if (res.data && res.data.activities && res.data.activities.length > 0) {
+           var createdAct = res.data.activities[0];
+           if (createdAct && createdAct.activity_id) {
+              rubric.activity_id = createdAct.activity_id;
+           }
+        }
 
         // Mark panel as saved — locks it from further edits
         this.$set(this.rubricsList, rIdx, Object.assign({}, this.rubricsList[rIdx], {
