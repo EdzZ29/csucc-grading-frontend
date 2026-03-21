@@ -589,31 +589,27 @@
                     <span v-else class="text-[10px] text-gray-400 font-inria italic">{{ student.risk_level === 'Safe' ? 'All COs on track' : 'No CO data' }}</span>
                   </div>
                 </div>
-                <div class="grid grid-cols-2 border-t"
+                <div class="border-t"
                   :class="{ 'border-red-200 bg-white': student.risk_level === 'Critical', 'border-yellow-200 bg-white': student.risk_level === 'Warning', 'border-green-200 bg-white': student.risk_level === 'Safe' }">
-                  <div class="px-4 py-3 border-r"
-                    :class="{ 'border-red-100': student.risk_level === 'Critical', 'border-yellow-100': student.risk_level === 'Warning', 'border-green-100': student.risk_level === 'Safe' }">
-                    <p class="text-[10px] font-bold mb-1.5 font-inria"
-                      :class="{ 'text-red-700': student.risk_level === 'Critical', 'text-yellow-700': student.risk_level === 'Warning', 'text-green-700': student.risk_level === 'Safe' }">
-                      {{ student.risk_level === 'Critical' ? 'Why Critical' : student.risk_level === 'Warning' ? 'Why Warning' : 'Why Safe' }}
-                    </p>
-                    <p class="text-xs text-gray-600 font-inria leading-relaxed">{{ getRiskExplanation(student) }}</p>
-                  </div>
                   <div class="px-4 py-3">
-                    <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria">Assessment Intervention Needed</p>
-                    <div v-if="student.weak_cos && student.weak_cos.length > 0" class="space-y-1.5">
+                    <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria uppercase tracking-wide">Missing Assessments / Needs Intervention</p>
+                    <div v-if="student.weak_cos && student.weak_cos.length > 0" class="flex flex-wrap gap-2">
                       <div v-for="co in student.weak_cos" :key="'int-' + co"
-                        class="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-1.5">
-                        <span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0">{{ co }}</span>
-                        <span v-if="student.weak_co_details && student.weak_co_details[co] && student.weak_co_details[co].length" class="text-[10px] text-gray-700 font-inria">
-                          <span class="font-semibold text-red-600">{{ student.weak_co_details[co].join(', ') }}</span>
-                          — {{ getAssessmentIntervention(co, student) }}
+                        class="flex flex-col gap-1 bg-red-50 border border-red-100 rounded-lg px-3 py-2 min-w-[120px]">
+                        <span class="text-red-800 text-[10px] font-black uppercase">{{ co }}</span>
+                        <span v-if="student.weak_co_details && student.weak_co_details[co] && student.weak_co_details[co].length"
+                          class="text-[11px] text-red-600 font-bold font-inria">
+                          {{ student.weak_co_details[co].join(', ') }}
                         </span>
-                        <span v-else class="text-[10px] text-gray-700 font-inria">{{ getAssessmentIntervention(co, student) }}</span>
+                        <span v-else class="text-[11px] text-red-600 font-bold font-inria">Missing Submissions</span>
                       </div>
                     </div>
-                    <div v-else-if="student.risk_level === 'Safe'" class="text-[10px] text-green-600 font-inria italic">No intervention needed</div>
-                    <div v-else class="text-[10px] text-gray-400 font-inria italic">Run Compute Grades for assessment data.</div>
+                    <div v-else-if="student.risk_level === 'Safe'" class="text-[11px] text-green-600 font-bold font-inria">
+                      All assessments are safely passing.
+                    </div>
+                    <div v-else class="text-[11px] text-gray-400 font-inria italic">
+                      Run Compute Grades for assessment data.
+                    </div>
                   </div>
                 </div>
               </div>

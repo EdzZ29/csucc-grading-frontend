@@ -185,29 +185,38 @@
 
           <!-- ── OBE Risk Overview Section ── -->
           <div>
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
               <div>
                 <h3 class="text-xl font-epundaslab font-bold text-black700 mb-1">All Classes — OBE Risk Overview</h3>
                 <p class="text-sm text-gray-500 font-inria flex items-center gap-2">
                   All active classes across all instructors · Click a card to view student details
-                  <span class="flex items-center gap-1 text-green-600 text-xs font-bold">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    Live · updates every 30s
-                  </span>
                 </p>
               </div>
-              <button @click="fetchAllClassRisks"
-                :disabled="obeLoading"
-                class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-3 py-1.5 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50">
-                <svg v-if="!obeLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                {{ obeLoading ? 'Refreshing...' : 'Refresh' }}
-              </button>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <select v-model="filterYear" class="text-sm font-inria border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-200">
+                  <option value="">All Years</option>
+                  <option v-for="yr in uniqueYears" :key="yr" :value="yr">{{ yr }}</option>
+                </select>
+
+                <select v-model="filterInstructor" class="text-sm font-inria border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-200 max-w-[200px] truncate">
+                  <option value="">All Instructors</option>
+                  <option v-for="inst in uniqueInstructors" :key="inst" :value="inst">{{ inst }}</option>
+                </select>
+
+                <button @click="fetchAllClassRisks"
+                  :disabled="obeLoading"
+                  class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-3 py-1.5 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50">
+                  <svg v-if="!obeLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ obeLoading ? 'Refreshing...' : 'Refresh' }}
+                </button>
+              </div>
             </div>
 
             <!-- Loading skeleton -->
@@ -237,7 +246,7 @@
             <!-- Class cards grid -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <div
-                v-for="card in obeClassCards"
+                v-for="card in filteredObeClassCards"
                 :key="card.key"
                 @click="card.hasData ? openRiskModal(card) : null"
                 class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all"
@@ -773,46 +782,29 @@
                   </div>
                 </div>
                 <!-- Bottom row -->
-                <div class="grid grid-cols-2 border-t bg-white"
+                <div class="border-t bg-white"
                   :class="{
                     'border-red-200': student.risk_level === 'Critical',
                     'border-yellow-200': student.risk_level === 'Warning',
                     'border-green-200': student.risk_level === 'Safe'
                   }">
-                  <div class="px-4 py-3 border-r"
-                    :class="{
-                      'border-red-100': student.risk_level === 'Critical',
-                      'border-yellow-100': student.risk_level === 'Warning',
-                      'border-green-100': student.risk_level === 'Safe'
-                    }">
-                    <p class="text-[10px] font-bold mb-1.5 font-inria"
-                      :class="{
-                        'text-red-700': student.risk_level === 'Critical',
-                        'text-yellow-700': student.risk_level === 'Warning',
-                        'text-green-700': student.risk_level === 'Safe'
-                      }">
-                      {{ student.risk_level === 'Critical' ? 'Why Critical' : student.risk_level === 'Warning' ? 'Why Warning' : 'Why Safe' }}
-                    </p>
-                    <p class="text-xs text-gray-600 font-inria leading-relaxed">{{ getRiskExplanation(student) }}</p>
-                  </div>
                   <div class="px-4 py-3">
-                    <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria">Assessment Intervention Needed</p>
-                    <div v-if="student.weak_cos && student.weak_cos.length > 0" class="space-y-1.5">
+                    <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria uppercase tracking-wide">Missing Assessments / Needs Intervention</p>
+                    <div v-if="student.weak_cos && student.weak_cos.length > 0" class="flex flex-wrap gap-2">
                       <div v-for="co in student.weak_cos" :key="'int-' + co"
-                        class="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-1.5">
-                        <span class="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0">{{ co }}</span>
+                        class="flex flex-col gap-1 bg-red-50 border border-red-100 rounded-lg px-3 py-2 min-w-[120px]">
+                        <span class="text-red-800 text-[10px] font-black uppercase">{{ co }}</span>
                         <span v-if="student.weak_co_details && student.weak_co_details[co] && student.weak_co_details[co].length"
-                          class="text-[10px] text-gray-700 font-inria">
-                          <span class="font-semibold text-red-600">{{ student.weak_co_details[co].join(', ') }}</span>
-                          — {{ getAssessmentIntervention(co, student) }}
+                          class="text-[11px] text-red-600 font-bold font-inria">
+                          {{ student.weak_co_details[co].join(', ') }}
                         </span>
-                        <span v-else class="text-[10px] text-gray-700 font-inria">{{ getAssessmentIntervention(co, student) }}</span>
+                        <span v-else class="text-[11px] text-red-600 font-bold font-inria">Missing Submissions</span>
                       </div>
                     </div>
-                    <div v-else-if="student.risk_level === 'Safe'" class="text-[10px] text-green-600 font-inria italic">
-                      No intervention needed
+                    <div v-else-if="student.risk_level === 'Safe'" class="text-[11px] text-green-600 font-bold font-inria">
+                      All assessments are safely passing.
                     </div>
-                    <div v-else class="text-[10px] text-gray-400 font-inria italic">
+                    <div v-else class="text-[11px] text-gray-400 font-inria italic">
                       Run Compute Grades for assessment data.
                     </div>
                   </div>
@@ -1051,7 +1043,8 @@ export default {
       // ── OBE ──
       obeLoading: false,
       obeClassCards: [],
-      pollInterval: null,      // auto-refresh timer handle
+      filterYear: '',
+      filterInstructor: '',
       riskModal: {
         open: false,
         loading: false,
@@ -1071,6 +1064,21 @@ export default {
     }
   },
   computed: {
+    uniqueYears() {
+      const years = new Set(this.obeClassCards.map(c => c.sy))
+      return Array.from(years).filter(Boolean).sort().reverse()
+    },
+    uniqueInstructors() {
+      const inst = new Set(this.obeClassCards.map(c => c.instructor))
+      return Array.from(inst).filter(Boolean).sort()
+    },
+    filteredObeClassCards() {
+      return this.obeClassCards.filter(c => {
+        const matchesYear = !this.filterYear || c.sy === this.filterYear
+        const matchesInst = !this.filterInstructor || c.instructor === this.filterInstructor
+        return matchesYear && matchesInst
+      })
+    },
     profilePicture() {
       if (!this.user?.empid) return null
       try {
@@ -1152,20 +1160,9 @@ export default {
       console.error("Failed to fetch user:", err)
     }
     window.addEventListener("scroll", this.handleScroll)
-
-    // ── Auto-refresh every 30 seconds ────────────────────────────
-    // Silently re-fetches predictions so Class Passed / At Risk
-    // percentages update as the instructor enters scores in the
-    // Grading Module — without needing a manual Refresh click.
-    this.pollInterval = setInterval(() => {
-      if (this.activePage.name === 'Dashboard' && !this.obeLoading) {
-        this.fetchAllClassRisks()
-      }
-    }, 30000)
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll)
-    if (this.pollInterval) clearInterval(this.pollInterval)
   },
   methods: {
     // ── Existing unchanged methods ────────────────────────────────────
