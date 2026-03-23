@@ -82,7 +82,7 @@
               <input v-model="newType.name" placeholder="Name (e.g. Field Trip)" :disabled="isLocked"
                 class="text-xs p-2.5 border border-gray-200 rounded-lg bg-gray-50 flex-1 focus:ring-2 focus:ring-orange-400 outline-none disabled:cursor-not-allowed" />
               <input v-model="newType.code" placeholder="Code" :disabled="isLocked"
-                class="text-xs p-2.5 border border-gray-200 rounded-lg bg-gray-50 w-20 uppercase focus:ring-2 focus:ring-orange-400 outline-none disabled:cursor-not-allowed" />
+                class="text-xs p-2.5 border border-gray-200 rounded-lg bg-gray-50 w-20 focus:ring-2 focus:ring-orange-400 outline-none disabled:cursor-not-allowed" />
             </div>
             <button @click="addNewAssessmentType" :disabled="isLocked"
               class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -528,12 +528,17 @@ export default {
     addNewAssessmentType: async function () {
       if (!this.newType.name || !this.newType.code) return
       try {
-        var payload = { name: this.newType.name, code: this.newType.code.toUpperCase(), empid: this.$parent.user.empid }
+        var payload = {
+          name:  this.newType.name.trim(),
+          code:  this.newType.code.trim(),
+          empid: this.$parent.user.empid,
+        }
         var res = await this.$axios.post('/obe/assessment-types', payload)
         this.assessmentTypes.push(res.data)
         this.newType = { name: '', code: '' }
-        alert('New assessment type registered!')
+        alert('New assessment type "' + payload.name + '" registered successfully!')
       } catch (e) {
+        console.error('Failed to register assessment type:', e)
         alert('Failed to add type. The code might already be taken.')
       }
     },
