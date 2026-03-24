@@ -99,7 +99,8 @@
                                         <th rowspan="2"
                                             class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
                                             style="min-width:200px">Student Name</th>
-                                        <th v-for="co in recordCoHeaders" :key="'rh-' + co.co_code"
+                                        <!-- FIX: Use sortedCoHeaders which respects CO order from courseOutcomes -->
+                                        <th v-for="co in sortedCoHeaders" :key="'rh-' + co.co_code"
                                             :colspan="co.count || 1"
                                             class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
                                             :style="{ backgroundColor: co.color }">
@@ -107,7 +108,8 @@
                                         </th>
                                     </tr>
                                     <tr>
-                                        <th v-for="act in recordActivityHeaders" :key="'ra-' + act.activity_id"
+                                        <!-- FIX: Use sortedActivityHeaders which is sorted by CO order -->
+                                        <th v-for="act in sortedActivityHeaders" :key="'ra-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
                                             <div>{{ act.activity_name }}</div>
@@ -123,10 +125,11 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
-                                        <td v-for="rs in row.raw_scores"
-                                            :key="'rs-' + rs.activity_id + row.studid"
+                                        <!-- FIX: Render cells in sortedActivityHeaders order using scoreMap lookup -->
+                                        <td v-for="act in sortedActivityHeaders"
+                                            :key="'rs-' + act.activity_id + row.studid"
                                             class="border border-gray-200 text-center py-1.5 text-sm">
-                                            {{ rs.score !== null ? rs.score : '' }}
+                                            {{ getRawScore(row, act.activity_id) }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -142,7 +145,7 @@
                                         <th rowspan="2"
                                             class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
                                             style="min-width:200px">Student Name</th>
-                                        <th v-for="co in recordCoHeaders" :key="'ph-' + co.co_code"
+                                        <th v-for="co in sortedCoHeaders" :key="'ph-' + co.co_code"
                                             :colspan="co.count || 1"
                                             class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
                                             :style="{ backgroundColor: co.color }">
@@ -150,7 +153,7 @@
                                         </th>
                                     </tr>
                                     <tr>
-                                        <th v-for="act in recordActivityHeaders" :key="'pa-' + act.activity_id"
+                                        <th v-for="act in sortedActivityHeaders" :key="'pa-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
                                             {{ act.activity_name }}
@@ -165,11 +168,12 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
-                                        <td v-for="pr in row.percent_ratings"
-                                            :key="'pr-' + pr.activity_id + row.studid"
+                                        <!-- FIX: Look up percent_ratings by activity_id -->
+                                        <td v-for="act in sortedActivityHeaders"
+                                            :key="'pr-' + act.activity_id + row.studid"
                                             class="border border-gray-200 text-center py-1.5 text-sm"
-                                            :class="pr.percent !== null && pr.percent < 60 ? 'text-red-600 font-bold' : ''">
-                                            {{ pr.percent !== null ? pr.percent.toFixed(1) + '%' : '' }}
+                                            :class="getPercentRating(row, act.activity_id) !== null && getPercentRating(row, act.activity_id) < 60 ? 'text-red-600 font-bold' : ''">
+                                            {{ getPercentRating(row, act.activity_id) !== null ? getPercentRating(row, act.activity_id).toFixed(1) + '%' : '' }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -185,7 +189,8 @@
                                         <th rowspan="2"
                                             class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
                                             style="min-width:200px">Student Name</th>
-                                        <th v-for="co in recordCoHeaders" :key="'wh-' + co.co_code"
+                                        <!-- FIX: Show CO weight in header using sortedCoHeaders -->
+                                        <th v-for="co in sortedCoHeaders" :key="'wh-' + co.co_code"
                                             :colspan="co.count || 1"
                                             class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
                                             :style="{ backgroundColor: co.color }">
@@ -196,7 +201,7 @@
                                             style="min-width:70px">TOTAL</th>
                                     </tr>
                                     <tr>
-                                        <th v-for="act in recordActivityHeaders" :key="'wa-' + act.activity_id"
+                                        <th v-for="act in sortedActivityHeaders" :key="'wa-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
                                             <div>{{ act.activity_name }}</div>
@@ -212,10 +217,11 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
-                                        <td v-for="wr in row.weighted_ratings"
-                                            :key="'wr-' + wr.activity_id + row.studid"
+                                        <!-- FIX: Look up weighted_ratings by activity_id -->
+                                        <td v-for="act in sortedActivityHeaders"
+                                            :key="'wr-' + act.activity_id + row.studid"
                                             class="border border-gray-200 text-center py-1.5 text-sm">
-                                            {{ wr.weighted_value !== undefined ? wr.weighted_value.toFixed(2) : '' }}
+                                            {{ getWeightedRating(row, act.activity_id) !== undefined ? getWeightedRating(row, act.activity_id).toFixed(2) : '' }}
                                         </td>
                                         <td class="border border-gray-200 text-center py-1.5 font-black text-sm bg-gray-50">
                                             {{ row.total_weighted_percent }}
@@ -320,7 +326,7 @@
                 </div>
             </div>
 
-            <!-- Quick Stats (optional) -->
+            <!-- Quick Stats -->
             <div v-if="subjects.length > 0" class="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
                 <span class="text-sm text-gray-600">{{ subjects.length }} Active Classes</span>
             </div>
@@ -392,7 +398,7 @@
         </div>
 
         <!-- ═══════════════════════════════════════════════ -->
-        <!-- CLASS CARDS - Orange themed                      -->
+        <!-- CLASS CARDS                                      -->
         <!-- ═══════════════════════════════════════════════ -->
         <div v-if="showSubjects && !activeSubject" class="animate-fade-in">
             <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider mb-4">Available Classes</h2>
@@ -412,9 +418,7 @@
                 <div v-for="(subject, index) in subjects" :key="index" @click="openGradingSheet(subject)"
                     class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer group">
                     <div class="bg-gradient-to-r from-orange-400 to-orange-500 p-5 relative overflow-hidden">
-                        <!-- Decorative pattern -->
                         <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-8 -mt-8"></div>
-
                         <div class="flex justify-between items-start relative z-10">
                             <h3 class="font-bold text-white text-xl">{{ subject.subjcode }}</h3>
                             <div class="flex gap-2">
@@ -454,7 +458,7 @@
         <div v-if="activeSubject"
             class="bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col relative animate-fade-in overflow-hidden">
 
-            <!-- Loading overlay with OBE theme -->
+            <!-- Loading overlay -->
             <div v-if="loadingGradebook"
                 class="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
                 <div class="bg-white p-8 rounded-2xl shadow-2xl text-center">
@@ -493,7 +497,6 @@
                     <!-- Action buttons -->
                     <div class="flex flex-wrap gap-2">
 
-                        <!-- ── Class Record tab buttons ── -->
                         <button @click="openClassRecord('raw')"
                             class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -549,14 +552,12 @@
             </div>
         </div>
 
-        <!-- OBE Info Footer (shown when no active subject) -->
+        <!-- Footer hint -->
         <div v-if="!activeSubject && showSubjects && subjects.length > 0" class="mt-8 text-center text-xs text-gray-400">
             <p>Select a class to begin OBE grading and assessment</p>
         </div>
     </div>
 </template>
-
-
 
 <script>
 import SuccessMessage from '@/components/success-message.vue'
@@ -569,7 +570,7 @@ export default {
 
     data: function () {
         return {
-            academicYears: ['2024-2025', '2025-2026', '2026-2027' , '2027-2028' , '2028-2029' , '2029-2030'],
+            academicYears: ['2024-2025', '2025-2026', '2026-2027', '2027-2028', '2028-2029', '2029-2030'],
             semesters: ['1st', '2nd', 'Summer'],
             selectedYear: '',
             selectedSemester: '',
@@ -606,13 +607,41 @@ export default {
 
     computed: {
 
-        recordActivityHeaders: function () {
+        // ─────────────────────────────────────────────────────────────────
+        // KEY FIX: Build a co_id → co_code map from courseOutcomes so we
+        // can correctly assign each activity to its real CO.
+        // ─────────────────────────────────────────────────────────────────
+        coIdToCode: function () {
+            var m = {}
+            ;(this.courseOutcomes || []).forEach(function (co) {
+                m[co.co_id] = co.co_code
+            })
+            return m
+        },
+
+        // ─────────────────────────────────────────────────────────────────
+        // coOrderMap: co_code → position index from courseOutcomes.
+        // This is the source of truth for ordering.
+        // ─────────────────────────────────────────────────────────────────
+        coOrderMap: function () {
+            var m = {}
+            ;(this.courseOutcomes || []).forEach(function (co, idx) {
+                m[co.co_code] = idx
+            })
+            return m
+        },
+
+        // ─────────────────────────────────────────────────────────────────
+        // sortedActivityHeaders: activities sorted by CO order then by
+        // their position within that CO. Uses co_id from raw_scores to
+        // resolve co_code correctly — NOT from the activity name.
+        // ─────────────────────────────────────────────────────────────────
+        sortedActivityHeaders: function () {
             if (!this.gradeData.length) return []
             var self = this
             var first = this.gradeData[0]
-            var coIdToCode = {}
-            ;(this.courseOutcomes || []).forEach(function (co) { coIdToCode[co.co_id] = co.co_code })
 
+            // Build weight lookup from weighted_ratings of first student
             var weightMap = {}
             if (first.weighted_ratings) {
                 first.weighted_ratings.forEach(function (wr) {
@@ -620,56 +649,82 @@ export default {
                 })
             }
 
-            return (first.raw_scores || []).map(function (rs) {
+            // Map each raw_score entry to a rich activity object,
+            // resolving co_code via coIdToCode (authoritative)
+            var activities = (first.raw_scores || []).map(function (rs) {
+                var co_code = self.coIdToCode[rs.co_id] || 'UNASSIGNED'
                 return {
                     activity_id:   rs.activity_id,
                     activity_name: rs.activity_name,
                     co_id:         rs.co_id,
-                    co_code:       coIdToCode[rs.co_id] || 'N/A',
+                    co_code:       co_code,
                     max_score:     rs.max_score,
                     weight:        weightMap[rs.activity_id] || 0,
+                    // Sort key: CO position in courseOutcomes
+                    coOrder: self.coOrderMap[co_code] !== undefined
+                        ? self.coOrderMap[co_code]
+                        : 9999,
                 }
             })
+
+            // Sort by CO order, then by activity_id (insertion order within CO)
+            activities.sort(function (a, b) {
+                if (a.coOrder !== b.coOrder) return a.coOrder - b.coOrder
+                return a.activity_id - b.activity_id
+            })
+
+            return activities
         },
 
-        recordCoHeaders: function () {
-            var acts = this.recordActivityHeaders
-            if (!acts.length) return []
+        // ─────────────────────────────────────────────────────────────────
+        // sortedCoHeaders: derived from sortedActivityHeaders so the
+        // colspan grouping is ALWAYS consistent with the activity order.
+        // ─────────────────────────────────────────────────────────────────
+        sortedCoHeaders: function () {
             var self = this
-            var counts  = {}
-            var weights = {}
-            acts.forEach(function (a) {
-                counts[a.co_code]  = (counts[a.co_code]  || 0) + 1
-                weights[a.co_code] = (weights[a.co_code] || 0) + a.weight
-            })
-            var headers = []
-            ;(this.courseOutcomes || []).forEach(function (co, idx) {
-                if (counts[co.co_code]) {
-                    headers.push({
-                        co_code: co.co_code,
-                        count:   counts[co.co_code],
-                        weight:  Math.round((weights[co.co_code] || 0) * 100) / 100,
-                        color:   self.coColors[idx % self.coColors.length],
-                    })
+            var seen  = {}
+            var result = []
+
+            // Walk activities in sorted order and count per CO
+            this.sortedActivityHeaders.forEach(function (act) {
+                if (!seen[act.co_code]) {
+                    var coIdx = self.coOrderMap[act.co_code]
+                    seen[act.co_code] = {
+                        co_code: act.co_code,
+                        count:   0,
+                        weight:  0,
+                        color:   self.coColors[coIdx !== undefined ? coIdx % self.coColors.length : result.length % self.coColors.length],
+                    }
+                    result.push(seen[act.co_code])
                 }
+                seen[act.co_code].count  += 1
+                seen[act.co_code].weight += act.weight
             })
-            return headers
+
+            // Round weights
+            result.forEach(function (co) {
+                co.weight = Math.round(co.weight * 100) / 100
+            })
+
+            return result
         },
 
+        // ─────────────────────────────────────────────────────────────────
+        // recordCoResultHeaders for Final Grade tab — sorted by CO order
+        // ─────────────────────────────────────────────────────────────────
         recordCoResultHeaders: function () {
             if (!this.gradeData.length || !this.gradeData[0].co_results) return []
             var self = this
-            var orderMap = {}
-            ;(this.courseOutcomes || []).forEach(function (co, idx) { orderMap[co.co_code] = idx })
             var sorted = this.gradeData[0].co_results.slice().sort(function (a, b) {
-                var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
-                var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
+                var ai = self.coOrderMap[a.co_code] !== undefined ? self.coOrderMap[a.co_code] : 9999
+                var bi = self.coOrderMap[b.co_code] !== undefined ? self.coOrderMap[b.co_code] : 9999
                 return ai - bi
             })
-            return sorted.map(function (cr, idx) {
+            return sorted.map(function (cr) {
+                var idx = self.coOrderMap[cr.co_code]
                 return {
                     co_code: cr.co_code,
-                    color:   self.coColors[orderMap[cr.co_code] !== undefined ? orderMap[cr.co_code] % self.coColors.length : idx % self.coColors.length],
+                    color:   self.coColors[idx !== undefined ? idx % self.coColors.length : 0],
                 }
             })
         },
@@ -700,16 +755,52 @@ export default {
 
     methods: {
 
+        // ─────────────────────────────────────────────────────────────────
+        // CELL LOOKUP HELPERS
+        // These look up by activity_id so the data always matches the
+        // correct column regardless of sort order.
+        // ─────────────────────────────────────────────────────────────────
+
+        getRawScore: function (row, activityId) {
+            if (!row.raw_scores) return ''
+            var entry = row.raw_scores.find(function (rs) {
+                return rs.activity_id === activityId
+            })
+            return entry && entry.score !== null ? entry.score : ''
+        },
+
+        getPercentRating: function (row, activityId) {
+            if (!row.percent_ratings) return null
+            var entry = row.percent_ratings.find(function (pr) {
+                return pr.activity_id === activityId
+            })
+            return entry && entry.percent !== null ? entry.percent : null
+        },
+
+        getWeightedRating: function (row, activityId) {
+            if (!row.weighted_ratings) return undefined
+            var entry = row.weighted_ratings.find(function (wr) {
+                return wr.activity_id === activityId
+            })
+            return entry && entry.weighted_value !== undefined ? entry.weighted_value : undefined
+        },
+
+        // ─────────────────────────────────────────────────────────────────
+        // Sort co_results for a student row by CO order
+        // ─────────────────────────────────────────────────────────────────
         sortedCoResults: function (coResults) {
             if (!coResults) return []
-            var orderMap = {}
-            ;(this.courseOutcomes || []).forEach(function (co, idx) { orderMap[co.co_code] = idx })
+            var self = this
             return coResults.slice().sort(function (a, b) {
-                var ai = orderMap[a.co_code] !== undefined ? orderMap[a.co_code] : 9999
-                var bi = orderMap[b.co_code] !== undefined ? orderMap[b.co_code] : 9999
+                var ai = self.coOrderMap[a.co_code] !== undefined ? self.coOrderMap[a.co_code] : 9999
+                var bi = self.coOrderMap[b.co_code] !== undefined ? self.coOrderMap[b.co_code] : 9999
                 return ai - bi
             })
         },
+
+        // ─────────────────────────────────────────────────────────────────
+        // All other methods — unchanged from original
+        // ─────────────────────────────────────────────────────────────────
 
         getUserInfo: async function () {
             try {
@@ -776,7 +867,6 @@ export default {
             }
         },
 
-        // ── FIXED: activeSubject set LAST after all data is ready ──────────
         openGradingSheet: async function (subject) {
             this.loadingGradebook = true
             this.gradeData = []
@@ -786,8 +876,6 @@ export default {
             try {
                 await this.fetchAssessmentTypes()
                 await this.fetchSyllabusForSubject(subject)
-                // Set activeSubject LAST — GradingSheet watcher fires here
-                // with coIdToCode and typeIdToCode already populated
                 this.activeSubject = subject
             } catch (e) {
                 console.error('Error loading grading sheet:', e)
@@ -806,7 +894,6 @@ export default {
             }
         },
 
-        // ── NEW: accepts subject as param so it works before activeSubject is set ──
         fetchSyllabusForSubject: async function (subject) {
             if (!this.user || !subject) {
                 this.courseOutcomes = []
@@ -834,7 +921,6 @@ export default {
             }
         },
 
-        // ── kept for handleObeSetupSave compatibility ──────────────────────
         fetchSyllabus: async function () {
             await this.fetchSyllabusForSubject(this.activeSubject)
         },
@@ -881,8 +967,6 @@ export default {
     },
 }
 </script>
-
-
 
 <style scoped>
 .animate-fade-in {
