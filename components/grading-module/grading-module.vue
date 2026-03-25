@@ -27,7 +27,6 @@
           Add Activity
         </button>
 
-        <!-- ── Laboratory Rubrics Button ── -->
         <button @click="openRubricsModal"
           class="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:from-orange-500 hover:to-orange-600 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 flex-1 sm:flex-none">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,6 +44,7 @@
           </svg>
           {{ saving ? 'Saving...' : 'Save Scores' }}
         </button>
+
         <button @click="computeGrades" :disabled="computing"
           class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2 flex-1 sm:flex-none">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,11 +76,12 @@
         <div class="inline-block min-w-full align-middle">
           <table class="min-w-full border-collapse text-sm table-fixed">
             <thead>
+              <!-- ── Row 1: CO group headers ── -->
               <tr>
-                <th rowspan="3"
+                <th rowspan="4"
                   class="sticky left-0 z-10 bg-gray-900 border border-gray-700 px-2 py-3 text-center font-black text-white text-xs uppercase tracking-wider"
                   style="width:40px; min-width:40px; background:#111827">#</th>
-                <th rowspan="3"
+                <th rowspan="4"
                   class="sticky left-[40px] z-10 border border-gray-700 px-4 py-3 text-left font-black text-white text-xs uppercase tracking-wider"
                   style="width:200px; min-width:200px; background:#111827">
                   Student Name
@@ -96,6 +97,25 @@
                   </div>
                 </th>
               </tr>
+
+              <!-- ── Row 2: Assessment type code ── -->
+              <tr>
+                <template v-for="group in coGroups">
+                  <td v-for="act in group.activities" :key="'type-' + act.localId"
+                    class="border border-gray-200 px-1 py-1 text-center"
+                    :style="{ backgroundColor: group.color + '33', width: '100px' }">
+                    <span class="text-[10px] font-black uppercase tracking-wider"
+                      :style="{ color: group.color }">
+                      {{ act.type_code || '—' }}
+                    </span>
+                  </td>
+                  <td v-if="group.activities.length === 0" :key="'type-empty-' + group.co_code"
+                    class="border border-gray-200 text-center text-xs text-gray-300 px-2 py-1"
+                    :style="{ width: '100px' }">—</td>
+                </template>
+              </tr>
+
+              <!-- ── Row 3: Task name inputs ── -->
               <tr>
                 <template v-for="group in coGroups">
                   <td v-for="act in group.activities" :key="'task-' + act.localId"
@@ -110,6 +130,8 @@
                     :style="{ width: '100px' }">—</td>
                 </template>
               </tr>
+
+              <!-- ── Row 4: Max score inputs ── -->
               <tr>
                 <template v-for="group in coGroups">
                   <td v-for="act in group.activities" :key="'max-' + act.localId"
@@ -127,6 +149,7 @@
                 </template>
               </tr>
             </thead>
+
             <tbody>
               <tr v-for="(student, idx) in filteredStudents" :key="student.studid"
                 :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'"
@@ -256,10 +279,6 @@
 
     <!-- ══════════════════════════════════════════════════════════════
          LABORATORY RUBRICS MODAL
-         Multi-rubric: rubricsList is an array of independent rubric
-         instances. Duplicate adds a new panel at the top. Each panel
-         has its own setup, student score table, and Save button.
-         Scores are isolated per panel and saved independently to DB.
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="showRubricsModal"
       class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4">
@@ -281,7 +300,6 @@
             </p>
           </div>
           <div class="flex items-center gap-2">
-            <!-- Add new blank rubric -->
             <button @click="addNewRubric"
               class="flex items-center gap-1.5 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-lg transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,10 +316,9 @@
           </div>
         </div>
 
-        <!-- Rubric panels — scrollable area containing all panels stacked -->
+        <!-- Rubric panels -->
         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-6">
 
-          <!-- Empty state -->
           <div v-if="rubricsList.length === 0"
             class="flex flex-col items-center justify-center h-full text-gray-400 py-16">
             <svg class="w-16 h-16 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +332,6 @@
             </button>
           </div>
 
-          <!-- ─── Individual rubric panel ─── -->
           <div v-for="(rubric, rIdx) in rubricsList" :key="rubric.id"
             class="bg-white rounded-2xl border-2 shadow-md overflow-hidden"
             :class="rubric.saved ? 'border-green-400' : 'border-orange-200'">
@@ -324,7 +340,6 @@
             <div class="flex items-center justify-between px-5 py-3 border-b"
               :class="rubric.saved ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'">
               <div class="flex items-center gap-3">
-                <!-- Rubric number badge -->
                 <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white"
                   :class="rubric.saved ? 'bg-green-500' : 'bg-orange-500'">
                   {{ rIdx + 1 }}
@@ -343,7 +358,6 @@
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <!-- Duplicate this rubric -->
                 <button @click="duplicateRubric(rIdx)"
                   class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,7 +366,6 @@
                   </svg>
                   Duplicate
                 </button>
-                <!-- Remove this rubric panel (only if not saved) -->
                 <button v-if="!rubric.saved" @click="removeRubricPanel(rIdx)"
                   class="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,39 +378,30 @@
             <!-- Panel setup row -->
             <div class="px-5 py-4 bg-gray-50 border-b border-gray-200">
               <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-end flex-wrap">
-
-                <!-- CO -->
                 <div class="w-full lg:w-40">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">CO</label>
                   <select v-model="rubric.selectedCo" @change="onRubricCoChange(rIdx)"
-                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
                     <option value="">— CO —</option>
                     <option v-for="co in outcomes" :key="co.co_code" :value="co.co_code">{{ co.co_code }}</option>
                   </select>
                 </div>
-
-                <!-- Assessment type -->
                 <div class="w-full lg:w-60">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Assessment Type</label>
                   <select v-model="rubric.selectedTypeId"
-                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
                     <option value="">— Type —</option>
                     <option v-for="t in getRubricFilteredTypes(rubric.selectedCo)" :key="t.type_id" :value="t.type_id">
                       {{ t.code }} — {{ t.name }}
                     </option>
                   </select>
                 </div>
-
-                <!-- Activity name -->
                 <div class="w-full lg:w-52">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Activity Name</label>
                   <input v-model="rubric.activityName" placeholder="e.g. Lab Activity 1"
-                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white disabled:opacity-60 disabled:cursor-not-allowed" />
+                    class="w-full px-3 py-2 border border-orange-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white" />
                 </div>
-
                 <div class="hidden lg:block w-px h-8 bg-orange-200 self-end mb-1"></div>
-
-                <!-- Criteria pills -->
                 <div class="flex-1 min-w-0">
                   <label class="block text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">
                     Rubric Criteria <span class="text-orange-300 font-normal">(label · max)</span>
@@ -424,8 +428,6 @@
                     </button>
                   </div>
                 </div>
-
-                <!-- Total max -->
                 <div class="flex-shrink-0 bg-white border border-orange-200 rounded-xl px-3 py-1.5 text-center shadow-sm self-end">
                   <p class="text-[10px] text-orange-500 font-bold uppercase tracking-wider">Max</p>
                   <p class="text-xl font-epundaslab font-black text-orange-700">{{ rubricPanelTotalMax(rIdx) }}</p>
@@ -461,7 +463,6 @@
                     <th class="border border-gray-200 bg-gray-600 text-white px-3 py-2 text-center text-xs font-black uppercase"
                       style="min-width:60px">%</th>
                   </tr>
-                  <!-- Max row -->
                   <tr class="bg-orange-50">
                     <th class="sticky left-0 z-10 bg-orange-50 border border-gray-200 px-3 py-1 text-center text-[10px] font-bold text-gray-400">MAX</th>
                     <th class="sticky left-[40px] z-10 bg-orange-50 border border-gray-200 px-4 py-1 text-[10px] text-gray-400">—</th>
@@ -480,9 +481,7 @@
                     :class="sIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'"
                     class="hover:bg-orange-50/20 transition-colors">
                     <td class="sticky left-0 z-10 border border-gray-200 px-3 py-2 text-center text-xs font-bold text-gray-400"
-                      :class="sIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                      {{ sIdx + 1 }}
-                    </td>
+                      :class="sIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ sIdx + 1 }}</td>
                     <td class="sticky left-[40px] z-10 border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 whitespace-nowrap"
                       :class="sIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
                       {{ student.studlastname }}, {{ student.studfirstname }}
@@ -495,7 +494,7 @@
                         :max="crit.maxScore"
                         :min="0"
                         @input="clampRubricScore(rIdx, student.studid, cIdx, crit.maxScore)"
-                        class="w-full py-2 px-2 text-sm text-center bg-transparent focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-400 transition-all disabled:text-gray-400 disabled:cursor-not-allowed"
+                        class="w-full py-2 px-2 text-sm text-center bg-transparent focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-400 transition-all"
                         :class="{
                           'text-green-600 font-semibold': rubric.scores[student.studid][cIdx] >= crit.maxScore * 0.75,
                           'text-orange-500': rubric.scores[student.studid][cIdx] >= crit.maxScore * 0.5 && rubric.scores[student.studid][cIdx] < crit.maxScore * 0.75,
@@ -503,7 +502,6 @@
                         }"
                         placeholder="—" />
                     </td>
-                    <!-- Row total -->
                     <td class="border border-gray-200 px-3 py-2 text-center font-black text-sm"
                       :class="rubricPanelRowTotal(rIdx, student.studid) >= rubricPanelTotalMax(rIdx) * 0.75
                         ? 'text-green-700 bg-green-50'
@@ -514,7 +512,6 @@
                             : 'text-gray-300'">
                       {{ rubricPanelRowTotal(rIdx, student.studid) > 0 ? rubricPanelRowTotal(rIdx, student.studid) : '—' }}
                     </td>
-                    <!-- Row % -->
                     <td class="border border-gray-200 px-3 py-2 text-center text-xs font-bold text-gray-500">
                       {{ rubricPanelTotalMax(rIdx) > 0 && rubricPanelRowTotal(rIdx, student.studid) > 0
                           ? Math.round(rubricPanelRowTotal(rIdx, student.studid) / rubricPanelTotalMax(rIdx) * 100) + '%'
@@ -534,9 +531,7 @@
               <button @click="saveRubricPanel(rIdx)"
                 :disabled="rubric.saving || !rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim() || rubric.criteria.length === 0"
                 class="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                :class="rubric.saved
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-orange-500 hover:bg-orange-600 text-white'">
+                :class="rubric.saved ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-orange-500 hover:bg-orange-600 text-white'">
                 <svg v-if="rubric.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -549,8 +544,6 @@
               </button>
             </div>
           </div>
-          <!-- end v-for rubric panel -->
-
         </div>
 
         <!-- Modal footer -->
@@ -563,7 +556,6 @@
             Close
           </button>
         </div>
-
       </div>
     </div>
 
@@ -618,25 +610,25 @@ export default {
   name: 'GradingSheet',
 
   props: {
-    activeSubject: { type: Object, default: null },
-    outcomes: { type: Array, default: function () { return [] } },
-    students: { type: Array, default: function () { return [] } },
-    assessmentTypes: { type: Array, default: function () { return [] } },
+    activeSubject:   { type: Object, default: null },
+    outcomes:        { type: Array,  default: function () { return [] } },
+    students:        { type: Array,  default: function () { return [] } },
+    assessmentTypes: { type: Array,  default: function () { return [] } },
   },
 
   data: function () {
     return {
-      searchQuery: '',
-      showAddModal: false,
-      newActivity: { co_code: '', name: '', type_id: null, maxScore: 100 },
+      searchQuery:   '',
+      showAddModal:  false,
+      newActivity:   { co_code: '', name: '', type_id: null, maxScore: 100 },
 
-      activitiesMap: {},
-      localStudents: [],
+      activitiesMap:  {},
+      localStudents:  [],
       computedGrades: {},
 
       idCounter: 1,
-      loading: false,
-      saving: false,
+      loading:   false,
+      saving:    false,
       computing: false,
 
       coColors: [
@@ -644,17 +636,14 @@ export default {
         '#ec4899', '#f97316', '#ef4444', '#6366f1',
       ],
 
-      // ── Laboratory Rubrics state ──────────────────────────────────
-      // rubricsList: array of independent rubric panels.
       showRubricsModal: false,
-      rubricsList: [],
+      rubricsList:      [],
 
-      // ── Add Criteria Modal state
       criteriaModal: {
-        open: false,
-        rIdx: -1,
-        label: '',
-        maxScore: 10
+        open:     false,
+        rIdx:     -1,
+        label:    '',
+        maxScore: 10,
       },
     }
   },
@@ -698,9 +687,7 @@ export default {
       ;(this.outcomes || []).forEach(function (co) {
         var typeIds = []
         ;(co.tosWeights || []).forEach(function (tw) {
-          if (tw.type_id && typeIds.indexOf(tw.type_id) === -1) {
-            typeIds.push(tw.type_id)
-          }
+          if (tw.type_id && typeIds.indexOf(tw.type_id) === -1) typeIds.push(tw.type_id)
         })
         m[co.co_code] = typeIds
       })
@@ -708,7 +695,7 @@ export default {
     },
 
     filteredAssessmentTypes: function () {
-      var coCode = this.newActivity.co_code
+      var coCode   = this.newActivity.co_code
       var validIds = this.validTypesPerCo[coCode]
       if (!validIds || validIds.length === 0) return this.assessmentTypes
       return (this.assessmentTypes || []).filter(function (t) {
@@ -720,32 +707,36 @@ export default {
       var self = this
       return (this.outcomes || []).map(function (co, idx) {
         return {
-          co_id: co.co_id,
-          co_code: co.co_code,
-          color: self.coColors[idx % self.coColors.length],
-          activities: self.activitiesMap[co.co_code] || [],
+          co_id:       co.co_id,
+          co_code:     co.co_code,
+          color:       self.coColors[idx % self.coColors.length],
+          activities:  self.activitiesMap[co.co_code] || [],
         }
       })
     },
+
     totalColumns: function () {
       return this.coGroups.reduce(function (sum, g) {
         return sum + Math.max(g.activities.length, 1)
       }, 0)
     },
+
     filteredStudents: function () {
       if (!this.searchQuery) return this.localStudents
       var q = this.searchQuery.toLowerCase()
       return this.localStudents.filter(function (s) {
-        return (s.studlastname || '').toLowerCase().indexOf(q) !== -1 ||
-          (s.studfirstname || '').toLowerCase().indexOf(q) !== -1 ||
-          (s.studid || '').toLowerCase().indexOf(q) !== -1
+        return (s.studlastname  || '').toLowerCase().indexOf(q) !== -1 ||
+               (s.studfirstname || '').toLowerCase().indexOf(q) !== -1 ||
+               (s.studid        || '').toLowerCase().indexOf(q) !== -1
       })
     },
+
     rubricsStorageKey: function () {
-      if (!this.subjcode || !this.section) return null;
-      var emp = this.empid || 'user';
-      return 'csucc_rubrics_' + emp + '_' + this.subjcode + '_' + this.section;
+      if (!this.subjcode || !this.section) return null
+      var emp = this.empid || 'user'
+      return 'csucc_rubrics_' + emp + '_' + this.subjcode + '_' + this.section
     },
+
     anyModalOpen: function () {
       return this.showAddModal || this.showRubricsModal || (this.criteriaModal && this.criteriaModal.open)
     },
@@ -754,30 +745,22 @@ export default {
   watch: {
     anyModalOpen: function (newVal) {
       if (typeof document !== 'undefined') {
-        if (newVal) {
-          document.body.style.overflow = 'hidden'
-        } else {
-          document.body.style.overflow = ''
-        }
+        document.body.style.overflow = newVal ? 'hidden' : ''
       }
     },
     rubricsList: {
       deep: true,
       handler: function (newVal) {
-        if (!this.rubricsStorageKey) return;
-        if (typeof window !== 'undefined') {
-          if (newVal && newVal.length > 0) {
-            localStorage.setItem(this.rubricsStorageKey, JSON.stringify(newVal));
-          }
+        if (!this.rubricsStorageKey) return
+        if (typeof window !== 'undefined' && newVal && newVal.length > 0) {
+          localStorage.setItem(this.rubricsStorageKey, JSON.stringify(newVal))
         }
-      }
+      },
     },
     activeSubject: {
       immediate: true,
       handler: function (val) {
-        if (val && val.subjcode) {
-          this.loadGradebook()
-        }
+        if (val && val.subjcode) this.loadGradebook()
       },
     },
     students: {
@@ -794,28 +777,26 @@ export default {
 
   methods: {
 
-    // ── Clamp grading sheet score ───────────────────────────────────
     clampScore: function (student, localId, maxScore) {
       var raw = student.scores[localId]
       if (raw === null || raw === undefined || raw === '') return
       var val = Number(raw)
-      if (val < 0) { this.$set(student.scores, localId, 0); return }
+      if (val < 0)        { this.$set(student.scores, localId, 0);        return }
       if (val > maxScore) { this.$set(student.scores, localId, maxScore) }
     },
 
-    // ── Load gradebook ──────────────────────────────────────────────
     loadGradebook: async function () {
       if (!this.subjcode || !this.section) return
       this.loading = true
       var self = this
       try {
-        var res = await this.$axios.get('/class-activity/sheet/raw-score', {
+        var res  = await this.$axios.get('/class-activity/sheet/raw-score', {
           params: { subjcode: this.subjcode, section: this.section, sy: this.sy, sem: this.sem },
         })
         var data = res.data
 
         if (!data || !data.length) {
-          this.localStudents = (this.students || []).map(function (s) {
+          this.localStudents  = (this.students || []).map(function (s) {
             return Object.assign({}, s, { scores: {} })
           })
           this.activitiesMap = {}
@@ -825,19 +806,19 @@ export default {
         var activityList = data[0].scores || []
         var newMap = {}
         activityList.forEach(function (act) {
-          var coCode = self.coIdToCode[act.co_id] || 'UNASSIGNED'
+          var coCode  = self.coIdToCode[act.co_id] || 'UNASSIGNED'
           var localId = 'a_' + act.activity_id
           if (!newMap[coCode]) newMap[coCode] = []
           var exists = newMap[coCode].some(function (a) { return a.localId === localId })
           if (!exists) {
             newMap[coCode].push({
-              localId: localId,
+              localId:   localId,
               activity_id: act.activity_id,
-              name: act.activity_name,
-              co_id: act.co_id,
-              type_id: act.type_id,
+              name:      act.activity_name,
+              co_id:     act.co_id,
+              type_id:   act.type_id,
               type_code: self.typeIdToCode[act.type_id] || '',
-              maxScore: act.max_score,
+              maxScore:  act.max_score,
             })
           }
         })
@@ -853,10 +834,10 @@ export default {
           var parts = (row.student_name || '').split(', ')
           return {
             masterlist_id: row.masterlist_id,
-            studid: row.studid,
-            studlastname: parts[0] || '',
+            studid:        row.studid,
+            studlastname:  parts[0] || '',
             studfirstname: parts.slice(1).join(', ') || '',
-            scores: scores,
+            scores:        scores,
           }
         })
 
@@ -871,7 +852,6 @@ export default {
       }
     },
 
-    // ── Save gradebook ──────────────────────────────────────────────
     saveGrades: async function () {
       if (!this.subjcode) return
       this.saving = true
@@ -894,25 +874,25 @@ export default {
         var categories = Object.keys(byCategory)
         for (var i = 0; i < categories.length; i++) {
           var category = categories[i]
-          var acts = byCategory[category]
-          var payload = {
-            subjcode: self.subjcode,
-            section: self.section,
-            sy: self.sy,
-            sem: self.sem,
-            category: category,
-            empid: self.empid,
+          var acts     = byCategory[category]
+          var payload  = {
+            subjcode:   self.subjcode,
+            section:    self.section,
+            sy:         self.sy,
+            sem:        self.sem,
+            category:   category,
+            empid:      self.empid,
             activities: acts.map(function (act) {
               return {
                 activity_id: act.activity_id || undefined,
-                name: act.name,
-                maxScore: act.maxScore,
-                co_id: act.co_id,
-                type_id: act.type_id,
-                scores: self.localStudents.map(function (s) {
+                name:        act.name,
+                maxScore:    act.maxScore,
+                co_id:       act.co_id,
+                type_id:     act.type_id,
+                scores:      self.localStudents.map(function (s) {
                   return {
                     studentId: s.studid,
-                    score: s.scores[act.localId] != null ? s.scores[act.localId] : 0,
+                    score:     s.scores[act.localId] != null ? s.scores[act.localId] : 0,
                   }
                 }),
               }
@@ -930,25 +910,24 @@ export default {
       }
     },
 
-    // ── Compute grades ──────────────────────────────────────────────
     computeGrades: async function () {
       if (!this.empid || !this.subjcode) return
       this.computing = true
       try {
-        var res = await this.$axios.post('/class-activity/compute-grades', {
-          empid: this.empid,
+        var res  = await this.$axios.post('/class-activity/compute-grades', {
+          empid:    this.empid,
           subjcode: this.subjcode,
-          section: this.section,
-          sy: this.sy,
-          sem: this.sem,
+          section:  this.section,
+          sy:       this.sy,
+          sem:      this.sem,
         })
-        var data = res.data
+        var data   = res.data
         var grades = {}
         ;(data || []).forEach(function (row) {
           grades[row.studid] = {
-            grade: row.final_numerical_grade,
-            total: row.total_weighted_percent,
-            remarks: row.remarks,
+            grade:      row.final_numerical_grade,
+            total:      row.total_weighted_percent,
+            remarks:    row.remarks,
             co_results: row.co_results || [],
           }
         })
@@ -962,13 +941,12 @@ export default {
       }
     },
 
-    // ── Add activity ────────────────────────────────────────────────
     addActivity: function () {
       if (!this.outcomes || !this.outcomes.length) {
         alert('Please set up Course Outcomes in Syllabus Setup first.')
         return
       }
-      var firstCo = this.outcomes[0].co_code
+      var firstCo    = this.outcomes[0].co_code
       var validTypes = this.validTypesPerCo[firstCo] || []
       var firstTypeId = validTypes.length > 0 ? validTypes[0] : null
       this.newActivity = { co_code: firstCo, name: '', type_id: firstTypeId, maxScore: 100 }
@@ -976,15 +954,15 @@ export default {
     },
 
     onAddActivityCoChange: function () {
-      var coCode = this.newActivity.co_code
-      var validTypes = this.validTypesPerCo[coCode] || []
+      var coCode      = this.newActivity.co_code
+      var validTypes  = this.validTypesPerCo[coCode] || []
       this.newActivity.type_id = validTypes.length > 0 ? validTypes[0] : null
     },
 
     confirmAddActivity: function () {
       if (!this.newActivity.co_code || !this.newActivity.name || !this.newActivity.type_id) return
       var co_code = this.newActivity.co_code
-      var type = null
+      var type    = null
       for (var i = 0; i < this.assessmentTypes.length; i++) {
         if (this.assessmentTypes[i].type_id === this.newActivity.type_id) {
           type = this.assessmentTypes[i]
@@ -995,36 +973,32 @@ export default {
         this.$set(this.activitiesMap, co_code, [])
       }
       this.activitiesMap[co_code].push({
-        localId: 'new_' + this.idCounter++,
+        localId:     'new_' + this.idCounter++,
         activity_id: null,
-        name: this.newActivity.name,
-        co_id: this.coCodeToId[co_code] || null,
-        type_id: this.newActivity.type_id,
-        type_code: type ? type.code : '',
-        maxScore: this.newActivity.maxScore,
+        name:        this.newActivity.name,
+        co_id:       this.coCodeToId[co_code] || null,
+        type_id:     this.newActivity.type_id,
+        type_code:   type ? type.code : '',
+        maxScore:    this.newActivity.maxScore,
       })
       this.showAddModal = false
     },
 
-    // ════════════════════════════════════════════════════════════════
-    // ════════════════════════════════════════════════════════════════
-    // LABORATORY RUBRICS METHODS — multi-panel
-    // ════════════════════════════════════════════════════════════════
+    // ── Rubrics ────────────────────────────────────────────────────
 
-    // ── Helper: make a blank rubric panel object ────────────────────
     _makeRubricPanel: function (co, typeId, criteria) {
-      var self = this
-      var crits = criteria || []
+      var self   = this
+      var crits  = criteria || []
       var scores = {}
       self.localStudents.forEach(function (s) {
         scores[s.studid] = crits.map(function () { return null })
       })
-      var firstCo   = co     || (self.outcomes.length ? self.outcomes[0].co_code : '')
+      var firstCo    = co     || (self.outcomes.length ? self.outcomes[0].co_code : '')
       var validTypes = self.validTypesPerCo[firstCo] || []
       var firstType  = typeId || (validTypes.length ? validTypes[0] : '')
       return {
-        id: 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        activity_id: undefined,
+        id:             'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        activity_id:    undefined,
         selectedCo:     firstCo,
         selectedTypeId: firstType,
         activityName:   '',
@@ -1035,13 +1009,11 @@ export default {
       }
     },
 
-    // ── Helper: get type name by id ─────────────────────────────────
     getTypeName: function (typeId) {
       var t = (this.assessmentTypes || []).find(function (t) { return t.type_id === typeId })
       return t ? t.code + ' — ' + t.name : ''
     },
 
-    // ── Helper: filtered types for a specific CO ────────────────────
     getRubricFilteredTypes: function (coCode) {
       if (!coCode) return this.assessmentTypes
       var validIds = this.validTypesPerCo[coCode]
@@ -1051,43 +1023,40 @@ export default {
       })
     },
 
-    // ── Helper: total max for a panel ──────────────────────────────
     rubricPanelTotalMax: function (rIdx) {
       var rubric = this.rubricsList[rIdx]
       if (!rubric) return 0
       return rubric.criteria.reduce(function (sum, c) { return sum + (Number(c.maxScore) || 0) }, 0)
     },
 
-    // ── Helper: row total for a student in a panel ─────────────────
     rubricPanelRowTotal: function (rIdx, studid) {
       var rubric = this.rubricsList[rIdx]
       if (!rubric || !rubric.scores[studid]) return 0
       return rubric.scores[studid].reduce(function (sum, v) { return sum + (Number(v) || 0) }, 0)
     },
 
-    // ── Heavy Persistence: Restore completely stored rubrics ────────
     restoreRubrics: function () {
-      if (!this.rubricsStorageKey || typeof window === 'undefined') return false;
-      var stored = localStorage.getItem(this.rubricsStorageKey);
+      if (!this.rubricsStorageKey || typeof window === 'undefined') return false
+      var stored = localStorage.getItem(this.rubricsStorageKey)
       if (stored) {
         try {
-          var parsed = JSON.parse(stored);
+          var parsed = JSON.parse(stored)
           if (Array.isArray(parsed) && parsed.length > 0) {
-            var self = this;
+            var self = this
             parsed.forEach(function (rubric) {
-              if (!rubric.scores) rubric.scores = {};
+              if (!rubric.scores) rubric.scores = {}
               self.localStudents.forEach(function (s) {
                 if (!rubric.scores[s.studid]) {
-                  rubric.scores[s.studid] = rubric.criteria.map(function () { return null; });
+                  rubric.scores[s.studid] = rubric.criteria.map(function () { return null })
                 }
-              });
-            });
-            this.rubricsList = parsed;
-            return true;
+              })
+            })
+            this.rubricsList = parsed
+            return true
           }
-        } catch (e) { console.error('Error parsing rubrics from localStorage', e); }
+        } catch (e) { console.error('Error parsing rubrics from localStorage', e) }
       }
-      return false;
+      return false
     },
 
     openRubricsModal: function () {
@@ -1095,22 +1064,18 @@ export default {
         alert('Please set up Course Outcomes in Syllabus Setup first.')
         return
       }
-      // Only set a blank panel if list is completely empty so it IS NOT gone across modal opens!
       if (this.rubricsList.length === 0) {
-        var restored = this.restoreRubrics();
-        if (!restored) {
-          this.rubricsList = [this._makeRubricPanel()];
-        }
+        var restored = this.restoreRubrics()
+        if (!restored) this.rubricsList = [this._makeRubricPanel()]
       } else {
-        // If we already hold state, run reconciliation anyway just to be extremely safe about new students
-        var self = this;
+        var self = this
         this.rubricsList.forEach(function (rubric) {
           self.localStudents.forEach(function (s) {
             if (!rubric.scores[s.studid]) {
-              self.$set(rubric.scores, s.studid, rubric.criteria.map(function () { return null; }));
+              self.$set(rubric.scores, s.studid, rubric.criteria.map(function () { return null }))
             }
-          });
-        });
+          })
+        })
       }
       this.showRubricsModal = true
     },
@@ -1119,90 +1084,77 @@ export default {
       this.showRubricsModal = false
     },
 
-    // Add a completely blank new rubric panel to the TOP of the list
     addNewRubric: function () {
       this.rubricsList.unshift(this._makeRubricPanel())
     },
 
-    // When CO changes on a panel, reset its type to first valid
     onRubricCoChange: function (rIdx) {
-      var rubric = this.rubricsList[rIdx]
+      var rubric     = this.rubricsList[rIdx]
       var validTypes = this.validTypesPerCo[rubric.selectedCo] || []
       this.$set(this.rubricsList[rIdx], 'selectedTypeId', validTypes.length ? validTypes[0] : '')
     },
 
-    // New: Open criteria modal instead of inline add
-    openCriteriaModal: function(rIdx) {
-      this.criteriaModal.rIdx = rIdx;
-      this.criteriaModal.label = '';
-      this.criteriaModal.maxScore = 10;
-      this.criteriaModal.open = true;
+    openCriteriaModal: function (rIdx) {
+      this.criteriaModal.rIdx     = rIdx
+      this.criteriaModal.label    = ''
+      this.criteriaModal.maxScore = 10
+      this.criteriaModal.open     = true
     },
 
-    confirmCriteriaModal: function() {
+    confirmCriteriaModal: function () {
       if (!this.criteriaModal.label.trim() || Number(this.criteriaModal.maxScore) <= 0) {
         alert('Please enter a valid criteria label and max score > 0.')
-        return;
+        return
       }
-      var rIdx = this.criteriaModal.rIdx;
-      var rubric = this.rubricsList[rIdx];
+      var rIdx   = this.criteriaModal.rIdx
+      var rubric = this.rubricsList[rIdx]
       rubric.criteria.push({
-        label: this.criteriaModal.label.trim(),
-        maxScore: Number(this.criteriaModal.maxScore)
+        label:    this.criteriaModal.label.trim(),
+        maxScore: Number(this.criteriaModal.maxScore),
       })
-      var self = this;
+      var self = this
       self.localStudents.forEach(function (s) {
-        if (!rubric.scores[s.studid]) {
-          self.$set(rubric.scores, s.studid, []);
-        }
-        rubric.scores[s.studid].push(null);
-      });
-      this.criteriaModal.open = false;
+        if (!rubric.scores[s.studid]) self.$set(rubric.scores, s.studid, [])
+        rubric.scores[s.studid].push(null)
+      })
+      this.criteriaModal.open = false
     },
 
-    // Remove criterion from a specific panel
     removeCriterionFromRubric: function (rIdx, cIdx) {
       var rubric = this.rubricsList[rIdx]
       if (rubric.criteria.length <= 1) return
       rubric.criteria.splice(cIdx, 1)
       var self = this
       self.localStudents.forEach(function (s) {
-        if (rubric.scores[s.studid]) {
-          rubric.scores[s.studid].splice(cIdx, 1)
-        }
+        if (rubric.scores[s.studid]) rubric.scores[s.studid].splice(cIdx, 1)
       })
     },
 
-    // Remove an entire unsaved rubric panel
     removeRubricPanel: function (rIdx) {
       this.rubricsList.splice(rIdx, 1)
     },
 
-    // Clamp score in a specific panel
     clampRubricScore: function (rIdx, studid, cIdx, maxScore) {
       var rubric = this.rubricsList[rIdx]
-      var val = rubric.scores[studid][cIdx]
+      var val    = rubric.scores[studid][cIdx]
       if (val === null || val === undefined || val === '') return
       val = Number(val)
-      if (val < 0)        { this.$set(rubric.scores[studid], cIdx, 0); return }
+      if (val < 0)        { this.$set(rubric.scores[studid], cIdx, 0);        return }
       if (val > maxScore) { this.$set(rubric.scores[studid], cIdx, maxScore) }
     },
 
-    // Duplicate a panel — clone its CO, type, criteria; blank name + scores; insert at TOP
     duplicateRubric: function (rIdx) {
-      var src = this.rubricsList[rIdx]
+      var src            = this.rubricsList[rIdx]
       var clonedCriteria = src.criteria.map(function (c) {
         return { label: c.label, maxScore: c.maxScore }
       })
       var newPanel = this._makeRubricPanel(src.selectedCo, src.selectedTypeId, clonedCriteria)
-      // Insert at top (index 0) so it's immediately visible
       this.rubricsList.unshift(newPanel)
     },
 
-    // Save one rubric panel to DB via save-gradebook endpoint
     saveRubricPanel: async function (rIdx) {
-      var rubric = this.rubricsList[rIdx]
-      var self   = this
+      var rubric   = this.rubricsList[rIdx]
+      var self     = this
       var totalMax = this.rubricPanelTotalMax(rIdx)
 
       if (!rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim()) {
@@ -1214,7 +1166,7 @@ export default {
         return
       }
       if (totalMax === 0) {
-        alert('Total max score must be greater than 0. Set the max for each criterion.')
+        alert('Total max score must be greater than 0.')
         return
       }
 
@@ -1225,48 +1177,40 @@ export default {
           return t.type_id === rubric.selectedTypeId
         })
         var category = selectedType ? selectedType.code : 'MISC'
-
-        var payload = {
-          subjcode:  this.subjcode,
-          section:   this.section,
-          sy:        this.sy,
-          sem:       this.sem,
-          category:  category,
-          empid:     this.empid,
-          activities: [
-            {
-              activity_id: rubric.activity_id,
-              name:        rubric.activityName.trim(),
-              maxScore:    totalMax,
-              co_id:       this.coCodeToId[rubric.selectedCo] || null,
-              type_id:     rubric.selectedTypeId,
-              scores:      this.localStudents.map(function (s) {
-                return {
-                  studentId: s.studid,
-                  score:     self.rubricPanelRowTotal(rIdx, s.studid),
-                }
-              }),
-            },
-          ],
+        var payload  = {
+          subjcode:   this.subjcode,
+          section:    this.section,
+          sy:         this.sy,
+          sem:        this.sem,
+          category:   category,
+          empid:      this.empid,
+          activities: [{
+            activity_id: rubric.activity_id,
+            name:        rubric.activityName.trim(),
+            maxScore:    totalMax,
+            co_id:       this.coCodeToId[rubric.selectedCo] || null,
+            type_id:     rubric.selectedTypeId,
+            scores:      this.localStudents.map(function (s) {
+              return {
+                studentId: s.studid,
+                score:     self.rubricPanelRowTotal(rIdx, s.studid),
+              }
+            }),
+          }],
         }
 
         var res = await this.$axios.post('/class-activity/save-gradebook', payload)
 
-        // Resync dynamic properties backward to perfectly match any new data generated by TypeORM
         if (res.data && res.data.activities && res.data.activities.length > 0) {
-           var createdAct = res.data.activities[0];
-           if (createdAct && createdAct.activity_id) {
-              rubric.activity_id = createdAct.activity_id;
-           }
+          var createdAct = res.data.activities[0]
+          if (createdAct && createdAct.activity_id) rubric.activity_id = createdAct.activity_id
         }
 
-        // Mark panel as saved — locks it from further edits
         this.$set(this.rubricsList, rIdx, Object.assign({}, this.rubricsList[rIdx], {
           saving: false,
           saved:  true,
         }))
 
-        // Reload grading sheet so the new activity column appears
         await this.loadGradebook()
       } catch (err) {
         console.error('Failed to save rubric panel:', err)

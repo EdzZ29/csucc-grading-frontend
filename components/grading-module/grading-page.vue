@@ -29,24 +29,86 @@
                             {{ activeSubject ? activeSubject.students.length : 0 }} Students
                         </p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <!-- Tab Buttons -->
-                        <div class="flex gap-1 bg-gray-700/60 rounded-xl p-1">
-                            <button v-for="tab in recordTabs" :key="tab.id"
-                                @click="classRecordActiveTab = tab.id"
-                                :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap',
-                                    classRecordActiveTab === tab.id
-                                        ? 'bg-white text-gray-800 shadow'
-                                        : 'text-gray-300 hover:text-white']">
-                                {{ tab.label }}
-                            </button>
-                        </div>
-                        <button @click="showClassRecord = false"
-                            class="text-white hover:bg-gray-700 rounded-full p-2 transition-colors ml-1">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="showClassRecord = false"
+                        class="text-white hover:bg-gray-700 rounded-full p-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- ── Prominent Tab Bar ── -->
+                <div class="shrink-0 bg-white border-b-2 border-gray-100 px-6 pt-3 pb-0 flex items-end gap-1">
+                    <!-- Raw Score -->
+                    <button @click="classRecordActiveTab = 'raw'"
+                        :class="[
+                            'flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl border-b-[3px] transition-all whitespace-nowrap',
+                            classRecordActiveTab === 'raw'
+                                ? 'border-orange-500 text-orange-600 bg-orange-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Raw Score
+                    </button>
+
+                    <!-- % Rating -->
+                    <button @click="classRecordActiveTab = 'percent'"
+                        :class="[
+                            'flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl border-b-[3px] transition-all whitespace-nowrap',
+                            classRecordActiveTab === 'percent'
+                                ? 'border-teal-500 text-teal-600 bg-teal-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        </svg>
+                        % Rating
+                    </button>
+
+                    <!-- Weighted % -->
+                    <button @click="classRecordActiveTab = 'weighted'"
+                        :class="[
+                            'flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl border-b-[3px] transition-all whitespace-nowrap',
+                            classRecordActiveTab === 'weighted'
+                                ? 'border-blue-500 text-blue-600 bg-blue-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        </svg>
+                        Weighted %
+                    </button>
+
+                    <!-- Final Grade -->
+                    <button @click="classRecordActiveTab = 'final'"
+                        :class="[
+                            'flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-t-xl border-b-[3px] transition-all whitespace-nowrap',
+                            classRecordActiveTab === 'final'
+                                ? 'border-purple-500 text-purple-600 bg-purple-50'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Final Grade
+                    </button>
+
+                    <!-- Print Button (right side) -->
+                    <div class="ml-auto pb-3 flex items-center gap-2">
+                        <button @click="printClassRecord"
+                            class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
+                            Print
                         </button>
                     </div>
                 </div>
@@ -196,9 +258,6 @@
                                             :style="{ backgroundColor: co.color }">
                                             {{ co.co_code }} ({{ co.weight }}%)
                                         </th>
-                                        <th rowspan="2"
-                                            class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:70px">TOTAL</th>
                                     </tr>
                                     <tr>
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-' + act.activity_id"
@@ -217,14 +276,10 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
-                                        <!-- FIX: Look up weighted_ratings by activity_id -->
                                         <td v-for="act in sortedActivityHeaders"
                                             :key="'wr-' + act.activity_id + row.studid"
                                             class="border border-gray-200 text-center py-1.5 text-sm">
                                             {{ getWeightedRating(row, act.activity_id) !== undefined ? getWeightedRating(row, act.activity_id).toFixed(2) : '' }}
-                                        </td>
-                                        <td class="border border-gray-200 text-center py-1.5 font-black text-sm bg-gray-50">
-                                            {{ row.total_weighted_percent }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -232,23 +287,60 @@
 
                             <!-- ═══ FINAL GRADE ═══ -->
                             <template v-if="classRecordActiveTab === 'final'">
-                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                <thead class="sticky top-0 z-20">
+                                    <!-- Row 1: % of Student Passed -->
                                     <tr>
-                                        <th class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
+                                        <th rowspan="4"
+                                            class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
                                             style="min-width:40px">No.</th>
-                                        <th class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
+                                        <th rowspan="4"
+                                            class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
                                             style="min-width:200px">Student Name</th>
-                                        <th v-for="co in recordCoResultHeaders" :key="'fh-' + co.co_code" colspan="2"
+                                        <!-- Per-CO: % of Student Passed -->
+                                        <th v-for="co in recordCoResultHeaders" :key="'fp-' + co.co_code"
+                                            colspan="2"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            :style="{ backgroundColor: '#dc2626' }">
+                                            {{ coPassedPercent(co.co_code) }}%
+                                        </th>
+                                        <!-- Total / Grade / Remarks span 4 rows — placed AFTER CO cols -->
+                                        <th rowspan="4"
+                                            class="bg-gray-600 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:60px">Total</th>
+                                        <th rowspan="4"
+                                            class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:70px">Final Numerical Grade</th>
+                                        <th rowspan="4"
+                                            class="bg-gray-800 text-white border border-gray-400 px-3 py-1 text-center font-black"
+                                            style="min-width:80px">REMARKS</th>
+                                    </tr>
+                                    <!-- Row 2: CO codes -->
+                                    <tr>
+                                        <th v-for="co in recordCoResultHeaders" :key="'fc-' + co.co_code"
+                                            colspan="2"
                                             class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
                                             :style="{ backgroundColor: co.color }">
                                             {{ co.co_code }}
                                         </th>
-                                        <th class="bg-gray-600 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:60px">Total</th>
-                                        <th class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:60px">Grade</th>
-                                        <th class="bg-gray-800 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:80px">Remarks</th>
+                                    </tr>
+                                    <!-- Row 3: CO weight % -->
+                                    <tr>
+                                        <th v-for="co in recordCoResultHeaders" :key="'fw-' + co.co_code"
+                                            colspan="2"
+                                            class="border border-gray-300 bg-gray-100 px-2 py-1 text-center font-black text-gray-700 text-xs">
+                                            {{ coWeightPercent(co.co_code) }}%
+                                        </th>
+                                    </tr>
+                                    <!-- Row 4: Sum % | REMARKS subheaders -->
+                                    <tr>
+                                        <template v-for="co in recordCoResultHeaders">
+                                            <th :key="'fs-' + co.co_code"
+                                                class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600 text-[10px] uppercase"
+                                                style="min-width:70px">Sum %</th>
+                                            <th :key="'fr-' + co.co_code"
+                                                class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600 text-[10px] uppercase"
+                                                style="min-width:80px">REMARKS</th>
+                                        </template>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -257,26 +349,29 @@
                                         <td class="sticky left-0 z-10 border border-gray-200 px-2 py-2 text-center font-bold text-gray-400"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-2 font-medium text-gray-800"
-                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
-                                        </td>
+                                            :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}</td>
+                                        <!-- Per-CO: Sum % + Remarks — LEFT of Total/Grade/Remarks -->
                                         <template v-for="cr in sortedCoResults(row.co_results)">
                                             <td :key="'cs-' + cr.co_code + row.studid"
-                                                class="border border-gray-200 text-center py-2 text-sm">
-                                                {{ cr.sum_weighted.toFixed(1) }}
+                                                class="border border-gray-200 text-center py-2 text-sm font-semibold">
+                                                {{ cr.sum_weighted !== undefined ? cr.sum_weighted.toFixed(2) : '0.00' }}
                                             </td>
                                             <td :key="'cp-' + cr.co_code + row.studid"
                                                 class="border border-gray-200 text-center py-2 text-xs font-bold"
-                                                :class="cr.passed ? 'text-green-600' : 'text-red-600'">
-                                                {{ cr.passed ? 'PASSED' : '-' }}
+                                                :class="cr.passed ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
+                                                {{ cr.passed ? 'PASSED' : 'FAILED' }}
                                             </td>
                                         </template>
+                                        <!-- Total — RIGHT -->
                                         <td class="border border-gray-200 text-center py-2 font-black text-sm bg-gray-50">
                                             {{ row.total_weighted_percent }}
                                         </td>
-                                        <td class="border border-gray-200 text-center py-2 font-black text-lg"
+                                        <!-- Final Numerical Grade — RIGHT -->
+                                        <td class="border border-gray-200 text-center py-2 font-black text-base"
                                             :class="row.final_numerical_grade <= 3.0 ? 'text-green-700' : 'text-red-600'">
                                             {{ row.final_numerical_grade ? row.final_numerical_grade.toFixed(2) : '' }}
                                         </td>
+                                        <!-- Remarks — RIGHT -->
                                         <td class="border border-gray-200 text-center py-2 font-black text-xs uppercase"
                                             :class="row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
                                             {{ row.remarks || '' }}
@@ -785,9 +880,24 @@ export default {
             return entry && entry.weighted_value !== undefined ? entry.weighted_value : undefined
         },
 
-        // ─────────────────────────────────────────────────────────────────
-        // Sort co_results for a student row by CO order
-        // ─────────────────────────────────────────────────────────────────
+        // ── % of students passed per CO ────────────────────────────
+        coPassedPercent: function (coCode) {
+            if (!this.filteredRecordData.length) return 0
+            var passed = this.filteredRecordData.filter(function (row) {
+                if (!row.co_results) return false
+                var cr = row.co_results.find(function (c) { return c.co_code === coCode })
+                return cr && cr.passed
+            }).length
+            return Math.round((passed / this.filteredRecordData.length) * 100)
+        },
+
+        // ── CO weight % from sortedCoHeaders ───────────────────────
+        coWeightPercent: function (coCode) {
+            var co = this.sortedCoHeaders.find(function (c) { return c.co_code === coCode })
+            return co ? co.weight : 0
+        },
+
+        // ── Sort co_results for a student row by CO order ──────────
         sortedCoResults: function (coResults) {
             if (!coResults) return []
             var self = this
@@ -963,6 +1073,59 @@ export default {
             if (this.$refs.gradingSheet) {
                 this.$refs.gradingSheet.loadGradebook()
             }
+        },
+
+        // ── Print current class record tab ──────────────────────────
+        printClassRecord: function () {
+            var tabLabels = {
+                raw:      'Raw Score',
+                percent:  '% Rating',
+                weighted: 'Weighted %',
+                final:    'Final Grade',
+            }
+            var tabLabel  = tabLabels[this.classRecordActiveTab] || ''
+            var subjcode  = this.activeSubject ? this.activeSubject.subjcode : ''
+            var section   = this.activeSubject ? this.activeSubject.section  : ''
+            var instructor = this.activeSubject ? this.activeSubject.instructor : ''
+
+            // Grab the visible table HTML
+            var tableEl = document.querySelector('.overflow-auto table')
+            if (!tableEl) {
+                alert('No table found to print.')
+                return
+            }
+
+            var win = window.open('', '_blank')
+            win.document.write([
+                '<!DOCTYPE html>',
+                '<html>',
+                '<head>',
+                '  <meta charset="UTF-8">',
+                '  <title>' + subjcode + ' ' + section + ' — ' + tabLabel + '</title>',
+                '  <style>',
+                '    * { box-sizing: border-box; margin: 0; padding: 0; }',
+                '    body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; color: #111; }',
+                '    h1 { font-size: 16px; font-weight: bold; margin-bottom: 2px; }',
+                '    p  { font-size: 11px; color: #555; margin-bottom: 12px; }',
+                '    table { border-collapse: collapse; width: 100%; }',
+                '    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; white-space: nowrap; }',
+                '    thead th { background: #1f2937; color: #fff; font-weight: bold; }',
+                '    thead tr:first-child th { font-size: 12px; }',
+                '    tbody tr:nth-child(even) { background: #f9f9f9; }',
+                '    td:nth-child(2), th:nth-child(2) { text-align: left; }',
+                '    @media print { body { padding: 10px; } }',
+                '  </style>',
+                '</head>',
+                '<body>',
+                '  <h1>' + subjcode + ' &mdash; Section ' + section + ' &nbsp;|&nbsp; ' + tabLabel + '</h1>',
+                '  <p>' + instructor + ' &nbsp;&bull;&nbsp; ' + this.filteredRecordData.length + ' Students &nbsp;&bull;&nbsp; ' + tabLabel + '</p>',
+                tableEl.outerHTML,
+                '</body>',
+                '</html>',
+            ].join('\n'))
+            win.document.close()
+            win.focus()
+            setTimeout(function () { win.print() }, 400)
         },
     },
 }
