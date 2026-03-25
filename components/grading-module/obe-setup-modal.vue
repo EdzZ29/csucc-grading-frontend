@@ -517,7 +517,8 @@ export default {
     // ── Fetch assessment types ────────────────────────────────────
     fetchTypes: async function () {
       try {
-        var res = await this.$axios.get('/obe/assessment-types')
+        var empid = this.$parent.user.empid
+        var res = await this.$axios.get('/obe/assessment-types', { params: { empid } })
         this.assessmentTypes = res.data
       } catch (e) {
         console.error('Could not load assessment types', e)
