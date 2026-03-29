@@ -174,7 +174,7 @@
                                         <th v-for="act in sortedActivityHeaders" :key="'ra-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
-                                            <div>{{ act.activity_name }}</div>
+                                            <div>{{ act.type_code }}</div>
                                             <div class="text-green-600 font-black">{{ act.max_score }}</div>
                                         </th>
                                     </tr>
@@ -218,7 +218,7 @@
                                         <th v-for="act in sortedActivityHeaders" :key="'pa-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
-                                            {{ act.activity_name }}
+                                            {{ act.type_code }}
                                         </th>
                                     </tr>
                                 </thead>
@@ -263,7 +263,7 @@
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-' + act.activity_id"
                                             class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600"
                                             style="min-width:80px">
-                                            <div>{{ act.activity_name }}</div>
+                                            <div>{{ act.type_code }}</div>
                                             <div class="text-blue-600 text-[10px]">{{ act.weight }}%</div>
                                         </th>
                                     </tr>
@@ -714,6 +714,14 @@ export default {
             return m
         },
 
+        typeIdToCode: function () {
+            var m = {}
+            ;(this.assessmentTypes || []).forEach(function (t) {
+                m[t.type_id] = t.code
+            })
+            return m
+        },
+
         // ─────────────────────────────────────────────────────────────────
         // coOrderMap: co_code → position index from courseOutcomes.
         // This is the source of truth for ordering.
@@ -748,11 +756,14 @@ export default {
             // resolving co_code via coIdToCode (authoritative)
             var activities = (first.raw_scores || []).map(function (rs) {
                 var co_code = self.coIdToCode[rs.co_id] || 'UNASSIGNED'
+                var type_code = self.typeIdToCode[rs.type_id] || ''
                 return {
                     activity_id:   rs.activity_id,
                     activity_name: rs.activity_name,
                     co_id:         rs.co_id,
                     co_code:       co_code,
+                    type_id:       rs.type_id,
+                    type_code:     type_code,
                     max_score:     rs.max_score,
                     weight:        weightMap[rs.activity_id] || 0,
                     // Sort key: CO position in courseOutcomes
