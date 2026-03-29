@@ -78,16 +78,8 @@
             <thead>
               <!-- ── Row 1: CO group headers ── -->
               <tr>
-                <th rowspan="4"
-                  class="sticky left-0 z-10 bg-gray-900 border border-gray-700 px-2 py-3 text-center font-black text-white text-xs uppercase tracking-wider"
-                  style="width:40px; min-width:40px; background:#111827">#</th>
-                <th rowspan="4"
-                  class="sticky left-[40px] z-10 border border-gray-700 px-4 py-3 text-left font-black text-white text-xs uppercase tracking-wider"
-                  style="width:200px; min-width:200px; background:#111827">
-                  Student Name
-                  <svg class="w-3 h-3 inline ml-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
+                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                  Course Outcomes
                 </th>
                 <th v-for="group in coGroups" :key="'hdr-' + group.co_code" :colspan="group.activities.length || 1"
                   class="border border-gray-300 px-2 py-2 text-center font-black text-white text-xs uppercase tracking-wider"
@@ -100,29 +92,35 @@
 
               <!-- ── Row 2: Assessment type code ── -->
               <tr>
+                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                  Assessment Task
+                </th>
                 <template v-for="group in coGroups">
                   <td v-for="act in group.activities" :key="'type-' + act.localId"
-                    class="border border-gray-200 px-1 py-1 text-center"
-                    :style="{ backgroundColor: group.color + '33', width: '100px' }">
+                    class="border border-gray-200 px-1 py-1 text-center bg-white"
+                    :style="{ width: '100px' }">
                     <span class="text-[10px] font-black uppercase tracking-wider"
                       :style="{ color: group.color }">
                       {{ act.type_code || '—' }}
                     </span>
                   </td>
                   <td v-if="group.activities.length === 0" :key="'type-empty-' + group.co_code"
-                    class="border border-gray-200 text-center text-xs text-gray-300 px-2 py-1"
+                    class="border border-gray-200 text-center text-xs text-gray-300 px-2 py-1 bg-white"
                     :style="{ width: '100px' }">—</td>
                 </template>
               </tr>
 
               <!-- ── Row 3: Task name inputs ── -->
               <tr>
+                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                  Task Name
+                </th>
                 <template v-for="group in coGroups">
                   <td v-for="act in group.activities" :key="'task-' + act.localId"
                     class="border border-gray-200 bg-gray-50 px-1 py-2 text-center"
                     :style="{ width: '100px' }">
                     <input v-model="act.name"
-                      class="w-full text-center text-xs font-bold text-gray-700 bg-transparent focus:outline-none focus:ring-1 focus:ring-orange-400 rounded px-1 uppercase truncate"
+                      class="w-full text-center text-[10px] font-bold text-gray-700 bg-transparent focus:outline-none focus:ring-1 focus:ring-orange-400 rounded px-1 uppercase truncate"
                       placeholder="TASK" />
                   </td>
                   <td v-if="group.activities.length === 0" :key="'task-empty-' + group.co_code"
@@ -133,19 +131,25 @@
 
               <!-- ── Row 4: Max score inputs ── -->
               <tr>
+                <th class="sticky left-0 z-30 border border-gray-200 px-2 py-3 text-center font-black text-black text-xs uppercase tracking-wider shadow-sm bg-clip-padding"
+                  style="width:40px; min-width:40px; background:#FFDB58">No.</th>
+                <th class="sticky left-[40px] z-30 border border-gray-200 px-4 py-3 text-left font-black text-black text-[13px] shadow-sm bg-clip-padding"
+                  style="width:200px; min-width:200px; background:#FFDB58">
+                  Student Name
+                </th>
                 <template v-for="group in coGroups">
                   <td v-for="act in group.activities" :key="'max-' + act.localId"
-                    class="border border-gray-200 bg-orange-50 px-1 py-2 text-center">
+                    class="border border-gray-200 px-1 py-2 text-center font-black" style="background:#FFDB58">
                     <div class="flex items-center justify-center gap-1">
-                      <span class="text-[9px] font-bold text-orange-500 shrink-0">MAX</span>
+                      <span v-if="act.maxScore === null || act.maxScore === undefined" class="text-[9px] font-bold text-black opacity-50 shrink-0">MAX</span>
                       <input type="number" v-model.number="act.maxScore"
-                        class="w-14 text-center text-xs font-black text-orange-600 bg-white border border-orange-200 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        class="w-14 text-center text-xs font-black text-black bg-transparent border-none rounded-none py-1 focus:outline-none focus:bg-white focus:ring-1 focus:ring-orange-400"
                         placeholder="100" />
                     </div>
                   </td>
                   <td v-if="group.activities.length === 0" :key="'max-empty-' + group.co_code"
-                    class="border border-gray-200 bg-gray-100 px-2 py-2"
-                    :style="{ width: '100px' }"></td>
+                    class="border border-gray-200 px-2 py-2"
+                    style="width: 100px; background:#FFDB58"></td>
                 </template>
               </tr>
             </thead>
@@ -1173,8 +1177,9 @@ export default {
       this.$set(this.rubricsList, rIdx, Object.assign({}, rubric, { saving: true }))
 
       try {
+        var currentRubric = this.rubricsList[rIdx]
         var selectedType = (this.assessmentTypes || []).find(function (t) {
-          return t.type_id === rubric.selectedTypeId
+          return t.type_id === currentRubric.selectedTypeId
         })
         var category = selectedType ? selectedType.code : 'MISC'
         var payload  = {
@@ -1185,11 +1190,11 @@ export default {
           category:   category,
           empid:      this.empid,
           activities: [{
-            activity_id: rubric.activity_id,
-            name:        rubric.activityName.trim(),
+            activity_id: currentRubric.activity_id || undefined,
+            name:        currentRubric.activityName.trim(),
             maxScore:    totalMax,
-            co_id:       this.coCodeToId[rubric.selectedCo] || null,
-            type_id:     rubric.selectedTypeId,
+            co_id:       this.coCodeToId[currentRubric.selectedCo] || null,
+            type_id:     currentRubric.selectedTypeId,
             scores:      this.localStudents.map(function (s) {
               return {
                 studentId: s.studid,
@@ -1201,15 +1206,16 @@ export default {
 
         var res = await this.$axios.post('/class-activity/save-gradebook', payload)
 
+        // Merge activity_id + saved state into the CURRENT array element in one $set
+        var updateObj = { saving: false, saved: true }
         if (res.data && res.data.activities && res.data.activities.length > 0) {
           var createdAct = res.data.activities[0]
-          if (createdAct && createdAct.activity_id) rubric.activity_id = createdAct.activity_id
+          if (createdAct && createdAct.activity_id) {
+            updateObj.activity_id = createdAct.activity_id
+          }
         }
 
-        this.$set(this.rubricsList, rIdx, Object.assign({}, this.rubricsList[rIdx], {
-          saving: false,
-          saved:  true,
-        }))
+        this.$set(this.rubricsList, rIdx, Object.assign({}, this.rubricsList[rIdx], updateObj))
 
         await this.loadGradebook()
       } catch (err) {
