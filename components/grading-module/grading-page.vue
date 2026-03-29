@@ -153,7 +153,7 @@
 
                             <!-- ═══ RAW SCORE ═══ -->
                             <template v-if="classRecordActiveTab === 'raw'">
-                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                <thead class="bg-gray-100 top-0 z-20">
                                     <tr>
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
@@ -161,7 +161,7 @@
                                         <!-- FIX: Use sortedCoHeaders which respects CO order from courseOutcomes -->
                                         <th v-for="co in sortedCoHeaders" :key="'rh-' + co.co_code"
                                             :colspan="co.count || 1"
-                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs relative z-20 bg-clip-padding"
                                             :style="{ backgroundColor: co.color }">
                                             {{ co.co_code }}
                                         </th>
@@ -172,7 +172,7 @@
                                             style="min-width:200px">Assesment Task</th>
                                         <!-- FIX: Use sortedActivityHeaders which is sorted by CO order -->
                                         <th v-for="act in sortedActivityHeaders" :key="'ra-' + act.activity_id"
-                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic"
+                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.type_code }}
                                         </th>
@@ -182,7 +182,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'ra-max-' + act.activity_id"
-                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black"
+                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.max_score }}
                                         </th>
@@ -193,8 +193,8 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-t border-b border-r border-gray-400 px-3 py-1 text-left font-bold text-black"
                                             style="min-width:200px">Student Name</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'ra-gap-' + act.activity_id"
-                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center"
-                                            style="min-width:80px"></th>
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center relative z-20 bg-clip-padding"
+                                            style="min-width:80px">&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -217,14 +217,14 @@
 
                             <!-- ═══ % RATING ═══ -->
                             <template v-if="classRecordActiveTab === 'percent'">
-                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                <thead class="bg-gray-100 top-0 z-20">
                                     <tr>
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Course Outcomes</th>
                                         <th v-for="co in sortedCoHeaders" :key="'ph-' + co.co_code"
                                             :colspan="co.count || 1"
-                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs relative z-20 bg-clip-padding"
                                             :style="{ backgroundColor: co.color }">
                                             {{ co.co_code }}
                                         </th>
@@ -234,7 +234,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'pa-type-' + act.activity_id"
-                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic"
+                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.type_code }}
                                         </th>
@@ -244,7 +244,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'pa-max-' + act.activity_id"
-                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black"
+                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.max_score }}
                                         </th>
@@ -255,8 +255,8 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-t border-b border-r border-gray-400 px-3 py-1 text-left font-bold text-black"
                                             style="min-width:200px">Student Name</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'pa-gap-' + act.activity_id"
-                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center"
-                                            style="min-width:80px"></th>
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center relative z-20 bg-clip-padding"
+                                            style="min-width:80px">&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -280,7 +280,7 @@
 
                             <!-- ═══ WEIGHTED % RATING ═══ -->
                             <template v-if="classRecordActiveTab === 'weighted'">
-                                <thead class="bg-gray-100 sticky top-0 z-20">
+                                <thead class="bg-gray-100 top-0 z-20">
                                     <tr>
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
@@ -288,7 +288,7 @@
                                         <!-- FIX: Show CO weight in header using sortedCoHeaders -->
                                         <th v-for="co in sortedCoHeaders" :key="'wh-' + co.co_code"
                                             :colspan="co.count || 1"
-                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
+                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs relative z-20 bg-clip-padding"
                                             :style="{ backgroundColor: co.color }">
                                             {{ co.co_code }}
                                         </th>
@@ -298,7 +298,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-type-' + act.activity_id"
-                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic"
+                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.type_code }}
                                         </th>
@@ -308,7 +308,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-max-' + act.activity_id"
-                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black"
+                                            class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.max_score }}
                                         </th>
@@ -319,7 +319,7 @@
                                         <th class="sticky left-[40px] z-30 bg-white border-t border-b border-r border-gray-400 px-3 py-1 text-left font-bold text-black"
                                             style="min-width:200px">Student Name</th>
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-weight-' + act.activity_id"
-                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black"
+                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
                                             style="min-width:80px">
                                             {{ act.weight }}
                                         </th>
@@ -344,58 +344,60 @@
 
                             <!-- ═══ FINAL GRADE ═══ -->
                             <template v-if="classRecordActiveTab === 'final'">
-                                <thead class="sticky top-0 z-20">
-                                    <!-- Row 1: % of Student Passed -->
+                                <thead class="bg-gray-100 top-0 z-20">
+                                    <!-- Row 1 -->
                                     <tr>
-                                        <th rowspan="4"
-                                            class="sticky left-0 z-30 bg-yellow-300 border border-gray-400 px-2 py-1 text-center font-black"
-                                            style="min-width:40px">No.</th>
-                                        <th rowspan="4"
-                                            class="sticky left-[40px] z-30 bg-yellow-300 border border-gray-400 px-3 py-1 text-left font-black"
-                                            style="min-width:200px">Student Name</th>
-                                        <!-- Per-CO: % of Student Passed -->
+                                        <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
+                                        <th class="sticky left-[40px] z-30 bg-white border-0" style="min-width:200px"></th>
+                                        <th colspan="3" class="border border-gray-400 bg-white px-2 py-1 text-right font-black text-black">
+                                            % of Student Passed
+                                        </th>
                                         <th v-for="co in recordCoResultHeaders" :key="'fp-' + co.co_code"
                                             colspan="2"
-                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
-                                            :style="{ backgroundColor: '#dc2626' }">
+                                            class="border border-gray-400 bg-red-600 px-2 py-1 text-center font-bold italic text-white text-xs relative z-20 bg-clip-padding">
                                             {{ coPassedPercent(co.co_code) }}%
                                         </th>
-                                        <!-- Total / Grade / Remarks span 4 rows — placed AFTER CO cols -->
-                                        <th rowspan="4"
-                                            class="bg-gray-600 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:60px">Total</th>
-                                        <th rowspan="4"
-                                            class="bg-gray-700 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:70px">Final Numerical Grade</th>
-                                        <th rowspan="4"
-                                            class="bg-gray-800 text-white border border-gray-400 px-3 py-1 text-center font-black"
-                                            style="min-width:80px">REMARKS</th>
                                     </tr>
-                                    <!-- Row 2: CO codes -->
+                                    <!-- Row 2 -->
                                     <tr>
+                                        <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
+                                        <th class="sticky left-[40px] z-30 bg-white border-0" style="min-width:200px"></th>
+                                        <th colspan="3" class="border border-gray-400 bg-white px-2 py-1 text-center font-black text-black uppercase">
+                                            FINAL GRADE
+                                        </th>
                                         <th v-for="co in recordCoResultHeaders" :key="'fc-' + co.co_code"
                                             colspan="2"
-                                            class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs"
-                                            :style="{ backgroundColor: co.color }">
+                                            class="border border-gray-400 bg-white px-2 py-1 text-center font-black text-black text-xs relative z-20 bg-clip-padding">
                                             {{ co.co_code }}
                                         </th>
                                     </tr>
-                                    <!-- Row 3: CO weight % -->
+                                    <!-- Row 3 -->
                                     <tr>
+                                        <th rowspan="2" class="sticky left-0 z-30 bg-white border-t border-b border-l border-r border-gray-400 px-2 py-1 text-center font-black text-black" style="min-width:40px">No.</th>
+                                        <th rowspan="2" class="sticky left-[40px] z-30 bg-white border-t border-b border-r border-gray-400 px-3 py-1 text-left font-black text-black" style="min-width:200px">Student Name</th>
+                                        <th rowspan="2" class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-[12px]" style="min-width:60px">
+                                            Total
+                                        </th>
+                                        <th rowspan="2" class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-[12px]" style="min-width:70px">
+                                            Final<br>Numerical<br>Grade
+                                        </th>
+                                        <th rowspan="2" class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-[12px] uppercase" style="min-width:80px">
+                                            REMARKS
+                                        </th>
                                         <th v-for="co in recordCoResultHeaders" :key="'fw-' + co.co_code"
                                             colspan="2"
-                                            class="border border-gray-300 bg-gray-100 px-2 py-1 text-center font-black text-gray-700 text-xs">
+                                            class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-xs relative z-20 bg-clip-padding">
                                             {{ coWeightPercent(co.co_code) }}%
                                         </th>
                                     </tr>
-                                    <!-- Row 4: Sum % | REMARKS subheaders -->
+                                    <!-- Row 4 -->
                                     <tr>
                                         <template v-for="co in recordCoResultHeaders">
                                             <th :key="'fs-' + co.co_code"
-                                                class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600 text-[10px] uppercase"
+                                                class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-[12px] relative z-20 bg-clip-padding"
                                                 style="min-width:70px">Sum %</th>
                                             <th :key="'fr-' + co.co_code"
-                                                class="border border-gray-300 bg-gray-50 px-2 py-1 text-center font-bold text-gray-600 text-[10px] uppercase"
+                                                class="border border-gray-400 bg-white px-2 py-1 text-center font-bold italic text-black text-[12px] relative z-20 bg-clip-padding"
                                                 style="min-width:80px">REMARKS</th>
                                         </template>
                                     </tr>
@@ -407,7 +409,20 @@
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ idx + 1 }}</td>
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-2 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}</td>
-                                        <!-- Per-CO: Sum % + Remarks — LEFT of Total/Grade/Remarks -->
+                                        
+                                        <!-- Summary Columns Moved BEFORE CO Columns -->
+                                        <td class="border border-gray-200 text-center py-2 font-black text-sm bg-gray-50">
+                                            {{ row.total_weighted_percent }}
+                                        </td>
+                                        <td class="border border-gray-200 text-center py-2 font-black text-base"
+                                            :class="row.final_numerical_grade <= 3.0 ? 'text-green-700' : 'text-red-600'">
+                                            {{ row.final_numerical_grade ? row.final_numerical_grade.toFixed(2) : '' }}
+                                        </td>
+                                        <td class="border border-gray-200 text-center py-2 font-black text-xs uppercase"
+                                            :class="row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
+                                            {{ row.remarks || '' }}
+                                        </td>
+
                                         <template v-for="cr in sortedCoResults(row.co_results)">
                                             <td :key="'cs-' + cr.co_code + row.studid"
                                                 class="border border-gray-200 text-center py-2 text-sm font-semibold">
@@ -419,20 +434,6 @@
                                                 {{ cr.passed ? 'PASSED' : 'FAILED' }}
                                             </td>
                                         </template>
-                                        <!-- Total — RIGHT -->
-                                        <td class="border border-gray-200 text-center py-2 font-black text-sm bg-gray-50">
-                                            {{ row.total_weighted_percent }}
-                                        </td>
-                                        <!-- Final Numerical Grade — RIGHT -->
-                                        <td class="border border-gray-200 text-center py-2 font-black text-base"
-                                            :class="row.final_numerical_grade <= 3.0 ? 'text-green-700' : 'text-red-600'">
-                                            {{ row.final_numerical_grade ? row.final_numerical_grade.toFixed(2) : '' }}
-                                        </td>
-                                        <!-- Remarks — RIGHT -->
-                                        <td class="border border-gray-200 text-center py-2 font-black text-xs uppercase"
-                                            :class="row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
-                                            {{ row.remarks || '' }}
-                                        </td>
                                     </tr>
                                 </tbody>
                             </template>
