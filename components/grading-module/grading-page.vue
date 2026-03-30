@@ -154,7 +154,7 @@
                             <!-- ═══ RAW SCORE ═══ -->
                             <template v-if="classRecordActiveTab === 'raw'">
                                 <thead class="bg-gray-100 top-0 z-20">
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Course Outcomes</th>
@@ -166,7 +166,7 @@
                                             {{ co.co_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
@@ -177,7 +177,7 @@
                                             {{ act.type_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>
@@ -218,7 +218,7 @@
                             <!-- ═══ % RATING ═══ -->
                             <template v-if="classRecordActiveTab === 'percent'">
                                 <thead class="bg-gray-100 top-0 z-20">
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Course Outcomes</th>
@@ -229,7 +229,7 @@
                                             {{ co.co_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
@@ -239,7 +239,7 @@
                                             {{ act.type_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>
@@ -281,7 +281,7 @@
                             <!-- ═══ WEIGHTED % RATING ═══ -->
                             <template v-if="classRecordActiveTab === 'weighted'">
                                 <thead class="bg-gray-100 top-0 z-20">
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Course Outcomes</th>
@@ -293,7 +293,7 @@
                                             {{ co.co_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
@@ -303,7 +303,7 @@
                                             {{ act.type_code }}
                                         </th>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assessment Total Points</th>

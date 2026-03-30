@@ -77,7 +77,7 @@
           <table class="min-w-full border-collapse text-sm table-fixed">
             <thead>
               <!-- ── Row 1: CO group headers ── -->
-              <tr>
+              <tr v-if="hasAnyActivity">
                 <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Course Outcomes
                 </th>
@@ -91,7 +91,7 @@
               </tr>
 
               <!-- ── Row 2: Assessment type code ── -->
-              <tr>
+              <tr v-if="hasAnyActivity">
                 <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Assessment Task
                 </th>
@@ -111,7 +111,7 @@
               </tr>
 
               <!-- ── Row 3: Task name inputs ── -->
-              <tr>
+              <tr v-if="hasAnyActivity">
                 <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Task Name
                 </th>
@@ -653,6 +653,9 @@ export default {
   },
 
   computed: {
+    hasAnyActivity: function () {
+      return this.coGroups.some(function(g) { return g.activities && g.activities.length > 0 })
+    },
     empid: function () {
       return this.$parent && this.$parent.user ? this.$parent.user.empid : null
     },
