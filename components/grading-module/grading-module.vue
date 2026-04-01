@@ -950,7 +950,7 @@ export default {
 
     addActivity: function () {
       if (!this.outcomes || !this.outcomes.length) {
-        alert('Please set up Course Outcomes in Syllabus Setup first.')
+        alert('Please set up Course Outcomes in OBE Syllabus setup first.')
         return
       }
       var firstCo    = this.outcomes[0].co_code
@@ -1068,7 +1068,7 @@ export default {
 
     openRubricsModal: function () {
       if (!this.outcomes || !this.outcomes.length) {
-        alert('Please set up Course Outcomes in Syllabus Setup first.')
+        alert('Please set up Course Outcomes in OBE Syllabus setup first.')
         return
       }
       if (this.rubricsList.length === 0) {

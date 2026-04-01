@@ -102,6 +102,15 @@
 
                     <!-- Print Button (right side) -->
                     <div class="ml-auto pb-3 flex items-center gap-2">
+                        <!-- ── Report of Rating ── ADDED ── -->
+                        <button @click="printReportOfRating"
+                            class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Report of Rating
+                        </button>
                         <button @click="printClassRecord"
                             class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -760,10 +769,6 @@ export default {
 
     computed: {
 
-        // ─────────────────────────────────────────────────────────────────
-        // KEY FIX: Build a co_id → co_code map from courseOutcomes so we
-        // can correctly assign each activity to its real CO.
-        // ─────────────────────────────────────────────────────────────────
         coIdToCode: function () {
             var m = {}
             ;(this.courseOutcomes || []).forEach(function (co) {
@@ -780,10 +785,6 @@ export default {
             return m
         },
 
-        // ─────────────────────────────────────────────────────────────────
-        // coOrderMap: co_code → position index from courseOutcomes.
-        // This is the source of truth for ordering.
-        // ─────────────────────────────────────────────────────────────────
         coOrderMap: function () {
             var m = {}
             ;(this.courseOutcomes || []).forEach(function (co, idx) {
@@ -792,17 +793,11 @@ export default {
             return m
         },
 
-        // ─────────────────────────────────────────────────────────────────
-        // sortedActivityHeaders: activities sorted by CO order then by
-        // their position within that CO. Uses co_id from raw_scores to
-        // resolve co_code correctly — NOT from the activity name.
-        // ─────────────────────────────────────────────────────────────────
         sortedActivityHeaders: function () {
             if (!this.gradeData.length) return []
             var self = this
             var first = this.gradeData[0]
 
-            // Build weight lookup from weighted_ratings of first student
             var weightMap = {}
             if (first.weighted_ratings) {
                 first.weighted_ratings.forEach(function (wr) {
@@ -810,8 +805,6 @@ export default {
                 })
             }
 
-            // Map each raw_score entry to a rich activity object,
-            // resolving co_code via coIdToCode (authoritative)
             var activities = (first.raw_scores || []).map(function (rs) {
                 var co_code = self.coIdToCode[rs.co_id] || 'UNASSIGNED'
                 var type_code = self.typeIdToCode[rs.type_id] || ''
@@ -824,14 +817,12 @@ export default {
                     type_code:     type_code,
                     max_score:     rs.max_score,
                     weight:        weightMap[rs.activity_id] || 0,
-                    // Sort key: CO position in courseOutcomes
                     coOrder: self.coOrderMap[co_code] !== undefined
                         ? self.coOrderMap[co_code]
                         : 9999,
                 }
             })
 
-            // Sort by CO order, then by activity_id (insertion order within CO)
             activities.sort(function (a, b) {
                 if (a.coOrder !== b.coOrder) return a.coOrder - b.coOrder
                 return a.activity_id - b.activity_id
@@ -840,16 +831,11 @@ export default {
             return activities
         },
 
-        // ─────────────────────────────────────────────────────────────────
-        // sortedCoHeaders: derived from sortedActivityHeaders so the
-        // colspan grouping is ALWAYS consistent with the activity order.
-        // ─────────────────────────────────────────────────────────────────
         sortedCoHeaders: function () {
             var self = this
             var seen  = {}
             var result = []
 
-            // Walk activities in sorted order and count per CO
             this.sortedActivityHeaders.forEach(function (act) {
                 if (!seen[act.co_code]) {
                     var coIdx = self.coOrderMap[act.co_code]
@@ -865,7 +851,6 @@ export default {
                 seen[act.co_code].weight += act.weight
             })
 
-            // Round weights
             result.forEach(function (co) {
                 co.weight = Math.round(co.weight * 100) / 100
             })
@@ -873,9 +858,6 @@ export default {
             return result
         },
 
-        // ─────────────────────────────────────────────────────────────────
-        // recordCoResultHeaders for Final Grade tab — sorted by CO order
-        // ─────────────────────────────────────────────────────────────────
         recordCoResultHeaders: function () {
             if (!this.gradeData.length || !this.gradeData[0].co_results) return []
             var self = this
@@ -919,12 +901,6 @@ export default {
 
     methods: {
 
-        // ─────────────────────────────────────────────────────────────────
-        // CELL LOOKUP HELPERS
-        // These look up by activity_id so the data always matches the
-        // correct column regardless of sort order.
-        // ─────────────────────────────────────────────────────────────────
-
         getRawScore: function (row, activityId) {
             if (!row.raw_scores) return ''
             var entry = row.raw_scores.find(function (rs) {
@@ -949,7 +925,6 @@ export default {
             return entry && entry.weighted_value !== undefined ? entry.weighted_value : undefined
         },
 
-        // ── % of students passed per CO ────────────────────────────
         coPassedPercent: function (coCode) {
             if (!this.filteredRecordData.length) return 0
             var passed = this.filteredRecordData.filter(function (row) {
@@ -960,13 +935,11 @@ export default {
             return Math.round((passed / this.filteredRecordData.length) * 100)
         },
 
-        // ── CO weight % from sortedCoHeaders ───────────────────────
         coWeightPercent: function (coCode) {
             var co = this.sortedCoHeaders.find(function (c) { return c.co_code === coCode })
             return co ? co.weight : 0
         },
 
-        // ── Sort co_results for a student row by CO order ──────────
         sortedCoResults: function (coResults) {
             if (!coResults) return []
             var self = this
@@ -976,10 +949,6 @@ export default {
                 return ai - bi
             })
         },
-
-        // ─────────────────────────────────────────────────────────────────
-        // All other methods — unchanged from original
-        // ─────────────────────────────────────────────────────────────────
 
         getUserInfo: async function () {
             try {
@@ -1157,7 +1126,6 @@ export default {
             var section   = this.activeSubject ? this.activeSubject.section  : ''
             var instructor = this.activeSubject ? this.activeSubject.instructor : ''
 
-            // Grab the visible table HTML
             var tableEl = document.querySelector('.overflow-auto table')
             if (!tableEl) {
                 alert('No table found to print.')
@@ -1195,6 +1163,148 @@ export default {
             win.document.close()
             win.focus()
             setTimeout(function () { win.print() }, 400)
+        },
+
+        // ── Report of Rating ─────────────────────────────────────────
+        // Prints the official CSU Report of Rating format using gradeData.
+        // If gradeData is empty (modal not opened yet), fetches it first.
+        printReportOfRating: async function () {
+            if (!this.activeSubject) {
+                alert('Please open a grading sheet first.')
+                return
+            }
+
+            // Use already-loaded gradeData; if empty, fetch it now
+            var rows = this.gradeData
+            if (!rows.length) {
+                try {
+                    var res = await this.$axios.post('/class-activity/compute-grades', {
+                        empid:    this.user ? this.user.empid : null,
+                        subjcode: this.activeSubject.subjcode,
+                        section:  (this.activeSubject.section || '').trim(),
+                        sy:       this.selectedYear,
+                        sem:      this.selectedSemester,
+                    })
+                    rows = res.data || []
+                } catch (e) {
+                    alert('Could not load grade data. Please compute grades first in the Grading Sheet.')
+                    return
+                }
+            }
+
+            if (!rows.length) {
+                alert('No grade data found. Please compute grades first.')
+                return
+            }
+
+            var subj       = this.activeSubject
+            var subjcode   = subj.subjcode  || ''
+            var section    = subj.section   || subj.sect || ''
+            var instructor = subj.instructor || ''
+            var sy         = this.selectedYear     || ''
+            var sem        = this.selectedSemester  || ''
+            var now        = new Date()
+            var datePrinted = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
+            // Build student rows
+            var rowsHtml = rows.map(function (row, idx) {
+                var grade   = row.final_numerical_grade ? parseFloat(row.final_numerical_grade).toFixed(2) : ''
+                var remarks = row.remarks || ''
+                var txtColor = remarks === 'PASSED' ? '#15803d' : remarks === 'FAILED' ? '#dc2626' : '#111'
+                var bgColor  = remarks === 'PASSED' ? '#f0fdf4' : remarks === 'FAILED' ? '#fff1f2' : 'transparent'
+                return [
+                    '<tr>',
+                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;">' + (idx + 1) + '</td>',
+                    '<td style="border:1px solid #bbb;padding:5px 12px;text-align:left;">' + (row.student_name || '') + '</td>',
+                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;font-weight:bold;">' + grade + '</td>',
+                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;font-weight:bold;color:' + txtColor + ';background:' + bgColor + ';">' + remarks + '</td>',
+                    '</tr>',
+                ].join('')
+            }).join('')
+
+            var html = [
+                '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+                '<title>Report of Rating — ' + subjcode + ' Sec ' + section + '</title>',
+                '<style>',
+                'body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:32px 48px;}',
+                '.center{text-align:center;} .bold{font-weight:bold;}',
+                'table.info{width:100%;border-collapse:collapse;margin-top:16px;}',
+                'table.info td{padding:3px 6px;font-size:11px;vertical-align:top;}',
+                'table.grades{width:55%;margin:20px auto 0;border-collapse:collapse;}',
+                'table.grades th{border:1px solid #bbb;padding:5px 8px;background:#f3f4f6;font-weight:bold;text-align:center;}',
+                'table.grades td{border:1px solid #bbb;padding:5px 8px;}',
+                'table.sigs{width:100%;border-collapse:collapse;margin-top:48px;}',
+                'table.sigs td{padding:4px 12px;vertical-align:top;width:25%;font-size:11px;}',
+                '.sig-line{display:block;font-weight:bold;text-decoration:underline;margin-top:20px;}',
+                '.sig-sub{display:block;font-size:10px;color:#555;margin-top:2px;}',
+                '.nothing{text-align:center;margin:28px 0 12px;font-size:11px;letter-spacing:1px;}',
+                '@media print{body{padding:16px 28px;} @page{margin:1cm;}}',
+                '</style></head><body>',
+
+                // Header
+                '<div class="center bold" style="font-size:13px;">CARAGA STATE UNIVERSITY CABADBARAN CAMPUS</div>',
+                '<div class="center" style="font-size:11px;">T. Curato St. Cabadbaran City</div>',
+                '<div class="center bold" style="font-size:13px;margin-top:14px;letter-spacing:1px;">REPORT OF RATING</div>',
+                '<div class="center" style="font-size:11px;margin-top:6px;">',
+                'Date Submitted: ' + datePrinted + '<br>Date Printed: ' + datePrinted,
+                '</div>',
+
+                // Course info
+                '<table class="info" style="margin-top:18px;">',
+                '<tr><td style="width:110px;" class="bold">Course No</td><td style="width:10px;">:</td>',
+                '<td style="width:260px;">' + subjcode + '</td>',
+                '<td style="width:70px;" class="bold">Section</td><td style="width:10px;">:</td><td>' + section + '</td></tr>',
+                '<tr><td class="bold">Descriptive Title</td><td>:</td>',
+                '<td>' + (subj.description || '&nbsp;') + '</td>',
+                '<td class="bold">Schedule</td><td>:</td><td>' + (subj.schedule || '&nbsp;') + '</td></tr>',
+                '<tr><td class="bold">A.Y. &amp; Semester</td><td>:</td>',
+                '<td>' + sy + ', ' + sem + ' Semester</td>',
+                '<td class="bold">Unit</td><td>:</td><td>' + (subj.units || '&nbsp;') + '</td></tr>',
+                '</table>',
+
+                // Grade table
+                '<table class="grades">',
+                '<thead><tr>',
+                '<th style="width:45px;">No.</th>',
+                '<th>Name</th>',
+                '<th style="width:65px;">Grade</th>',
+                '<th style="width:85px;">Remarks</th>',
+                '</tr></thead>',
+                '<tbody>' + rowsHtml + '</tbody>',
+                '</table>',
+
+                // Nothing follows
+                '<div class="nothing">',
+                '&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;NOTHING FOLLOWS&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;',
+                '</div>',
+
+                // Signature block
+                '<table class="sigs"><tr>',
+                '<td>Prepared by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
+                '<span class="sig-line">' + instructor + '</span>',
+                '<span class="sig-sub">Instructor/Professor</span></td>',
+
+                '<td>Approved by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
+                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
+                '<span class="sig-sub">Dean</span></td>',
+
+                '<td>Checked by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
+                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
+                '<span class="sig-sub">Chairperson</span></td>',
+
+                '<td>Received by:<br><span class="sig-sub">&nbsp;</span>',
+                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
+                '<span class="sig-sub">University Registrar</span></td>',
+                '</tr></table>',
+
+                '</body></html>',
+            ].join('\n')
+
+            var win = window.open('', '_blank')
+            win.document.write(html)
+            win.document.close()
+            win.focus()
+            setTimeout(function () { win.print() }, 450)
         },
     },
 }

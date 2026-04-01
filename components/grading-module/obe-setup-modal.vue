@@ -250,11 +250,14 @@
                       <td v-for="co in localOutcomes" :key="'cell-' + rowIdx + '-' + co.co_code"
                         class="px-2 py-2 text-center border-r border-gray-100">
                         <input
-                          type="number"
-                          :value="getCellValue(rowIdx, co.co_code)"
+                          type="text"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          :value="getCellValue(rowIdx, co.co_code) || ''"
                           @input="setCellValue(rowIdx, co.co_code, $event.target.value)"
+                          @blur="sanitizeCellOnBlur(rowIdx, co.co_code, $event.target)"
+                          @keydown="blockNonNumericKeys($event)"
                           :disabled="isLocked"
-                          min="0" max="100" step="1"
                           class="w-14 text-center text-xs font-bold rounded-lg px-1 py-1.5 outline-none transition-all"
                           :class="[
                             isLocked ? 'cursor-not-allowed bg-gray-50 text-gray-400' : 'focus:ring-2 focus:ring-orange-400',
@@ -438,12 +441,27 @@ export default {
       return row.cells[coCode] || 0
     },
     setCellValue: function (rowIdx, coCode, raw) {
-      var val = parseInt(raw, 10)
+      // Strip anything that isn't a digit then floor to integer
+      var cleaned = String(raw).replace(/[^0-9]/g, '')
+      var val = cleaned === '' ? 0 : Math.floor(parseInt(cleaned, 10))
       if (isNaN(val) || val < 0) val = 0
       if (val > 100) val = 100
       var row = this.weightMatrix[rowIdx]
       if (!row) return
       this.$set(row.cells, coCode, val)
+    },
+    // Called on blur — writes the clean integer back into the input so the
+    // displayed value always matches the stored integer (no trailing dots, etc.)
+    sanitizeCellOnBlur: function (rowIdx, coCode, inputEl) {
+      var stored = this.getCellValue(rowIdx, coCode)
+      // Show empty string when 0 so the placeholder is visible
+      inputEl.value = stored > 0 ? String(stored) : ''
+    },
+    // Block arrow-up / arrow-down / wheel so the value never auto-increments
+    blockNonNumericKeys: function (evt) {
+      if (evt.key === 'ArrowUp' || evt.key === 'ArrowDown') {
+        evt.preventDefault()
+      }
     },
     getRowTotal: function (rowIdx) {
       var self = this
@@ -517,8 +535,7 @@ export default {
     // ── Fetch assessment types ────────────────────────────────────
     fetchTypes: async function () {
       try {
-        var empid = this.$parent.user.empid
-        var res = await this.$axios.get('/obe/assessment-types', { params: { empid } })
+        var res = await this.$axios.get('/obe/assessment-types')
         this.assessmentTypes = res.data
       } catch (e) {
         console.error('Could not load assessment types', e)
@@ -631,8 +648,8 @@ export default {
               co.tosWeights.forEach(function (tw) {
                 var typeId = tw.type_id
                 var pct    = allDecimal
-                  ? Math.round(tw.weight_percentage * 100)
-                  : Math.round(tw.weight_percentage)
+                  ? Math.floor(tw.weight_percentage * 100)
+                  : Math.floor(tw.weight_percentage)
 
                 // Find existing row for this typeId, or add one
                 var existingRowIdx = self.matrixRows.indexOf(typeId)
@@ -666,9 +683,6 @@ export default {
 .overflow-y-auto::-webkit-scrollbar-track { background: transparent; }
 .overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 .overflow-y-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button { opacity: 0; }
-input[type="number"] { -moz-appearance: textfield; }
 .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
