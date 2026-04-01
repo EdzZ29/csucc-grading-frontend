@@ -991,6 +991,8 @@ export default {
                             instructor: row.employee
                                 ? (row.employee.firstname + ' ' + row.employee.lastname)
                                 : 'Unassigned',
+                            chairperson: row.chairperson || '',
+                            college_dean: row.college_dean || '',
                             students: [],
                         }
                     }
@@ -1201,12 +1203,18 @@ export default {
             var subjcode   = subj.subjcode  || ''
             var section    = subj.section   || subj.sect || ''
             var instructor = subj.instructor || ''
+            var dean       = subj.college_dean || ''
+            var chairperson = subj.chairperson || ''
             var sy         = this.selectedYear     || ''
             var sem        = this.selectedSemester  || ''
             var now        = new Date()
-            var datePrinted = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            // Format date as YYYY-MM-DD
+            var year = now.getFullYear()
+            var month = String(now.getMonth() + 1).padStart(2, '0')
+            var day = String(now.getDate()).padStart(2, '0')
+            var dateFormatted = year + '-' + month + '-' + day
 
-            // Build student rows
+            // Build student rows with period in No. column
             var rowsHtml = rows.map(function (row, idx) {
                 var grade   = row.final_numerical_grade ? parseFloat(row.final_numerical_grade).toFixed(2) : ''
                 var remarks = row.remarks || ''
@@ -1214,88 +1222,131 @@ export default {
                 var bgColor  = remarks === 'PASSED' ? '#f0fdf4' : remarks === 'FAILED' ? '#fff1f2' : 'transparent'
                 return [
                     '<tr>',
-                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;">' + (idx + 1) + '</td>',
-                    '<td style="border:1px solid #bbb;padding:5px 12px;text-align:left;">' + (row.student_name || '') + '</td>',
-                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;font-weight:bold;">' + grade + '</td>',
-                    '<td style="border:1px solid #bbb;padding:5px 8px;text-align:center;font-weight:bold;color:' + txtColor + ';background:' + bgColor + ';">' + remarks + '</td>',
+                    '<td style="border:1px solid #999;padding:6px 8px;text-align:center;font-size:11px;">' + (idx + 1) + '.</td>',
+                    '<td style="border:1px solid #999;padding:6px 10px;text-align:left;font-size:11px;">' + (row.student_name || '') + '</td>',
+                    '<td style="border:1px solid #999;padding:6px 8px;text-align:center;font-weight:bold;font-size:11px;">' + grade + '</td>',
+                    '<td style="border:1px solid #999;padding:6px 8px;text-align:center;font-weight:bold;color:' + txtColor + ';background:' + bgColor + ';font-size:11px;">' + remarks + '</td>',
                     '</tr>',
                 ].join('')
             }).join('')
+
+            var credits = subj.credit_units || subj.units || '3'
 
             var html = [
                 '<!DOCTYPE html><html><head><meta charset="UTF-8">',
                 '<title>Report of Rating — ' + subjcode + ' Sec ' + section + '</title>',
                 '<style>',
-                'body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:32px 48px;}',
-                '.center{text-align:center;} .bold{font-weight:bold;}',
-                'table.info{width:100%;border-collapse:collapse;margin-top:16px;}',
-                'table.info td{padding:3px 6px;font-size:11px;vertical-align:top;}',
-                'table.grades{width:55%;margin:20px auto 0;border-collapse:collapse;}',
-                'table.grades th{border:1px solid #bbb;padding:5px 8px;background:#f3f4f6;font-weight:bold;text-align:center;}',
-                'table.grades td{border:1px solid #bbb;padding:5px 8px;}',
-                'table.sigs{width:100%;border-collapse:collapse;margin-top:48px;}',
-                'table.sigs td{padding:4px 12px;vertical-align:top;width:25%;font-size:11px;}',
-                '.sig-line{display:block;font-weight:bold;text-decoration:underline;margin-top:20px;}',
-                '.sig-sub{display:block;font-size:10px;color:#555;margin-top:2px;}',
-                '.nothing{text-align:center;margin:28px 0 12px;font-size:11px;letter-spacing:1px;}',
-                '@media print{body{padding:16px 28px;} @page{margin:1cm;}}',
+                'body{font-family:"Arial","Calibri",sans-serif;font-size:12px;color:#000;margin:0.5in 0.75in;line-height:1.2;}',
+                '.center{text-align:center;} .bold{font-weight:bold;} .italic{font-style:italic;}',
+                'table.info{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px;}',
+                'table.info td{padding:4px 6px;vertical-align:top;}',
+                'table.grades{width:100%;border-collapse:collapse;margin:16px 0;border:1px solid #999;}',
+                'table.grades th{border:1px solid #999;padding:6px 8px;background:#f0f0f0;font-weight:bold;text-align:center;font-size:12px;}',
+                'table.grades td{border:1px solid #999;padding:6px 8px;font-size:11px;}',
+                'table.sigs{width:100%;border-collapse:collapse;margin-top:28px;font-size:11px;}',
+                'table.sigs td{padding:0 24px;vertical-align:top;width:50%;border:none;}',
+                '.sig-row{margin-bottom:32px;}',
+                '.sig-label{font-weight:bold;font-size:11px;margin-bottom:2px;}',
+                '.sig-date{font-size:10px;color:#555;text-align:left;}',
+                '.sig-line{border-top:1px solid #000;margin-top:16px;height:20px;}',
+                '.sig-title{font-size:10px;color:#333;margin-top:2px;text-align:left;}',
+                '.nothing{text-align:center;margin:20px 0 16px;font-size:11px;letter-spacing:1px;}',
+                '@page{size:8.5in 11in;margin:0.5in 0.75in;}',
+                '@media print{body{margin:0.5in 0.75in;} html,body{height:100%;}}',
                 '</style></head><body>',
 
                 // Header
-                '<div class="center bold" style="font-size:13px;">CARAGA STATE UNIVERSITY CABADBARAN CAMPUS</div>',
-                '<div class="center" style="font-size:11px;">T. Curato St. Cabadbaran City</div>',
-                '<div class="center bold" style="font-size:13px;margin-top:14px;letter-spacing:1px;">REPORT OF RATING</div>',
-                '<div class="center" style="font-size:11px;margin-top:6px;">',
-                'Date Submitted: ' + datePrinted + '<br>Date Printed: ' + datePrinted,
-                '</div>',
+                '<div class="center" style="font-size:13px;margin-bottom:0;">CARAGA STATE UNIVERSITY CABADBARAN CAMPUS</div>',
+                '<div class="center" style="font-size:11px;margin-bottom:24px;">T. Curato St. Cabadbaran City</div>',
+                '<div class="center bold" style="font-size:13px;letter-spacing:0.5px;">REPORT OF RATING</div>',
 
-                // Course info
-                '<table class="info" style="margin-top:18px;">',
-                '<tr><td style="width:110px;" class="bold">Course No</td><td style="width:10px;">:</td>',
-                '<td style="width:260px;">' + subjcode + '</td>',
-                '<td style="width:70px;" class="bold">Section</td><td style="width:10px;">:</td><td>' + section + '</td></tr>',
-                '<tr><td class="bold">Descriptive Title</td><td>:</td>',
-                '<td>' + (subj.description || '&nbsp;') + '</td>',
-                '<td class="bold">Schedule</td><td>:</td><td>' + (subj.schedule || '&nbsp;') + '</td></tr>',
-                '<tr><td class="bold">A.Y. &amp; Semester</td><td>:</td>',
-                '<td>' + sy + ', ' + sem + ' Semester</td>',
-                '<td class="bold">Unit</td><td>:</td><td>' + (subj.units || '&nbsp;') + '</td></tr>',
+                // Date info - column format
+                '<table class="info" style="margin-top:0;margin-bottom:14px;width:100%;">',
+                '<tr>',
+                '<td style="font-size:11px;padding:2px 0;text-align:center;"><span class="">Date Submitted:</span> ' + dateFormatted + '</td>',
+                '</tr>',
+                '<tr>',
+                '<td style="font-size:11px;padding:2px 0;text-align:center;"><span class="">Date Printed:</span> ' + dateFormatted + '</td>',
+                '</tr>',
+                '</table>',
+
+                // Course info table
+                '<table class="info" style="margin-top:0;">',
+                '<tr>',
+                '<td style="width:90px;" class="">Course No.</td>',
+                '<td style="width:8px;">:</td>',
+                '<td style="width:40%;" class="bold">' + subjcode + '</td>',
+                '<td style="width:70px;" class="">Section</td>',
+                '<td style="width:8px;">:</td>',
+                '<td class="bold">' + section + '</td>',
+                '</tr>',
+                '<tr>',
+                '<td class="">Descriptive Title</td>',
+                '<td>:</td>',
+                '<td style="width:40%;" class="bold">' + (subj.description || '') + '</td>',
+                '<td class="">Schedule</td>',
+                '<td>:</td>',
+                '<td class="bold">' + (subj.schedule || '') + '</td>',
+                '</tr>',
+                '<tr>',
+                '<td class="">A.Y. & Semester</td>',
+                '<td>:</td>',
+                '<td class="bold">' + sy + ', ' + sem + ' Semester</td>',
+                '<td class="">Unit</td>',
+                '<td>:</td>',
+                '<td class="bold">' + credits + '</td>',
+                '</tr>',
                 '</table>',
 
                 // Grade table
                 '<table class="grades">',
                 '<thead><tr>',
-                '<th style="width:45px;">No.</th>',
-                '<th>Name</th>',
-                '<th style="width:65px;">Grade</th>',
-                '<th style="width:85px;">Remarks</th>',
+                '<th style="width:40px;text-align:center;">No.</th>',
+                '<th style="text-align:left;">Name</th>',
+                '<th style="width:70px;text-align:center;">Grade</th>',
+                '<th style="width:80px;text-align:center;">Remarks</th>',
                 '</tr></thead>',
                 '<tbody>' + rowsHtml + '</tbody>',
                 '</table>',
 
                 // Nothing follows
                 '<div class="nothing">',
-                '&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;NOTHING FOLLOWS&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;&lowast;',
+                '*****************************NOTHING FOLLOWS*****************************',
                 '</div>',
 
-                // Signature block
-                '<table class="sigs"><tr>',
-                '<td>Prepared by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
-                '<span class="sig-line">' + instructor + '</span>',
-                '<span class="sig-sub">Instructor/Professor</span></td>',
-
-                '<td>Approved by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
-                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
-                '<span class="sig-sub">Dean</span></td>',
-
-                '<td>Checked by:<br><span class="sig-sub">SGD. ' + datePrinted + '</span>',
-                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
-                '<span class="sig-sub">Chairperson</span></td>',
-
-                '<td>Received by:<br><span class="sig-sub">&nbsp;</span>',
-                '<span class="sig-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
-                '<span class="sig-sub">University Registrar</span></td>',
-                '</tr></table>',
+                // Signature block - 2 columns
+                '<table class="sigs">',
+                '<tr>',
+                '<td>',
+                '<div class="sig-row">',
+                '<div class="sig-label">Prepared by:</div>',
+                '<div class="sig-date"><i>SGD</i> ' + dateFormatted + '</div>',
+                '<div style="font-weight:bold;font-size:11px;text-decoration:underline;text-transform:uppercase;">' + instructor + '</div>',
+                '<div class="sig-title">Instructor/Professor</div>',
+                '</div>',
+                '<div class="sig-row">',
+                '<div class="sig-label">Checked by:</div>',
+                '<div class="sig-date"><i>SGD</i> ' + dateFormatted + '</div>',
+                '<div style="font-weight:bold;font-size:11px;text-decoration:underline;text-transform:uppercase;">' + chairperson + '</div>',
+                '<div class="sig-title">Chairperson</div>',
+                '</div>',
+                '</td>',
+                '<td>',
+                '<div class="sig-row">',
+                '<div class="sig-label">Approved by:</div>',
+                '<div class="sig-date"><i>SGD</i> ' + dateFormatted + '</div>',
+                '<div style="font-weight:bold;font-size:11px;text-decoration:underline;text-transform:uppercase;">' + dean + '</div>',
+                '<div class="sig-title">Dean</div>',
+                '</div>',
+                '<div class="sig-row">',
+                '<div class="sig-label">Received by:</div>',
+                '<div class="sig-date"><i>SGD</i> ' + dateFormatted + '</div>',
+                '<div style="font-weight:bold;font-size:11px;text-decoration:underline;">REY D. ODTOJAN, MSIT</div>',
+                '<div class="sig-title">University Registrar</div>',
+                '</div>',
+                '</td>',
+                '</tr>',
+                '</table>',
 
                 '</body></html>',
             ].join('\n')
