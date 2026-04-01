@@ -157,22 +157,38 @@
 
           <!-- OBE Risk Overview -->
           <div>
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
               <div>
                 <h3 class="text-xl font-epundaslab font-bold text-black700 mb-1">My Classes — OBE Risk Overview</h3>
                 <p class="text-sm text-gray-500 font-inria">Your active classes · Click a card to view student details</p>
               </div>
-              <button @click="fetchAllClassRisks" :disabled="obeLoading"
-                class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-3 py-1.5 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50">
-                <svg v-if="!obeLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                {{ obeLoading ? 'Refreshing...' : 'Refresh' }}
-              </button>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex-1 max-w-xs relative">
+                  <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                  </svg>
+                  <input v-model="searchQuery" type="text" placeholder="Search class code or section..."
+                    class="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange400"/>
+                </div>
+
+                <select v-model="filterYear" class="text-sm font-inria border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-200">
+                  <option value="">All Years</option>
+                  <option v-for="yr in uniqueYears" :key="yr" :value="yr">{{ yr }}</option>
+                </select>
+
+                <button @click="fetchAllClassRisks" :disabled="obeLoading"
+                  class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-3 py-1.5 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50">
+                  <svg v-if="!obeLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {{ obeLoading ? 'Refreshing...' : 'Refresh' }}
+                </button>
+              </div>
             </div>
 
             <!-- Loading skeleton -->
@@ -198,7 +214,7 @@
 
             <!-- Class cards grid -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div v-for="card in obeClassCards" :key="card.key"
+              <div v-for="card in paginatedObeClassCards" :key="card.key"
                 @click="card.hasData ? openRiskModal(card) : null"
                 class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all"
                 :class="card.hasData ? 'hover:shadow-xl transform hover:-translate-y-1 cursor-pointer group' : 'opacity-80 cursor-default'">
@@ -359,6 +375,27 @@
                 </div>
               </div>
             </div>
+
+            <!-- Pagination controls -->
+            <div v-if="!obeLoading && filteredObeClassCards.length > obeCardsPerPage" class="flex items-center justify-center gap-2 mt-6">
+              <button @click="obePage > 1 && (obePage--)"
+                :disabled="obePage === 1"
+                class="px-3 py-1.5 text-sm font-inria rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <span class="text-sm font-inria text-gray-600">
+                Page {{ obePage }} of {{ obeTotalPages }}
+              </span>
+              <button @click="obePage < obeTotalPages && (obePage++)"
+                :disabled="obePage === obeTotalPages"
+                class="px-3 py-1.5 text-sm font-inria rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
         </div>
@@ -422,7 +459,7 @@
     <!-- OBE STUDENT RISK MODAL -->
     <div v-if="riskModal.open"
       class="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style="background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);"
+      style="background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"
       @click.self="closeRiskModal">
 
       <div class="bg-white rounded-2xl w-full max-w-7xl flex flex-row overflow-hidden"
@@ -855,6 +892,10 @@ export default {
       masterlistStats: { count: 0, latest: null },
       obeLoading: false,
       obeClassCards: [],
+      searchQuery: '',
+      filterYear: '',
+      obePage: 1,
+      obeCardsPerPage: 3,
       riskModal: {
         open: false, loading: false, card: null, students: [],
         filter: '', search: '', activeTab: 'risk',
@@ -872,6 +913,28 @@ export default {
     currentMonth() { return new Date().toLocaleDateString('en-US', { month: 'long' }) },
     currentYear()  { return new Date().getFullYear() },
     currentDay()   { return new Date().getDate() },
+    uniqueYears() {
+      const years = new Set(this.obeClassCards.map(c => c.sy))
+      return Array.from(years).filter(Boolean).sort().reverse()
+    },
+    filteredObeClassCards() {
+      return this.obeClassCards.filter(c => {
+        const matchesYear = !this.filterYear || c.sy === this.filterYear
+        const matchesSearch = !this.searchQuery.trim() ||
+          (c.subjcode || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          String(c.section || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          (c.sy || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          (c.sem || '').toLowerCase().includes(this.searchQuery.toLowerCase())
+        return matchesYear && matchesSearch
+      })
+    },
+    paginatedObeClassCards() {
+      const start = (this.obePage - 1) * this.obeCardsPerPage
+      return this.filteredObeClassCards.slice(start, start + this.obeCardsPerPage)
+    },
+    obeTotalPages() {
+      return Math.ceil(this.filteredObeClassCards.length / this.obeCardsPerPage)
+    },
     filteredModalStudents() {
       let list = this.riskModal.students
       if (this.riskModal.filter) list = list.filter(s => s.risk_level === this.riskModal.filter)
@@ -900,6 +963,10 @@ export default {
       }
       return list
     }
+  },
+  watch: {
+    searchQuery() { this.obePage = 1 },
+    filterYear() { this.obePage = 1 }
   },
   async mounted() {
     try {

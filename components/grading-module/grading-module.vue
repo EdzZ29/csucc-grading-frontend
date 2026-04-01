@@ -228,7 +228,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          ADD ACTIVITY MODAL
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm p-4">
+    <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-md p-4">
       <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform transition-all animate-slideIn">
         <div class="mb-6">
           <h3 class="text-xl font-epundaslab font-bold text-gray-800">Add OBE Activity</h3>
@@ -285,7 +285,7 @@
          LABORATORY RUBRICS MODAL
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="showRubricsModal"
-      class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4">
+      class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-2 md:p-4">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl flex flex-col overflow-hidden"
         style="height: 92vh;">
 
@@ -566,7 +566,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          ADD CRITERIA MODAL
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4" style="z-index: 99999;">
+    <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-4" style="z-index: 99999;">
       <div class="bg-white rounded-xl shadow-xl p-5 w-full max-w-sm animate-slideIn">
         <h3 class="text-sm font-epundaslab font-bold text-gray-800 mb-4 tracking-wider">Add Label & Max</h3>
         <div class="space-y-4">
@@ -589,6 +589,29 @@
           <button @click="confirmCriteriaModal"
             class="px-4 py-2 bg-orange-500 text-white rounded-lg text-xs font-bold hover:bg-orange-600 shadow-sm transition-all">
             Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ALERT MODAL
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="alertModal.open" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-4" style="z-index: 100000;">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-slideIn">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-epundaslab font-bold text-gray-800">Notification</h3>
+        </div>
+        <p class="text-sm font-inria text-gray-600 mb-6 leading-relaxed">{{ alertModal.message }}</p>
+        <div class="flex justify-end">
+          <button @click="alertModal.open = false"
+            class="px-5 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold shadow hover:bg-orange-600 hover:-translate-y-0.5 transition-all w-full md:w-auto">
+            Okay
           </button>
         </div>
       </div>
@@ -648,6 +671,11 @@ export default {
         rIdx:     -1,
         label:    '',
         maxScore: 10,
+      },
+
+      alertModal: {
+        open: false,
+        message: ''
       },
     }
   },
@@ -784,6 +812,11 @@ export default {
 
   methods: {
 
+    showAlert(message) {
+      this.alertModal.message = message;
+      this.alertModal.open = true;
+    },
+
     clampScore: function (student, localId, maxScore) {
       var raw = student.scores[localId]
       if (raw === null || raw === undefined || raw === '') return
@@ -868,7 +901,7 @@ export default {
           return arr.concat(g.activities)
         }, [])
         if (!allActivities.length) {
-          alert('No activities to save.')
+          this.showAlert('No activities to save.')
           this.saving = false
           return
         }
@@ -907,11 +940,11 @@ export default {
           }
           await self.$axios.post('/class-activity/save-gradebook', payload)
         }
-        alert('Scores saved successfully!')
+        this.showAlert('Scores saved successfully!')
         await this.loadGradebook()
       } catch (err) {
         console.error('Failed to save:', err)
-        alert('Error saving scores. Check console for details.')
+        this.showAlert('Error saving scores. Check console for details.')
       } finally {
         this.saving = false
       }
@@ -939,10 +972,10 @@ export default {
           }
         })
         this.computedGrades = grades
-        alert('Final grades computed and saved!')
+        this.showAlert('Final grades computed and saved!')
       } catch (err) {
         console.error('Failed to compute grades:', err)
-        alert('Error computing grades. Make sure TOS weights are configured in Syllabus Setup.')
+        this.showAlert('Error computing grades. Make sure TOS weights are configured in Syllabus Setup.')
       } finally {
         this.computing = false
       }
@@ -950,7 +983,7 @@ export default {
 
     addActivity: function () {
       if (!this.outcomes || !this.outcomes.length) {
-        alert('Please set up Course Outcomes in OBE Syllabus setup first.')
+        this.showAlert('Please set up Course Outcomes in OBE Syllabus setup first.')
         return
       }
       var firstCo    = this.outcomes[0].co_code
@@ -1068,7 +1101,7 @@ export default {
 
     openRubricsModal: function () {
       if (!this.outcomes || !this.outcomes.length) {
-        alert('Please set up Course Outcomes in OBE Syllabus setup first.')
+        this.showAlert('Please set up Course Outcomes in OBE Syllabus setup first.')
         return
       }
       if (this.rubricsList.length === 0) {
@@ -1110,7 +1143,7 @@ export default {
 
     confirmCriteriaModal: function () {
       if (!this.criteriaModal.label.trim() || Number(this.criteriaModal.maxScore) <= 0) {
-        alert('Please enter a valid criteria label and max score > 0.')
+        this.showAlert('Please enter a valid criteria label and max score > 0.')
         return
       }
       var rIdx   = this.criteriaModal.rIdx
@@ -1165,15 +1198,15 @@ export default {
       var totalMax = this.rubricPanelTotalMax(rIdx)
 
       if (!rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim()) {
-        alert('Please fill in CO, Assessment Type and Activity Name before saving.')
+        this.showAlert('Please fill in CO, Assessment Type and Activity Name before saving.')
         return
       }
       if (rubric.criteria.length === 0) {
-        alert('Add at least one criterion before saving.')
+        this.showAlert('Add at least one criterion before saving.')
         return
       }
       if (totalMax === 0) {
-        alert('Total max score must be greater than 0.')
+        this.showAlert('Total max score must be greater than 0.')
         return
       }
 
@@ -1223,7 +1256,7 @@ export default {
         await this.loadGradebook()
       } catch (err) {
         console.error('Failed to save rubric panel:', err)
-        alert('Error saving rubric. Check console for details.')
+        this.showAlert('Error saving rubric. Check console for details.')
         this.$set(this.rubricsList, rIdx, Object.assign({}, this.rubricsList[rIdx], { saving: false }))
       }
     },

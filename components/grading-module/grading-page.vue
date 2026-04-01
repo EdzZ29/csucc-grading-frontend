@@ -10,7 +10,7 @@
         <!-- CLASS RECORD MODAL (integrated)                 -->
         <!-- ═══════════════════════════════════════════════ -->
         <div v-if="showClassRecord"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-2 md:p-4">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-md p-2 md:p-4">
             <div
                 class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-fade-in">
 
@@ -622,7 +622,7 @@
 
             <!-- Loading overlay -->
             <div v-if="loadingGradebook"
-                class="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                class="absolute inset-0 z-50 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
                 <div class="bg-white p-8 rounded-2xl shadow-2xl text-center">
                     <div
                         class="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mb-4 mx-auto">

@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-2 md:p-6 backdrop-blur-sm">
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-2 md:p-6 backdrop-blur-md">
     <div class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden font-inria animate-fade-in flex flex-col">
 
       <!-- Header -->
