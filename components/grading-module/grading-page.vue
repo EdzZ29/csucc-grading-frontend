@@ -424,12 +424,12 @@
                                             {{ row.total_weighted_percent }}
                                         </td>
                                         <td class="border border-gray-200 text-center py-2 font-black text-base"
-                                            :class="row.final_numerical_grade <= 3.0 ? 'text-green-700' : 'text-red-600'">
-                                            {{ row.final_numerical_grade ? row.final_numerical_grade.toFixed(2) : '' }}
+                                            :class="row.total_weighted_percent > 0 && row.final_numerical_grade <= 3.0 ? 'text-green-700' : row.total_weighted_percent > 0 ? 'text-red-600' : 'text-gray-400'">
+                                            {{ row.total_weighted_percent > 0 ? row.final_numerical_grade.toFixed(2) : '-' }}
                                         </td>
                                         <td class="border border-gray-200 text-center py-2 font-black text-xs uppercase"
-                                            :class="row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
-                                            {{ row.remarks || '' }}
+                                            :class="row.total_weighted_percent > 0 && row.remarks === 'PASSED' ? 'text-green-600 bg-green-50' : row.total_weighted_percent > 0 ? 'text-red-600 bg-red-50' : 'text-gray-400'">
+                                            {{ row.total_weighted_percent > 0 ? row.remarks : '-' }}
                                         </td>
 
                                         <template v-for="cr in sortedCoResults(row.co_results)">
@@ -439,8 +439,8 @@
                                             </td>
                                             <td :key="'cp-' + cr.co_code + row.studid"
                                                 class="border border-gray-200 text-center py-2 text-xs font-bold"
-                                                :class="cr.passed ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">
-                                                {{ cr.passed ? 'PASSED' : 'FAILED' }}
+                                                :class="cr.sum_weighted > 0 && cr.passed ? 'text-green-600 bg-green-50' : cr.sum_weighted > 0 ? 'text-red-600 bg-red-50' : 'text-gray-400'">
+                                                {{ cr.sum_weighted > 0 ? (cr.passed ? 'PASSED' : 'FAILED') : '-' }}
                                             </td>
                                         </template>
                                     </tr>
@@ -1108,10 +1108,32 @@ export default {
 
         handleObeSetupSave: async function () {
             this.showObeModal = false
-            this.$refs.msg.show('Syllabus saved successfully!', 'success')
-            await this.fetchSyllabus()
-            if (this.$refs.gradingSheet) {
-                this.$refs.gradingSheet.loadGradebook()
+            
+            // DEEP FIX: Clear all cached grading data to force fresh rebuild
+            console.log('[DEEP FIX] Clearing all grading cache after syllabus save')
+            this.gradeData = []
+            this.courseOutcomes = []
+            this.assessmentTypes = []
+            this.showClassRecord = false
+            this.classRecordActiveTab = 'raw'
+            this.filteredRecordData = []
+            
+            try {
+                // Fetch the new syllabus
+                await this.fetchSyllabus()
+                
+                // Fetch fresh assessment types
+                await this.fetchAssessmentTypes()
+                
+                // Reload gradebook with new setup
+                if (this.$refs.gradingSheet) {
+                    await this.$refs.gradingSheet.loadGradebook()
+                }
+                
+                this.$refs.msg.show('Syllabus updated! Grading sheet has been refreshed with the new setup.', 'success')
+            } catch (e) {
+                console.error('Error refreshing after syllabus save:', e)
+                this.$refs.msg.show('Syllabus saved but there was an error refreshing. Please reload the page.', 'warning')
             }
         },
 

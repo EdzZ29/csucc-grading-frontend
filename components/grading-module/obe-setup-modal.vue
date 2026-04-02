@@ -358,6 +358,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Unlock Confirmation Modal -->
+    <div v-if="unlockModal.open"
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
+        <!-- Icon & Title -->
+        <div class="flex items-start gap-4 mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-11a9 9 0 110 18 9 9 0 010-18zM12 5a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">Unlock Syllabus?</h3>
+            <p class="text-sm text-gray-500 mt-1">This action cannot be undone</p>
+          </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-gray-700 leading-relaxed">
+            <span class="font-bold text-red-600">⚠️ WARNING:</span> Unlocking the syllabus and saving again will <strong>RESET all scores</strong> in the Grading Sheet for this class, including:
+          </p>
+          <ul class="list-disc list-inside mt-3 space-y-1 text-sm text-gray-600">
+            <li>All activity scores entered by students</li>
+            <li>All computed grades and remarks</li>
+          </ul>
+          <p class="text-sm text-gray-700 font-bold mt-3">
+            Only proceed if NO scores have been entered yet.
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 justify-end">
+          <button @click="cancelUnlock"
+            class="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            No, Cancel
+          </button>
+          <button @click="confirmUnlock"
+            class="px-4 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+            Yes, Unlock & Edit
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -370,19 +418,20 @@ export default {
   },
   data: function () {
     return {
-      localOutcomes:   [{ co_code: 'CO1', description: '' }],
-      assessmentTypes: [],
-      newType:         { name: '', code: '' },
-      showWeightError: false,
-      isLocked:        false,
+      localOutcomes:    [{ co_code: 'CO1', description: '' }],
+      assessmentTypes:  [],
+      newType:          { name: '', code: '' },
+      showWeightError:  false,
+      isLocked:         false,
+      unlockModal:      { open: false },  // NEW: Unlock confirmation modal state
 
       // ── TOS Matrix ─────────────────────────────────────────────────
       // matrixRows: ordered list of type_ids (duplicates allowed)
-      matrixRows:         [],
+      matrixRows:       [],
       // weightMatrix: array of { typeId, cells: { [co_code]: number } }
       //   indexed by row position, so duplicates are independent
-      weightMatrix:       [],
-      selectedTypeToAdd:  '',
+      weightMatrix:     [],
+      selectedTypeToAdd: '',
     }
   },
   computed: {
@@ -503,13 +552,19 @@ export default {
 
     // ── Unlock ───────────────────────────────────────────────────
     requestUnlock: function () {
-      var confirmed = window.confirm(
-        '⚠️  WARNING\n\n' +
-        'Unlocking the syllabus and saving again will RESET all scores in the Grading Sheet for this class.\n\n' +
-        'Only unlock if NO scores have been entered yet.\n\n' +
-        'Are you sure you want to unlock and edit?'
-      )
-      if (confirmed) this.isLocked = false
+      // Show modal instead of browser alert
+      this.unlockModal.open = true
+    },
+
+    confirmUnlock: function () {
+      // User confirmed to unlock
+      this.unlockModal.open = false
+      this.isLocked = false
+    },
+
+    cancelUnlock: function () {
+      // User cancelled unlock
+      this.unlockModal.open = false
     },
 
     // ── CO management ────────────────────────────────────────────
@@ -595,13 +650,36 @@ export default {
           weights,
         }
 
+        console.log('[OBE Modal] Submitting syllabus with payload:', payload)
         await this.$axios.post('/obe/course-outcome/batch', payload)
-        alert('Syllabus saved successfully!')
+        alert('Syllabus saved successfully! Refreshing grading sheet...')
         this.isLocked = true
+        
+        // DEEP FIX: Refresh all grading data in parent component
+        if (this.$parent.gradeData) {
+          this.$parent.gradeData = []
+        }
+        this.$parent.courseOutcomes = []
+        this.$parent.assessmentTypes = []
+        
+        // Force reload of grading sheet data
+        if (this.$parent.openGradingSheet) {
+          await this.$parent.openGradingSheet(this.activeSubject)
+        }
+        
         this.$emit('save')
       } catch (e) {
-        console.error(e)
-        alert('Error saving syllabus. Check backend logs.')
+        console.error('[OBE Modal] Save error:', e)
+        console.error('[OBE Modal] Error response:', e.response)
+        
+        var errorMsg = 'Error saving syllabus. Check backend logs.'
+        if (e.response && e.response.data) {
+          errorMsg = e.response.data.message || e.response.data.error || errorMsg
+        } else if (e.message) {
+          errorMsg = e.message
+        }
+        
+        alert('❌ Failed to save syllabus:\n\n' + errorMsg)
       }
     },
 
