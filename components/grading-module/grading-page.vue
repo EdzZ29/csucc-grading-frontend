@@ -1203,8 +1203,6 @@ export default {
             var subjcode   = subj.subjcode  || ''
             var section    = subj.section   || subj.sect || ''
             var instructor = subj.instructor || ''
-            var dean       = subj.college_dean || ''
-            var chairperson = subj.chairperson || ''
             var sy         = this.selectedYear     || ''
             var sem        = this.selectedSemester  || ''
             var now        = new Date()
@@ -1213,6 +1211,41 @@ export default {
             var month = String(now.getMonth() + 1).padStart(2, '0')
             var day = String(now.getDate()).padStart(2, '0')
             var dateFormatted = year + '-' + month + '-' + day
+
+            // Fetch chairperson and dean from backend roles
+            var dean = ''
+            var chairperson = ''
+            try {
+                var employeeRes = await this.$axios.get('/employee')
+                var employees = employeeRes.data || []
+                
+                console.log('Fetched employees:', employees)
+                
+                // Find dean and chairperson by role (matching exact enum values)
+                var deanEmp = employees.find(function (emp) {
+                    return emp.role === 'Dean'
+                })
+                var chairpersonEmp = employees.find(function (emp) {
+                    return emp.role === 'Chairperson'
+                })
+                
+                console.log('Dean employee:', deanEmp)
+                console.log('Chairperson employee:', chairpersonEmp)
+                
+                if (deanEmp && deanEmp.firstname && deanEmp.lastname) {
+                    dean = (deanEmp.firstname + ' ' + deanEmp.lastname).trim()
+                }
+                if (chairpersonEmp && chairpersonEmp.firstname && chairpersonEmp.lastname) {
+                    chairperson = (chairpersonEmp.firstname + ' ' + chairpersonEmp.lastname).trim()
+                }
+                
+                console.log('Dean name:', dean)
+                console.log('Chairperson name:', chairperson)
+            } catch (e) {
+                console.error('Failed to fetch dean and chairperson:', e)
+                dean = ''
+                chairperson = ''
+            }
 
             // Build student rows with period in No. column
             var rowsHtml = rows.map(function (row, idx) {
@@ -1236,7 +1269,7 @@ export default {
                 '<!DOCTYPE html><html><head><meta charset="UTF-8">',
                 '<title>Report of Rating — ' + subjcode + ' Sec ' + section + '</title>',
                 '<style>',
-                'body{font-family:"Arial","Calibri",sans-serif;font-size:12px;color:#000;margin:0.5in 0.75in;line-height:1.2;}',
+                'body{font-family:"Arial","Calibri",sans-serif;font-size:12px;color:#000;margin:0.5in 0.3in;line-height:1.2;}',
                 '.center{text-align:center;} .bold{font-weight:bold;} .italic{font-style:italic;}',
                 'table.info{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px;}',
                 'table.info td{padding:4px 6px;vertical-align:top;}',
@@ -1251,8 +1284,11 @@ export default {
                 '.sig-line{border-top:1px solid #000;margin-top:16px;height:20px;}',
                 '.sig-title{font-size:10px;color:#333;margin-top:2px;text-align:left;}',
                 '.nothing{text-align:center;margin:20px 0 16px;font-size:11px;letter-spacing:1px;}',
-                '@page{size:8.5in 11in;margin:0.5in 0.75in;}',
-                '@media print{body{margin:0.5in 0.75in;} html,body{height:100%;}}',
+                '@page{size:8.5in 11in;margin:0.5in 0.3in;}',
+                '@media print{',
+                '  body{margin:0;}',
+                '  @page{margin:0.5in 0.3in;}',
+                '}',
                 '</style></head><body>',
 
                 // Header
@@ -1266,7 +1302,7 @@ export default {
                 '<td style="font-size:11px;padding:2px 0;text-align:center;"><span class="">Date Submitted:</span> ' + dateFormatted + '</td>',
                 '</tr>',
                 '<tr>',
-                '<td style="font-size:11px;padding:2px 0;text-align:center;"><span class="">Date Printed:</span> ' + dateFormatted + '</td>',
+                '<td style="font-size:11px;padding:0 0 10px 0;text-align:center;"><span class="">Date Printed:</span> ' + dateFormatted + '</td>',
                 '</tr>',
                 '</table>',
 
