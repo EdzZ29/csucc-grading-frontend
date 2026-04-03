@@ -10,7 +10,7 @@
         <!-- CLASS RECORD MODAL (integrated)                 -->
         <!-- ═══════════════════════════════════════════════ -->
         <div v-if="showClassRecord"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-md p-2 md:p-4">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-xl p-2 md:p-4">
             <div
                 class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-fade-in">
 

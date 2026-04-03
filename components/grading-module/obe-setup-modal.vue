@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-2 md:p-6 backdrop-blur-md">
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-2 md:p-6 backdrop-blur-lg">
     <div class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden font-inria animate-fade-in flex flex-col">
 
       <!-- Header -->
@@ -361,7 +361,7 @@
 
     <!-- Unlock Confirmation Modal -->
     <div v-if="unlockModal.open"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4">
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-lg p-4">
       <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
         <!-- Icon & Title -->
         <div class="flex items-start gap-4 mb-4">

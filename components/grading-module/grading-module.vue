@@ -228,7 +228,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          ADD ACTIVITY MODAL
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-md p-4">
+    <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-lg p-4">
       <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform transition-all animate-slideIn">
         <div class="mb-6">
           <h3 class="text-xl font-epundaslab font-bold text-gray-800">Add OBE Activity</h3>
@@ -285,7 +285,7 @@
          LABORATORY RUBRICS MODAL
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="showRubricsModal"
-      class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-2 md:p-4">
+      class="fixed inset-0 z-50 bg-black bg-opacity-75 backdrop-blur-lg flex items-center justify-center p-2 md:p-4">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl flex flex-col overflow-hidden"
         style="height: 92vh;">
 
@@ -566,7 +566,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          ADD CRITERIA MODAL
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-4" style="z-index: 99999;">
+    <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-lg flex items-center justify-center p-4" style="z-index: 99999;">
       <div class="bg-white rounded-xl shadow-xl p-5 w-full max-w-sm animate-slideIn">
         <h3 class="text-sm font-epundaslab font-bold text-gray-800 mb-4 tracking-wider">Add Label & Max</h3>
         <div class="space-y-4">
@@ -597,7 +597,7 @@
     <!-- ══════════════════════════════════════════════════════════════
          ALERT MODAL
     ══════════════════════════════════════════════════════════════ -->
-    <div v-if="alertModal.open" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center p-4" style="z-index: 100000;">
+    <div v-if="alertModal.open" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-lg flex items-center justify-center p-4" style="z-index: 100000;">
       <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-slideIn">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-10 h-10 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
