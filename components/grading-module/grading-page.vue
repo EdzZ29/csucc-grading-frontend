@@ -1139,54 +1139,136 @@ export default {
 
         // ── Print current class record tab ──────────────────────────
         printClassRecord: function () {
-            var tabLabels = {
-                raw:      'Raw Score',
-                percent:  '% Rating',
-                weighted: 'Weighted %',
-                final:    'Final Grade',
-            }
-            var tabLabel  = tabLabels[this.classRecordActiveTab] || ''
-            var subjcode  = this.activeSubject ? this.activeSubject.subjcode : ''
-            var section   = this.activeSubject ? this.activeSubject.section  : ''
-            var instructor = this.activeSubject ? this.activeSubject.instructor : ''
-
-            var tableEl = document.querySelector('.overflow-auto table')
-            if (!tableEl) {
-                alert('No table found to print.')
+            if (!this.activeSubject) {
+                alert('Please open a grading sheet first.')
                 return
             }
 
-            var win = window.open('', '_blank')
-            win.document.write([
-                '<!DOCTYPE html>',
-                '<html>',
-                '<head>',
-                '  <meta charset="UTF-8">',
-                '  <title>' + subjcode + ' ' + section + ' — ' + tabLabel + '</title>',
-                '  <style>',
-                '    * { box-sizing: border-box; margin: 0; padding: 0; }',
-                '    body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; color: #111; }',
-                '    h1 { font-size: 16px; font-weight: bold; margin-bottom: 2px; }',
-                '    p  { font-size: 11px; color: #555; margin-bottom: 12px; }',
-                '    table { border-collapse: collapse; width: 100%; }',
-                '    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; white-space: nowrap; }',
-                '    thead th { background: #1f2937; color: #fff; font-weight: bold; }',
-                '    thead tr:first-child th { font-size: 12px; }',
-                '    tbody tr:nth-child(even) { background: #f9f9f9; }',
-                '    td:nth-child(2), th:nth-child(2) { text-align: left; }',
-                '    @media print { body { padding: 10px; } }',
-                '  </style>',
-                '</head>',
-                '<body>',
-                '  <h1>' + subjcode + ' &mdash; Section ' + section + ' &nbsp;|&nbsp; ' + tabLabel + '</h1>',
-                '  <p>' + instructor + ' &nbsp;&bull;&nbsp; ' + this.filteredRecordData.length + ' Students &nbsp;&bull;&nbsp; ' + tabLabel + '</p>',
-                tableEl.outerHTML,
-                '</body>',
-                '</html>',
-            ].join('\n'))
-            win.document.close()
-            win.focus()
-            setTimeout(function () { win.print() }, 400)
+            if (this.classRecordActiveTab !== 'final') {
+                alert('Please view the Final Grade tab to print the Outcome-Based Class Record.')
+                return
+            }
+
+            var self = this
+            var subj = this.activeSubject
+            var subjcode = subj.subjcode || ''
+            var section = subj.section || subj.sect || ''
+            var instructor = subj.instructor || ''
+            var credits = subj.credit_units || subj.units || '3'
+            var sy = this.selectedYear || ''
+            var sem = this.selectedSemester || ''
+            var students = this.filteredRecordData || []
+
+            // Get CO result headers with pass percentages
+            var coHeaders = this.recordCoResultHeaders || []
+
+            // Build student rows with CO data
+            var rowsHtml = students.map(function (row, idx) {
+                var grade = row.final_numerical_grade ? parseFloat(row.final_numerical_grade).toFixed(2) : ''
+                var remarks = row.remarks || ''
+                var totalPercent = row.total_weighted_percent || 0
+                var txtColor = remarks === 'PASSED' ? '#15803d' : remarks === 'FAILED' ? '#dc2626' : '#111'
+                var bgColor = remarks === 'PASSED' ? '#f0fdf4' : remarks === 'FAILED' ? '#fff1f2' : 'transparent'
+
+                var coData = ''
+                if (row.co_results) {
+                    var sortedCos = row.co_results.slice().sort(function (a, b) {
+                        var ai = self.coOrderMap[a.co_code] !== undefined ? self.coOrderMap[a.co_code] : 9999
+                        var bi = self.coOrderMap[b.co_code] !== undefined ? self.coOrderMap[b.co_code] : 9999
+                        return ai - bi
+                    })
+                    coData = sortedCos.map(function (cr) {
+                        var sumCn = cr.sum_weighted !== undefined ? cr.sum_weighted.toFixed(2) : '0.00'
+                        var remarkCn = cr.sum_weighted > 0 ? (cr.passed ? 'PASSED' : 'FAILED') : '-'
+                        var remarkColorCn = cr.sum_weighted > 0 && cr.passed ? 'style="color:#15803d;background:#f0fdf4;"' : cr.sum_weighted > 0 ? 'style="color:#dc2626;background:#fff1f2;"' : ''
+                        return '<td style="text-align:center;font-size:10px;">' + sumCn + '</td><td ' + remarkColorCn + ' style="text-align:center;font-size:10px;font-weight:bold;">' + remarkCn + '</td>'
+                    }).join('')
+                }
+
+                return [
+                    '<tr>',
+                    '<td style="border:1px solid #999;padding:4px;text-align:center;font-size:10px;">' + (idx + 1) + '</td>',
+                    '<td style="border:1px solid #999;padding:4px;text-align:left;font-size:10px;">' + (row.student_name || '') + '</td>',
+                    '<td style="border:1px solid #999;padding:4px;text-align:center;font-size:10px;font-weight:bold;">' + totalPercent + '</td>',
+                    '<td style="border:1px solid #999;padding:4px;text-align:center;font-size:10px;font-weight:bold;">' + grade + '</td>',
+                    '<td style="border:1px solid #999;padding:4px;text-align:center;font-weight:bold;color:' + txtColor + ';background:' + bgColor + ';font-size:10px;">' + remarks + '</td>',
+                    coData,
+                    '</tr>',
+                ].join('')
+            }).join('')
+
+            // Build CO header colspan rows
+            var coHeadersHtml = coHeaders.map(function (co) {
+                var percent = self.coWeightPercent(co.co_code)
+                var passPercent = self.coPassedPercent(co.co_code)
+                return '<th colspan="2" style="border:1px solid #999;padding:4px;background:' + co.color + ';color:white;font-weight:bold;font-size:10px;">' + co.co_code + '<br>(' + percent + '%) Pass: ' + passPercent + '%</th>'
+            }).join('')
+
+            var coSubHeadersHtml = coHeaders.map(function () {
+                return '<th style="border:1px solid #999;padding:3px;background:#f5f5f5;font-size:9px;font-weight:bold;">Sum %</th><th style="border:1px solid #999;padding:3px;background:#f5f5f5;font-size:9px;font-weight:bold;">REMARKS</th>'
+            }).join('')
+
+            var headerImage = '/assets/image/header.png'  // Path to header.png in assets
+
+            var html = [
+                '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+                '<title>Outcome-Based Class Record — ' + subjcode + ' Sec ' + section + '</title>',
+                '<style>',
+                'body{font-family:"Arial","Calibri",sans-serif;font-size:11px;color:#000;margin:0.5in 0.3in;}',
+                '.header-img{max-width:100%;height:80px;margin-bottom:10px;}',
+                '.center{text-align:center;} .bold{font-weight:bold;}',
+                'table.info{width:100%;border-collapse:collapse;margin:6px 0;font-size:10px;}',
+                'table.info td{padding:2px 4px;vertical-align:top;}',
+                'table.grades{width:100%;border-collapse:collapse;margin:8px 0;border:1px solid #999;}',
+                'table.grades th{border:1px solid #999;padding:4px;background:#f0f0f0;font-weight:bold;text-align:center;font-size:10px;}',
+                'table.grades td{border:1px solid #999;padding:4px;font-size:9px;}',
+                'h1{font-size:14px;margin:4px 0;text-align:center;font-weight:bold;}',
+                'h2{font-size:11px;margin:3px 0;text-align:center;}',
+                '.subtitle{font-size:10px;text-align:center;color:#555;margin:2px 0;}',
+                '@page{size:A4;margin:0.5in;}',
+                '@media print{body{margin:0;}page-break-after:avoid;}',
+                '</style></head><body>',
+                '<img src="' + headerImage + '" class="header-img" alt="CSU Header">',
+                '<h1>OUTCOME-BASED CLASS RECORD</h1>',
+                '<table class="info">',
+                '<tr><td style="width:15%;"><b>Course Code:</b></td><td style="width:20%;">' + subjcode + '</td><td style="width:20%;"><b>Course Name:</b></td><td>' + (subj.description || '') + '</td><td style="text-align:right;"><b>School Year:</b></td><td>' + sy + '</td></tr>',
+                '<tr><td><b>Credit Units:</b></td><td>' + credits + '</td><td><b>Semester:</b></td><td>' + sem + '</td></tr>',
+                '<tr><td><b>Section Code:</b></td><td>' + section + '</td></tr>',
+                '</table>',
+                '<table class="info" style="margin-top:10px;">',
+                '<tr><td style="width:30%;"><b>Prepared & Submitted by:</b></td><td style="width:20%;"></td><td style="width:30%;"><b>Checked by:</b></td><td style="width:20%;"></td><td><b>Noted by:</b></td><td></td></tr>',
+                '<tr><td colspan="2" style="height:40px;border-bottom:1px solid #999;"></td><td colspan="2" style="height:40px;border-bottom:1px solid #999;"></td><td colspan="2" style="height:40px;border-bottom:1px solid #999;"></td></tr>',
+                '<tr><td style="font-size:9px;"><b>' + instructor + '</b></td><td style="font-size:9px;">Faculty</td><td style="font-size:9px;"></td><td style="font-size:9px;">Chairperson</td><td style="font-size:9px;"></td><td style="font-size:9px;">College Dean</td></tr>',
+                '</table>',
+                '<h2 style="margin-top:12px;">% of Student Passed</h2>',
+                '<table class="grades">',
+                '<thead>',
+                '<tr><th style="width:5%;">No.</th><th style="width:25%;">Student Name</th><th style="background:#ffcccc;font-weight:bold;">Total</th><th style="background:#ffcccc;font-weight:bold;">Final Numerical Grade</th><th style="background:#ffcccc;font-weight:bold;">REMARKS</th>' + coHeadersHtml + '</tr>',
+                '<tr><th colspan="5"></th>' + coSubHeadersHtml + '</tr>',
+                '</thead>',
+                '<tbody>' + rowsHtml + '</tbody>',
+                '</table>',
+                '</body></html>',
+            ].join('\n')
+
+            var iframe = document.createElement('iframe')
+            iframe.id = 'print-frame-' + Date.now()
+            iframe.style.display = 'none'
+            document.body.appendChild(iframe)
+
+            var iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+            iframeDoc.open()
+            iframeDoc.write(html)
+            iframeDoc.close()
+
+            setTimeout(function () {
+                iframe.contentWindow.print()
+                setTimeout(function () {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe)
+                    }
+                }, 500)
+            }, 250)
         },
 
         // ── Report of Rating ─────────────────────────────────────────
@@ -1291,21 +1373,22 @@ export default {
                 '<!DOCTYPE html><html><head><meta charset="UTF-8">',
                 '<title>Report of Rating — ' + subjcode + ' Sec ' + section + '</title>',
                 '<style>',
-                'body{font-family:"Arial","Calibri",sans-serif;font-size:12px;color:#000;margin:0.5in 0.3in;line-height:1.2;}',
+                'body{font-family:"Arial","Calibri",sans-serif;font-size:12px;color:#000;margin:0 0.3in 0.3in 0.3in;line-height:1.2;padding:0;}',
                 '.center{text-align:center;} .bold{font-weight:bold;} .italic{font-style:italic;}',
-                'table.info{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px;}',
+                'h1{margin:0;padding:0;}h2{margin:0;padding:0;}',
+                'table.info{width:100%;border-collapse:collapse;margin:4px 0 8px 0;font-size:11px;}',
                 'table.info td{padding:4px 6px;vertical-align:top;}',
-                'table.grades{width:100%;border-collapse:collapse;margin:16px 0;border:1px solid #999;}',
+                'table.grades{width:100%;border-collapse:collapse;margin:6px 0;border:1px solid #999;}',
                 'table.grades th{border:1px solid #999;padding:6px 8px;background:#f0f0f0;font-weight:bold;text-align:center;font-size:12px;}',
                 'table.grades td{border:1px solid #999;padding:6px 8px;font-size:11px;}',
-                'table.sigs{width:100%;border-collapse:collapse;margin-top:28px;font-size:11px;}',
+                'table.sigs{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px;}',
                 'table.sigs td{padding:0 24px;vertical-align:top;width:50%;border:none;}',
                 '.sig-row{margin-bottom:32px;}',
                 '.sig-label{font-weight:bold;font-size:11px;margin-bottom:2px;}',
                 '.sig-date{font-size:10px;color:#555;text-align:left;}',
                 '.sig-line{border-top:1px solid #000;margin-top:16px;height:20px;}',
                 '.sig-title{font-size:10px;color:#333;margin-top:2px;text-align:left;}',
-                '.nothing{text-align:center;margin:20px 0 16px;font-size:11px;letter-spacing:1px;}',
+                '.nothing{text-align:center;margin:6px 0;font-size:11px;letter-spacing:1px;}',
                 '@page{size:8.5in 11in;margin:0.5in 0.3in;}',
                 '@media print{',
                 '  body{margin:0;}',
@@ -1314,22 +1397,22 @@ export default {
                 '</style></head><body>',
 
                 // Header
-                '<div class="center" style="font-size:13px;margin-bottom:0;">CARAGA STATE UNIVERSITY CABADBARAN CAMPUS</div>',
-                '<div class="center" style="font-size:11px;margin-bottom:24px;">T. Curato St. Cabadbaran City</div>',
-                '<div class="center bold" style="font-size:13px;letter-spacing:0.5px;">REPORT OF RATING</div>',
+                '<div class="center" style="font-size:13px;">CARAGA STATE UNIVERSITY CABADBARAN CAMPUS</div>',
+                '<div class="center" style="font-size:11px;margin-bottom:12px;">T. Curato St. Cabadbaran City</div>',
+                '<div class="center bold" style="font-size:13px;letter-spacing:0.5px;margin:2px 0;padding:0;">REPORT OF RATING</div>',
 
                 // Date info - column format
-                '<table class="info" style="margin-top:0;margin-bottom:14px;width:100%;">',
+                '<table class="info" style="margin:4px 0 4px 0;width:100%;">',
                 '<tr>',
-                '<td style="font-size:11px;padding:2px 0;text-align:center;"><span class="">Date Submitted:</span> ' + dateFormatted + '</td>',
+                '<td style="font-size:11px;padding:0 0 2px 0;text-align:center;"><span class="">Date Submitted:</span> ' + dateFormatted + '</td>',
                 '</tr>',
                 '<tr>',
-                '<td style="font-size:11px;padding:0 0 10px 0;text-align:center;"><span class="">Date Printed:</span> ' + dateFormatted + '</td>',
+                '<td style="font-size:11px;padding:0 0 4px 0;text-align:center;"><span class="">Date Printed:</span> ' + dateFormatted + '</td>',
                 '</tr>',
                 '</table>',
 
                 // Course info table
-                '<table class="info" style="margin-top:0;">',
+                '<table class="info" style="margin:4px 0 8px 0;">',
                 '<tr>',
                 '<td style="width:90px;" class="">Course No.</td>',
                 '<td style="width:8px;">:</td>',
@@ -1409,11 +1492,28 @@ export default {
                 '</body></html>',
             ].join('\n')
 
-            var win = window.open('', '_blank')
-            win.document.write(html)
-            win.document.close()
-            win.focus()
-            setTimeout(function () { win.print() }, 450)
+            // Create hidden iframe for printing
+            var iframe = document.createElement('iframe')
+            iframe.id = 'print-frame-' + Date.now()
+            iframe.style.display = 'none'
+            document.body.appendChild(iframe)
+
+            // Write HTML to iframe and print
+            var iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+            iframeDoc.open()
+            iframeDoc.write(html)
+            iframeDoc.close()
+
+            // Wait for iframe to load, then print
+            setTimeout(function () {
+                iframe.contentWindow.print()
+                // Remove iframe after print dialog closes
+                setTimeout(function () {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe)
+                    }
+                }, 500)
+            }, 250)
         },
     },
 }
