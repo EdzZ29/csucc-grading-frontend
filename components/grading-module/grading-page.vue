@@ -102,14 +102,14 @@
 
                     <!-- Print Button (right side) -->
                     <div class="ml-auto pb-3 flex items-center gap-2">
-                        <!-- ── Report of Rating ── ADDED ── -->
-                        <button @click="printReportOfRating"
-                            class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                        <!-- ── Grading Report Sheet ── -->
+                        <button @click="openGradingReportSheet()"
+                            class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Report of Rating
+                            Grading Report Sheet
                         </button>
                         <button @click="printClassRecord"
                             class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
@@ -294,7 +294,7 @@
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Course Outcomes</th>
-                                        <!-- FIX: Show CO weight in header using sortedCoHeaders -->
+                                        <!-- CO Headers with proper colspan -->
                                         <th v-for="co in sortedCoHeaders" :key="'wh-' + co.co_code"
                                             :colspan="co.count || 1"
                                             class="border border-gray-400 px-2 py-1 text-center font-black text-white text-xs relative z-20 bg-clip-padding"
@@ -306,6 +306,7 @@
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
                                             style="min-width:200px">Assesment Task</th>
+                                        <!-- Show all activities with their type codes -->
                                         <th v-for="act in sortedActivityHeaders" :key="'wa-type-' + act.activity_id"
                                             class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black italic relative z-20 bg-clip-padding"
                                             style="min-width:80px">
@@ -315,11 +316,12 @@
                                     <tr v-if="sortedActivityHeaders.length > 0">
                                         <th class="sticky left-0 z-30 bg-white border-0" style="min-width:40px"></th>
                                         <th class="sticky left-[40px] z-30 bg-white border-r border-gray-400 px-3 py-1 text-right text-xs italic font-bold text-black"
-                                            style="min-width:200px">Assessment Total Points</th>
-                                        <th v-for="act in sortedActivityHeaders" :key="'wa-max-' + act.activity_id"
+                                            style="min-width:200px">Weight %</th>
+                                        <!-- Display weight percentage for each activity -->
+                                        <th v-for="act in sortedActivityHeaders" :key="'wa-weight-' + act.activity_id"
                                             class="border border-gray-400 bg-yellow-300 px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
                                             style="min-width:80px">
-                                            {{ act.max_score }}
+                                            {{ act.weight > 0 ? (act.weight.toFixed(2) + '%') : '-' }}
                                         </th>
                                     </tr>
                                     <tr>
@@ -327,14 +329,14 @@
                                             style="min-width:40px">No.</th>
                                         <th class="sticky left-[40px] z-30 bg-white border-t border-b border-r border-gray-400 px-3 py-1 text-left font-bold text-black"
                                             style="min-width:200px">Student Name</th>
-                                        <th v-for="act in sortedActivityHeaders" :key="'wa-weight-' + act.activity_id"
-                                            class="border border-gray-300 bg-white px-2 py-1 text-center font-bold text-black relative z-20 bg-clip-padding"
-                                            style="min-width:80px">
-                                            {{ act.weight }}
-                                        </th>
+                                        <!-- Empty cells for data alignment -->
+                                        <th v-for="act in sortedActivityHeaders" :key="'wa-gap-' + act.activity_id"
+                                            class="border border-gray-300 bg-gray-50 px-2 py-1 text-center relative z-20 bg-clip-padding"
+                                            style="min-width:80px">&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <!-- Student data rows - show weighted values -->
                                     <tr v-for="(row, idx) in filteredRecordData" :key="'w-' + row.studid"
                                         :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
                                         <td class="sticky left-0 z-10 border border-gray-200 px-2 py-1.5 text-center font-bold text-gray-400"
@@ -342,10 +344,11 @@
                                         <td class="sticky left-[40px] z-10 border border-gray-200 px-3 py-1.5 font-medium text-gray-800"
                                             :class="idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'">{{ row.student_name }}
                                         </td>
+                                        <!-- Show weighted values for each activity -->
                                         <td v-for="act in sortedActivityHeaders"
                                             :key="'wr-' + act.activity_id + row.studid"
                                             class="border border-gray-200 text-center py-1.5 text-sm">
-                                            {{ getWeightedRating(row, act.activity_id) !== undefined ? getWeightedRating(row, act.activity_id).toFixed(2) : '' }}
+                                            {{ getWeightedRating(row, act.activity_id) !== undefined ? getWeightedRating(row, act.activity_id).toFixed(2) : '-' }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -468,6 +471,119 @@
                         <div><span class="text-gray-500">Pass Rate:</span>
                             <span class="font-bold text-green-700 ml-1">{{ recordPassRate }}%</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- GRADING REPORT SHEET MODAL                      -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div v-if="showGradingReportSheetModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-xl p-2 md:p-4">
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-fade-in">
+
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-indigo-800 to-indigo-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            Grading Report Sheet
+                            <span v-if="activeSubject"
+                                class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                {{ activeSubject.subjcode }} — Sec {{ activeSubject.section }}
+                            </span>
+                        </h2>
+                        <p class="text-gray-300 text-xs mt-0.5">
+                            Final Numerical Grades for All Students
+                        </p>
+                    </div>
+                    <button @click="showGradingReportSheetModal = false"
+                        class="text-white hover:bg-indigo-700 rounded-full p-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Search Bar and Action Buttons -->
+                <div class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shrink-0 gap-3">
+                    <div class="flex-1 flex items-center">
+                        <input v-model="searchReportSheetQuery" type="text" placeholder="Search by Student ID or Name..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                        <span v-if="filteredGradingReportSheetData.length > 0" class="ml-3 text-xs text-gray-600">
+                            {{ filteredGradingReportSheetData.length }} of {{ gradingReportSheetData.length }} records
+                        </span>
+                    </div>
+                    <button @click="printReportOfRating"
+                        class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Report of Rating
+                    </button>
+                </div>
+
+                <!-- Grading Report Sheet Table -->
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <!-- Table container -->
+                    <div class="overflow-auto flex-1">
+                        <table class="w-full text-xs border-collapse">
+                            <thead class="bg-gray-100 sticky top-0 z-20">
+                                <tr>
+                                    <th class="border border-gray-300 px-4 py-2 text-left font-bold text-gray-700 bg-gray-100">
+                                        Student ID
+                                    </th>
+                                    <th class="border border-gray-300 px-4 py-2 text-left font-bold text-gray-700 bg-gray-100">
+                                        Program
+                                    </th>
+                                    <th class="border border-gray-300 px-4 py-2 text-left font-bold text-gray-700 bg-gray-100">
+                                        Student
+                                    </th>
+                                    <th class="border border-gray-300 px-4 py-2 text-center font-bold text-gray-700 bg-gray-100">
+                                        Validation Date
+                                    </th>
+                                    <th class="border border-gray-300 px-4 py-2 text-center font-bold text-gray-700 bg-indigo-200 min-w-[100px]">
+                                        Grade
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(student, idx) in filteredGradingReportSheetData" :key="'grs-' + student.studid"
+                                    :class="[
+                                        idx % 2 === 0 ? 'bg-white' : 'bg-gray-50',
+                                        'hover:bg-indigo-100 transition-colors'
+                                    ]">
+                                    <td class="border border-gray-300 px-4 py-2 font-mono text-gray-800">
+                                        {{ student.studid }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-gray-800">
+                                        {{ student.course || 'N/A' }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-gray-800">
+                                        {{ student.name || 'N/A' }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center text-gray-600 text-xs">
+                                        {{ new Date().toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center font-bold">
+                                        <span v-if="student.final_grade !== null && student.final_grade !== undefined && student.final_grade !== ''">
+                                            {{ parseFloat(student.final_grade).toFixed(2) }}
+                                        </span>
+                                        <span v-else class="text-gray-400">
+                                            —
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="filteredGradingReportSheetData.length === 0">
+                                    <td colspan="5" class="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                                        {{ gradingReportSheetData.length === 0 ? 'No data available. Please load the class record first.' : 'No records match your search.' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -660,36 +776,12 @@
                     <div class="flex flex-wrap gap-2">
 
                         <button @click="openClassRecord('raw')"
-                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border border-orange-400 bg-orange-500 hover:bg-orange-600 text-white shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Raw Score
-                        </button>
-                        <button @click="openClassRecord('percent')"
-                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                            </svg>
-                            % Rating
-                        </button>
-                        <button @click="openClassRecord('weighted')"
-                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/20 bg-white/10 hover:bg-white/20 text-white">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                            </svg>
-                            Weighted %
-                        </button>
-                        <button @click="openClassRecord('final')"
-                            class="px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-orange-400 bg-orange-500 hover:bg-orange-600 text-white shadow-md">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Final Grade
+                            Class Record
                         </button>
 
                         <!-- ── OBE Syllabus Setup ── -->
@@ -747,9 +839,12 @@ export default {
             showSubjects: false,
             showObeModal: false,
             showClassRecord: false,
+            showGradingReportSheetModal: false,
             classRecordActiveTab: 'raw',
             gradeData: [],
+            gradingReportSheetData: [],
             searchRecordQuery: '',
+            searchReportSheetQuery: '',
             recordTabs: [
                 { id: 'raw',      label: 'Raw Score'   },
                 { id: 'percent',  label: '% Rating'    },
@@ -831,6 +926,47 @@ export default {
             return activities
         },
 
+        // DEDUPLICATED headers for Weighted % tab: unique (CO, Type) combinations
+        uniqueWeightedHeaders: function () {
+            // For Weighted % tab: group by (co_id, type_id) to avoid duplicate type codes
+            // Multiple activities with same type under same CO should show as ONE column
+            var self = this
+            var seen = {}  // key: co_id + ':' + type_id
+            var result = []
+
+            this.sortedActivityHeaders.forEach(function (act) {
+                // Skip activities with no weight (deleted from assessment matrix)
+                if (act.weight === 0) return
+
+                var key = act.co_id + ':' + act.type_id
+                if (!seen[key]) {
+                    seen[key] = {
+                        co_id: act.co_id,
+                        co_code: act.co_code,
+                        type_id: act.type_id,
+                        type_code: act.type_code,
+                        weight: 0,
+                        activities: [],  // Store ALL activities in this group
+                        coOrder: act.coOrder,
+                    }
+                    result.push(seen[key])
+                }
+                // Accumulate weight and activities for this (CO, Type) group
+                seen[key].weight += act.weight
+                seen[key].activities.push(act.activity_id)
+            })
+
+            return result
+        },
+
+        filteredActivityHeadersForWeighted: function () {
+            // For Weighted % tab: only show activities that have weight > 0
+            // This filters out deleted assessments that no longer have weights
+            return this.sortedActivityHeaders.filter(function (act) {
+                return act.weight > 0
+            })
+        },
+
         sortedCoHeaders: function () {
             var self = this
             var seen  = {}
@@ -849,6 +985,35 @@ export default {
                 }
                 seen[act.co_code].count  += 1
                 seen[act.co_code].weight += act.weight
+            })
+
+            result.forEach(function (co) {
+                co.weight = Math.round(co.weight * 100) / 100
+            })
+
+            return result
+        },
+
+        filteredCoHeadersForWeighted: function () {
+            // For Weighted % tab: build CO headers using deduplicated (CO, Type) groups
+            // Each CO header's colspan = count of unique types under that CO
+            var self = this
+            var seen  = {}
+            var result = []
+
+            this.uniqueWeightedHeaders.forEach(function (header) {
+                if (!seen[header.co_code]) {
+                    var coIdx = self.coOrderMap[header.co_code]
+                    seen[header.co_code] = {
+                        co_code: header.co_code,
+                        count:   0,
+                        weight:  0,
+                        color:   self.coColors[coIdx !== undefined ? coIdx % self.coColors.length : result.length % self.coColors.length],
+                    }
+                    result.push(seen[header.co_code])
+                }
+                seen[header.co_code].count  += 1
+                seen[header.co_code].weight += header.weight
             })
 
             result.forEach(function (co) {
@@ -884,6 +1049,15 @@ export default {
             })
         },
 
+        filteredGradingReportSheetData: function () {
+            if (!this.searchReportSheetQuery) return this.gradingReportSheetData
+            var q = this.searchReportSheetQuery.toLowerCase()
+            return this.gradingReportSheetData.filter(function (s) {
+                return (s.studid || '').toLowerCase().indexOf(q) !== -1 ||
+                    (s.name || '').toLowerCase().indexOf(q) !== -1
+            })
+        },
+
         recordPassedCount: function () {
             return this.filteredRecordData.filter(function (r) { return r.remarks === 'PASSED' }).length
         },
@@ -896,6 +1070,44 @@ export default {
         recordPassRate: function () {
             if (!this.filteredRecordData.length) return 0
             return Math.round((this.recordPassedCount / this.filteredRecordData.length) * 100)
+        },
+
+        maxGradeReport: function () {
+            if (!this.gradingReportSheetData.length) return 0
+            var validGrades = this.gradingReportSheetData
+                .filter(function (s) { return s.final_grade !== null && s.final_grade !== undefined && s.final_grade !== '' })
+                .map(function (s) { return parseFloat(s.final_grade) || 0 })
+            return validGrades.length > 0 ? Math.max.apply(null, validGrades) : 0
+        },
+
+        minGradeReport: function () {
+            if (!this.gradingReportSheetData.length) return 0
+            var validGrades = this.gradingReportSheetData
+                .filter(function (s) { return s.final_grade !== null && s.final_grade !== undefined && s.final_grade !== '' })
+                .map(function (s) { return parseFloat(s.final_grade) || 0 })
+            return validGrades.length > 0 ? Math.min.apply(null, validGrades) : 0
+        },
+
+        avgGradeReport: function () {
+            if (!this.gradingReportSheetData.length) return 0
+            var validGrades = this.gradingReportSheetData
+                .filter(function (s) { return s.final_grade !== null && s.final_grade !== undefined && s.final_grade !== '' })
+                .map(function (s) { return parseFloat(s.final_grade) || 0 })
+            if (validGrades.length === 0) return 0
+            var total = validGrades.reduce(function (sum, g) { return sum + g }, 0)
+            return total / validGrades.length
+        },
+
+        passedCountReport: function () {
+            return this.gradingReportSheetData.filter(function (s) { 
+                return s.final_grade !== null && s.final_grade !== undefined && s.final_grade !== '' && parseFloat(s.final_grade) >= 75 
+            }).length
+        },
+
+        studentsWithGradesReport: function () {
+            return this.gradingReportSheetData.filter(function (s) { 
+                return s.final_grade !== null && s.final_grade !== undefined && s.final_grade !== '' 
+            }).length
         },
     },
 
@@ -923,6 +1135,20 @@ export default {
                 return wr.activity_id === activityId
             })
             return entry && entry.weighted_value !== undefined ? entry.weighted_value : undefined
+        },
+
+        // Helper: get aggregated weighted score for (CO, Type) group
+        getAggregatedWeightedScore: function (row, coId, typeId) {
+            if (!row.weighted_ratings) return ''
+            var matching = row.weighted_ratings.filter(function (wr) {
+                return wr.co_id === coId && wr.type_id === typeId
+            })
+            if (matching.length === 0) return ''
+            // Sum all weighted values for this (CO, Type) group
+            var total = matching.reduce(function (sum, wr) {
+                return sum + wr.weighted_value
+            }, 0)
+            return Math.round(total * 100) / 100
         },
 
         coPassedPercent: function (coCode) {
@@ -1106,34 +1332,88 @@ export default {
             }
         },
 
+        openGradingReportSheet: function () {
+            // Populate grading report sheet data from existing gradeData
+            this.gradingReportSheetData = []
+            
+            if (this.gradeData && this.gradeData.length > 0) {
+                var self = this
+                var gradebookData = this.gradeData || []
+                
+                gradebookData.forEach(function (row) {
+                    // Backend now includes all required fields:
+                    // - final_numerical_grade: The final numerical grade
+                    // - student_name: Format "LastName, FirstName"
+                    // - course: Student's course/program from masterlist
+                    
+                    self.gradingReportSheetData.push({
+                        studid: row.studid,
+                        name: row.student_name || row.studid,
+                        course: row.course || 'N/A',
+                        final_grade: row.final_numerical_grade || null
+                    })
+                })
+            }
+            
+            // Show the grading report sheet modal
+            this.showGradingReportSheetModal = true
+        },
+
         handleObeSetupSave: async function () {
             this.showObeModal = false
             
-            // DEEP FIX: Clear all cached grading data to force fresh rebuild
-            console.log('[DEEP FIX] Clearing all grading cache after syllabus save')
-            this.gradeData = []
+            // SMART REFRESH: Clear cached data and intelligently reload
+            console.log('[OBE REFRESH] Updating grading sheet and class record after syllabus save')
             this.courseOutcomes = []
             this.assessmentTypes = []
-            this.showClassRecord = false
-            this.classRecordActiveTab = 'raw'
             this.filteredRecordData = []
             
             try {
-                // Fetch the new syllabus
+                // Fetch the new syllabus and assessment types
                 await this.fetchSyllabus()
-                
-                // Fetch fresh assessment types
                 await this.fetchAssessmentTypes()
                 
                 // Reload gradebook with new setup
                 if (this.$refs.gradingSheet) {
+                    console.log('[OBE REFRESH] Reloading gradebook')
                     await this.$refs.gradingSheet.loadGradebook()
                 }
                 
-                this.$refs.msg.show('Syllabus updated! Grading sheet has been refreshed with the new setup.', 'success')
+                // IF class record is open, reload it with new CO structure AND updated weights
+                if (this.showClassRecord && this.activeSubject) {
+                    console.log('[OBE REFRESH] Class record is open - reloading with new CO structure and weights')
+                    this.loadingRecord = true
+                    this.gradeData = []  // Clear old data first
+                    
+                    try {
+                        // Reload grade data with new weight percentages
+                        var res = await this.$axios.post('/class-activity/compute-grades', {
+                            empid:    this.user ? this.user.empid : null,
+                            subjcode: this.activeSubject.subjcode,
+                            section:  (this.activeSubject.section || '').trim(),
+                            sy:       this.selectedYear,
+                            sem:      this.selectedSemester,
+                        })
+                        
+                        this.gradeData = res.data || []
+                        
+                        // Force Vue to recalculate computed properties
+                        this.$forceUpdate()
+                        
+                        console.log('[OBE REFRESH] Class record data reloaded with', this.gradeData.length, 'records')
+                        console.log('[OBE REFRESH] Updated weighted data:', this.gradeData.length > 0 ? this.gradeData[0].weighted_ratings : 'none')
+                    } catch (e) {
+                        console.error('[OBE REFRESH] Error reloading class record:', e)
+                        this.gradeData = []
+                    } finally {
+                        this.loadingRecord = false
+                    }
+                }
+                
+                this.$refs.msg.show('✅ Syllabus updated! OBE Grading Sheet and Class Record have been refreshed with the new assessment weights.', 'success')
             } catch (e) {
                 console.error('Error refreshing after syllabus save:', e)
-                this.$refs.msg.show('Syllabus saved but there was an error refreshing. Please reload the page.', 'warning')
+                this.$refs.msg.show('⚠️ Syllabus saved but there was an error refreshing. Please reload the grading sheet.', 'warning')
             }
         },
 

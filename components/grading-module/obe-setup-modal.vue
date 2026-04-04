@@ -48,7 +48,7 @@
           </div>
           <div>
             <p class="text-xs font-bold text-amber-800">Syllabus is locked — grading data is protected</p>
-            <p class="text-[10px] text-amber-600 mt-0.5">This syllabus has already been saved. Editing and re-saving will <strong>reset all grading sheet scores</strong>. Unlock only if no scores have been entered yet.</p>
+            <p class="text-[10px] text-amber-600 mt-0.5">This syllabus has already been saved.</p>
           </div>
         </div>
         <button @click="requestUnlock"
@@ -379,14 +379,15 @@
         <!-- Warning Message -->
         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p class="text-sm text-gray-700 leading-relaxed">
-            <span class="font-bold text-red-600">⚠️ WARNING:</span> Unlocking the syllabus and saving again will <strong>RESET all scores</strong> in the Grading Sheet for this class, including:
+            <span class="font-bold text-red-600">⚠️ WARNING:</span> Unlocking the syllabus allows edits. Only <strong>removed Course Outcomes</strong> or <strong>Assessment Types</strong> will delete related scores:
           </p>
           <ul class="list-disc list-inside mt-3 space-y-1 text-sm text-gray-600">
-            <li>All activity scores entered by students</li>
-            <li>All computed grades and remarks</li>
+            <li>Scores for Course Outcomes you REMOVE will be deleted</li>
+            <li>Scores for Course Outcomes you KEEP are preserved</li>
+            <li>Changes to assessment weights alone will NOT reset scores</li>
           </ul>
           <p class="text-sm text-gray-700 font-bold mt-3">
-            Only proceed if NO scores have been entered yet.
+            Proceed with confidence — only removed outcomes will affect grading data.
           </p>
         </div>
 
@@ -652,22 +653,16 @@ export default {
 
         console.log('[OBE Modal] Submitting syllabus with payload:', payload)
         await this.$axios.post('/obe/course-outcome/batch', payload)
-        alert('Syllabus saved successfully! Refreshing grading sheet...')
+        alert('✅ Syllabus updated successfully! Your grading data has been preserved. Refreshing grading sheet and class record...')
         this.isLocked = true
         
-        // DEEP FIX: Refresh all grading data in parent component
-        if (this.$parent.gradeData) {
-          this.$parent.gradeData = []
-        }
-        this.$parent.courseOutcomes = []
-        this.$parent.assessmentTypes = []
-        
-        // Force reload of grading sheet data
-        if (this.$parent.openGradingSheet) {
-          await this.$parent.openGradingSheet(this.activeSubject)
-        }
-        
+        // Emit save event to trigger parent refresh
         this.$emit('save')
+        
+        // Close modal after brief delay to allow parent to process
+        setTimeout(() => {
+          this.$emit('close')
+        }, 500)
       } catch (e) {
         console.error('[OBE Modal] Save error:', e)
         console.error('[OBE Modal] Error response:', e.response)

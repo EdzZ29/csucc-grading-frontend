@@ -412,8 +412,9 @@
                   </label>
                   <div class="flex flex-wrap gap-1.5 items-center">
                     <div v-for="(crit, cIdx) in rubric.criteria" :key="'c-' + rubric.id + '-' + cIdx"
-                      class="flex items-center gap-1 bg-white border border-orange-200 rounded-lg px-2 py-1 shadow-sm">
-                      <span class="text-xs font-bold text-gray-700">{{ crit.label }}</span>
+                      class="flex items-center gap-1 bg-white border border-orange-200 rounded-lg px-2 py-1 shadow-sm"
+                      :title="crit.description || 'No description'">
+                      <span class="text-xs font-bold text-gray-700" :title="crit.description">{{ crit.label }}</span>
                       <span class="text-[10px] text-gray-400">·</span>
                       <span class="text-xs text-center font-bold text-orange-700 bg-orange-50 px-1 py-0.5 rounded">{{ crit.maxScore }}</span>
                       <button @click="removeCriterionFromRubric(rIdx, cIdx)"
@@ -459,8 +460,10 @@
                       style="min-width:200px">Student Name</th>
                     <th v-for="(crit, cIdx) in rubric.criteria" :key="'h-' + cIdx"
                       class="border border-gray-200 px-3 py-2 text-center text-xs font-black text-white"
-                      style="min-width:100px; background:#f97316;">
-                      {{ crit.label || 'Criterion ' + (cIdx + 1) }}
+                      style="min-width:100px; background:#f97316;"
+                      :title="crit.description || 'No description'">
+                      <div class="truncate">{{ crit.label || 'Criterion ' + (cIdx + 1) }}</div>
+                      <div v-if="crit.description" class="text-[9px] font-normal text-orange-100 truncate">{{ crit.description }}</div>
                     </th>
                     <th class="border border-gray-200 bg-gray-700 text-white px-3 py-2 text-center text-xs font-black uppercase"
                       style="min-width:70px">Total</th>
@@ -567,13 +570,19 @@
          ADD CRITERIA MODAL
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="criteriaModal.open" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-lg flex items-center justify-center p-4" style="z-index: 99999;">
-      <div class="bg-white rounded-xl shadow-xl p-5 w-full max-w-sm animate-slideIn">
-        <h3 class="text-sm font-epundaslab font-bold text-gray-800 mb-4 tracking-wider">Add Label & Max</h3>
+      <div class="bg-white rounded-xl shadow-xl p-5 w-full max-w-md animate-slideIn">
+        <h3 class="text-sm font-epundaslab font-bold text-gray-800 mb-4 tracking-wider">Add Rubric Criteria</h3>
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Criterion Label</label>
             <input v-model="criteriaModal.label" placeholder="e.g. Accuracy"
               class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Description (Optional)</label>
+            <textarea v-model="criteriaModal.description" placeholder="e.g. Correctness and precision of the laboratory work"
+              rows="2"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 resize-none" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Max Score</label>
@@ -667,10 +676,11 @@ export default {
       rubricsList:      [],
 
       criteriaModal: {
-        open:     false,
-        rIdx:     -1,
-        label:    '',
-        maxScore: 10,
+        open:        false,
+        rIdx:        -1,
+        label:       '',
+        description: '',
+        maxScore:    10,
       },
 
       alertModal: {
@@ -1149,8 +1159,9 @@ export default {
       var rIdx   = this.criteriaModal.rIdx
       var rubric = this.rubricsList[rIdx]
       rubric.criteria.push({
-        label:    this.criteriaModal.label.trim(),
-        maxScore: Number(this.criteriaModal.maxScore),
+        label:       this.criteriaModal.label.trim(),
+        description: this.criteriaModal.description.trim(),
+        maxScore:    Number(this.criteriaModal.maxScore),
       })
       var self = this
       self.localStudents.forEach(function (s) {
@@ -1158,6 +1169,9 @@ export default {
         rubric.scores[s.studid].push(null)
       })
       this.criteriaModal.open = false
+      this.criteriaModal.label = ''
+      this.criteriaModal.description = ''
+      this.criteriaModal.maxScore = 10
     },
 
     removeCriterionFromRubric: function (rIdx, cIdx) {
@@ -1186,9 +1200,16 @@ export default {
     duplicateRubric: function (rIdx) {
       var src            = this.rubricsList[rIdx]
       var clonedCriteria = src.criteria.map(function (c) {
-        return { label: c.label, maxScore: c.maxScore }
+        return { label: c.label, description: c.description || '', maxScore: c.maxScore }
       })
       var newPanel = this._makeRubricPanel(src.selectedCo, src.selectedTypeId, clonedCriteria)
+      // Also clone the scores from the original rubric
+      var self = this
+      Object.keys(src.scores).forEach(function (studid) {
+        if (src.scores[studid]) {
+          newPanel.scores[studid] = src.scores[studid].slice()  // Shallow copy of scores array
+        }
+      })
       this.rubricsList.unshift(newPanel)
     },
 
