@@ -536,7 +536,7 @@
                 <span v-else>Save to add this rubric as an activity in the Grading Sheet.</span>
               </p>
               <button @click="saveRubricPanel(rIdx)"
-                :disabled="rubric.saving || !rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim() || rubric.criteria.length === 0"
+                :disabled="rubric.saving"
                 class="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 :class="rubric.saved ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-orange-500 hover:bg-orange-600 text-white'">
                 <svg v-if="rubric.saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -616,7 +616,7 @@
           </div>
           <h3 class="text-lg font-epundaslab font-bold text-gray-800">Notification</h3>
         </div>
-        <p class="text-sm font-inria text-gray-600 mb-6 leading-relaxed">{{ alertModal.message }}</p>
+        <p class="text-sm font-inria text-gray-600 mb-6 leading-relaxed whitespace-pre-wrap">{{ alertModal.message }}</p>
         <div class="flex justify-end">
           <button @click="alertModal.open = false"
             class="px-5 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold shadow hover:bg-orange-600 hover:-translate-y-0.5 transition-all w-full md:w-auto">
@@ -1218,16 +1218,39 @@ export default {
       var self     = this
       var totalMax = this.rubricPanelTotalMax(rIdx)
 
-      if (!rubric.selectedCo || !rubric.selectedTypeId || !rubric.activityName.trim()) {
-        this.showAlert('Please fill in CO, Assessment Type and Activity Name before saving.')
+      // Check Activity Name first with specific message
+      if (!rubric.activityName.trim()) {
+        this.showAlert('⚠️ Required: Activity Name\n\nPlease enter an activity name to save the rubric.')
         return
       }
+
+      // Check CO selection
+      if (!rubric.selectedCo) {
+        this.showAlert('⚠️ Required: Course Outcome (CO)\n\nPlease select a Course Outcome before saving.')
+        return
+      }
+
+      // Check Assessment Type selection  
+      if (!rubric.selectedTypeId) {
+        this.showAlert('⚠️ Required: Assessment Type\n\nPlease select an Assessment Type before saving.')
+        return
+      }
+
       if (rubric.criteria.length === 0) {
-        this.showAlert('Add at least one criterion before saving.')
+        this.showAlert('⚠️ Required: Criteria\n\nPlease add at least one criterion before saving.')
         return
       }
       if (totalMax === 0) {
-        this.showAlert('Total max score must be greater than 0.')
+        this.showAlert('⚠️ Invalid: Total Max Score\n\nTotal max score must be greater than 0.')
+        return
+      }
+
+      // Check if any student has at least one score entered
+      var hasAnyScore = this.localStudents.some(function (s) {
+        return self.rubricPanelRowTotal(rIdx, s.studid) > 0
+      })
+      if (!hasAnyScore) {
+        this.showAlert('⚠️ Required: Student Scores\n\nPlease enter scores for at least one student before saving.')
         return
       }
 
