@@ -12,7 +12,7 @@
         <div v-if="showClassRecord"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-xl p-2 md:p-4">
             <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-fade-in">
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden flex flex-col animate-popInDown">
 
                 <!-- Modal Header -->
                 <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
@@ -1814,6 +1814,24 @@ export default {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+@keyframes popInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-popInDown {
+    animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 ::-webkit-scrollbar {

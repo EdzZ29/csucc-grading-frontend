@@ -78,7 +78,7 @@
             <thead>
               <!-- ── Row 1: CO group headers ── -->
               <tr v-if="hasAnyActivity">
-                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                <th colspan="2" class="sticky left-0 z-0 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Course Outcomes
                 </th>
                 <th v-for="group in coGroups" :key="'hdr-' + group.co_code" :colspan="group.activities.length || 1"
@@ -92,7 +92,7 @@
 
               <!-- ── Row 2: Assessment type code ── -->
               <tr v-if="hasAnyActivity">
-                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                <th colspan="2" class="sticky left-0 z-0 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Assessment Task
                 </th>
                 <template v-for="group in coGroups">
@@ -112,7 +112,7 @@
 
               <!-- ── Row 3: Task name inputs ── -->
               <tr v-if="hasAnyActivity">
-                <th colspan="2" class="sticky left-0 z-30 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
+                <th colspan="2" class="sticky left-0 z-0 bg-white px-4 py-1 text-right font-extrabold italic text-black text-[13px] border-r border-gray-200 bg-clip-padding" style="min-width:240px; padding-right: 0.75rem;">
                   Task Name
                 </th>
                 <template v-for="group in coGroups">
@@ -131,9 +131,9 @@
 
               <!-- ── Row 4: Max score inputs ── -->
               <tr>
-                <th class="sticky left-0 z-30 border border-gray-200 px-2 py-3 text-center font-black text-black text-xs uppercase tracking-wider shadow-sm bg-clip-padding"
+                <th class="sticky left-0 z-0 border border-gray-200 px-2 py-3 text-center font-black text-black text-xs uppercase tracking-wider shadow-sm bg-clip-padding"
                   style="width:40px; min-width:40px; background:#FFDB58">No.</th>
-                <th class="sticky left-[40px] z-30 border border-gray-200 px-4 py-3 text-left font-black text-black text-[13px] shadow-sm bg-clip-padding"
+                <th class="sticky left-[40px] z-0 border border-gray-200 px-4 py-3 text-left font-black text-black text-[13px] shadow-sm bg-clip-padding"
                   style="width:200px; min-width:200px; background:#FFDB58">
                   Student Name
                 </th>
@@ -229,7 +229,7 @@
          ADD ACTIVITY MODAL
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-lg p-4">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform transition-all animate-slideIn">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform transition-all animate-popInDown">
         <div class="mb-6">
           <h3 class="text-xl font-epundaslab font-bold text-gray-800">Add OBE Activity</h3>
           <p class="text-xs text-gray-400">Create a new assessment task</p>
@@ -286,7 +286,7 @@
     ══════════════════════════════════════════════════════════════ -->
     <div v-if="showRubricsModal"
       class="fixed inset-0 z-50 bg-black bg-opacity-75 backdrop-blur-lg flex items-center justify-center p-2 md:p-4">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl flex flex-col overflow-hidden"
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-7xl flex flex-col overflow-hidden animate-popInDown"
         style="height: 92vh;">
 
         <!-- Modal header -->
@@ -1313,4 +1313,22 @@ table { border-spacing: 0; }
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button { opacity: 0; }
 input[type="number"] { -moz-appearance: textfield; }
+
+@keyframes popInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-popInDown {
+  animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 </style>

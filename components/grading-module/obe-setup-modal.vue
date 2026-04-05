@@ -1,7 +1,7 @@
 <template>
   <div v-if="isOpen"
     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-2 md:p-6 backdrop-blur-lg">
-    <div class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden font-inria animate-fade-in flex flex-col">
+    <div class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden font-inria animate-popInDown flex flex-col">
 
       <!-- Header -->
       <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center shrink-0">
@@ -756,9 +756,28 @@ export default {
 .overflow-y-auto::-webkit-scrollbar-track { background: transparent; }
 .overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 .overflow-y-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes popInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-popInDown {
+  animation: popInDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 </style>
