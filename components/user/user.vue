@@ -284,7 +284,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr
-              v-for="(user, index) in filteredUsers"
+              v-for="(user, index) in paginatedUsers"
               :key="user.empid || user.id"
               class="hover:bg-orange-50/50 transition-colors"
               :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'"
@@ -298,15 +298,26 @@
               <td class="px-6 py-4 text-gray-600">{{ user.lastname }}</td>
               <td class="px-6 py-4 text-gray-500">{{ user.email }}</td>
               <td class="px-6 py-4 text-right">
-                <button
-                  @click="openDeleteModal(user)"
-                  class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-xs font-medium shadow-sm hover:shadow flex items-center gap-1 ml-auto"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
+                <div class="flex items-center gap-2 justify-end">
+                  <button
+                    @click="openEditModal(user)"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-xs font-medium shadow-sm hover:shadow flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                  <button
+                    @click="openDeleteModal(user)"
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-xs font-medium shadow-sm hover:shadow flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -316,22 +327,32 @@
       <!-- Mobile -->
       <div class="sm:hidden p-4 space-y-4">
         <div
-          v-for="user in filteredUsers"
+          v-for="user in paginatedUsers"
           :key="user.empid || user.id"
           class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all"
         >
-          <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center justify-between mb-3 gap-2">
             <span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
               {{ user.role }}
             </span>
-            <button
-              @click="openDeleteModal(user)"
-              class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            <div class="flex gap-2">
+              <button
+                @click="openEditModal(user)"
+                class="p-2 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-100 transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button
+                @click="openDeleteModal(user)"
+                class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="space-y-2">
             <div class="flex items-center gap-2">
@@ -357,6 +378,256 @@
         </svg>
         <p class="text-gray-400 text-sm mb-2">No users found</p>
         <p class="text-xs text-gray-300">Try adjusting your search or create a new user</p>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="filteredUsers.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-6 py-4 bg-white rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-600">
+          Showing <span class="font-semibold">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+          to <span class="font-semibold">{{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }}</span>
+          of <span class="font-semibold">{{ filteredUsers.length }}</span> users
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Previous
+          </button>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="page in totalPages"
+              :key="page"
+              @click="currentPage = page"
+              :class="[
+                'px-3 py-2 text-sm font-medium rounded-lg transition-all',
+                currentPage === page
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </div>
+          <button
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div v-if="showEditModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4 backdrop-blur-sm">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 sticky top-0 z-10 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg sm:text-xl font-bold">{{ editingUser?.firstname }} {{ editingUser?.lastname }}</h3>
+            <p class="text-sm text-blue-100">Edit user details and permissions</p>
+          </div>
+          <button @click="closeEditModal" class="p-2 hover:bg-blue-700 rounded-lg transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex gap-0 border-b border-gray-200 px-6 sticky top-[68px] bg-white z-10">
+          <button
+            @click="editingUser.editTab = 'details'"
+            :class="[
+              'px-6 py-3 text-sm font-medium border-b-2 transition-all',
+              editingUser?.editTab === 'details'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            User Details
+          </button>
+          <button
+            @click="editingUser.editTab = 'password'"
+            :class="[
+              'px-6 py-3 text-sm font-medium border-b-2 transition-all',
+              editingUser?.editTab === 'password'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            Password
+          </button>
+          <button
+            @click="editingUser.editTab = 'security'"
+            :class="[
+              'px-6 py-3 text-sm font-medium border-b-2 transition-all',
+              editingUser?.editTab === 'security'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-800'
+            ]"
+          >
+            Security
+          </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 space-y-6">
+          <!-- Error Banner -->
+          <div v-if="errors.editError" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-700 text-sm font-medium">{{ errors.editError }}</p>
+          </div>
+
+          <!-- User Details Tab -->
+          <div v-if="editingUser?.editTab === 'details'" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">First Name</label>
+                <input v-model="editForm.firstname" type="text" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Middle Name</label>
+                <input v-model="editForm.middlename" type="text" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Last Name</label>
+                <input v-model="editForm.lastname" type="text" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Extension Name</label>
+                <input v-model="editForm.extname" type="text" placeholder="Jr., Sr., III" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Email</label>
+              <input v-model="editForm.email" type="email" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Role</label>
+              <select v-model="editForm.role" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <option>Admin</option>
+                <option>Dean</option>
+                <option>Chairperson</option>
+                <option>Guidance</option>
+                <option>Instructor</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Password Tab -->
+          <div v-if="editingUser?.editTab === 'password'" class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p class="text-sm text-blue-800 font-medium flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Choose an option to update the password
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                @click="handleResetPassword"
+                class="px-4 py-3 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset to Default
+              </button>
+              <button
+                @click="showPasswordFields = !showPasswordFields"
+                class="px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Change Password
+              </button>
+            </div>
+
+            <!-- Change Password Fields -->
+            <div v-if="showPasswordFields" class="space-y-3 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Current Password</label>
+                <input v-model="passwordForm.oldPassword" type="password" placeholder="Enter current password" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">New Password</label>
+                <input v-model="passwordForm.newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Confirm New Password</label>
+                <input v-model="passwordForm.confirmPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div v-if="editingUser?.editTab === 'security'" class="space-y-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p class="text-sm text-yellow-800 font-medium flex items-center gap-2 mb-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Account Security Options
+              </p>
+              <p class="text-xs text-yellow-700">Manage account access and security settings</p>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="font-semibold text-red-700">Block Account</p>
+                  <p class="text-xs text-red-600 mt-1">Prevent this user from logging in to the system</p>
+                </div>
+                <button
+                  @click="handleBlockAccount"
+                  :class="[
+                    'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all',
+                    editingUser?.is_blocked
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  ]"
+                >
+                  {{ editingUser?.is_blocked ? 'Unblock Account' : 'Block Account' }}
+                </button>
+              </div>
+            </div>
+
+            <div v-if="editingUser?.is_blocked" class="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-3">
+              <svg class="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-orange-800">Account is Blocked</p>
+                <p class="text-xs text-orange-700 mt-1">This user cannot sign in. Click "Unblock Account" to restore access.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3 sticky bottom-0">
+          <button
+            @click="closeEditModal"
+            class="px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            v-if="editingUser?.editTab === 'details' || editingUser?.editTab === 'password'"
+            @click="handleSaveEditUser"
+            class="px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
 
@@ -417,9 +688,26 @@ export default {
     return {
       showForm: false,
       showDeleteModal: false,
+      showEditModal: false,
       showPassword: false,
       users: [],
       userToDelete: null,
+      editingUser: null,
+      editForm: {
+        firstname: "",
+        middlename: "",
+        lastname: "",
+        extname: "",
+        role: "Instructor",
+        email: "",
+      },
+      passwordForm: {
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      },
+      showPasswordFields: false,
+      showResetPasswordModal: false,
       form: {
         firstname: "",
         middlename: "",
@@ -433,6 +721,8 @@ export default {
       errors: {},
       loading: false,
       searchQuery: "",
+      currentPage: 1,
+      itemsPerPage: 10,
     };
   },
 
@@ -447,6 +737,16 @@ export default {
           (u.role && u.role.toLowerCase().includes(q)) ||
           (u.email && u.email.toLowerCase().includes(q))
       );
+    },
+
+    paginatedUsers() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredUsers.slice(start, end);
+    },
+
+    totalPages() {
+      return Math.ceil(this.filteredUsers.length / this.itemsPerPage);
     },
   },
 
@@ -585,6 +885,155 @@ export default {
         password:         "",
         password_confirm: "",
       };
+    },
+
+    openEditModal(user) {
+      this.editingUser = { ...user, editTab: 'details' };
+      this.editForm = {
+        firstname: user.firstname || '',
+        middlename: user.middlename || '',
+        lastname: user.lastname || '',
+        extname: user.extname || '',
+        role: user.role || 'Instructor',
+        email: user.email || '',
+      };
+      this.passwordForm = {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      };
+      this.showPasswordFields = false;
+      this.errors = {};
+      this.showEditModal = true;
+    },
+
+    closeEditModal() {
+      this.showEditModal = false;
+      this.editingUser = null;
+      this.showPasswordFields = false;
+      this.errors = {};
+    },
+
+    async handleSaveEditUser() {
+      if (!this.editingUser) return;
+      
+      const id = this.editingUser.empid ?? this.editingUser.id;
+      this.loading = true;
+      this.errors = {};
+
+      try {
+        if (this.editingUser.editTab === 'details') {
+          // Save user details
+          await this.$axios.put(
+            `/auth/admin/users/${id}`,
+            this.editForm,
+            { withCredentials: true }
+          );
+          this.$refs.successMessage.show('User details updated successfully!', 'success');
+        } else if (this.editingUser.editTab === 'password' && this.showPasswordFields) {
+          // Validate password fields
+          if (!this.passwordForm.oldPassword || !this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
+            this.errors.editError = 'All password fields are required.';
+            this.loading = false;
+            return;
+          }
+          if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+            this.errors.editError = 'New passwords do not match.';
+            this.loading = false;
+            return;
+          }
+          if (this.passwordForm.newPassword.length < 6) {
+            this.errors.editError = 'New password must be at least 6 characters.';
+            this.loading = false;
+            return;
+          }
+
+          // Change password
+          await this.$axios.post(
+            `/auth/admin/users/${id}/change-password`,
+            {
+              oldPassword: this.passwordForm.oldPassword,
+              newPassword: this.passwordForm.newPassword,
+            },
+            { withCredentials: true }
+          );
+          this.$refs.successMessage.show('Password changed successfully!', 'success');
+          this.showPasswordFields = false;
+        }
+
+        await this.fetchUsers();
+        this.closeEditModal();
+      } catch (err) {
+        console.error('Error:', err);
+        console.error('Response data:', err.response?.data);
+        console.error('Response status:', err.response?.status);
+        const message = err.response?.data?.message || err.message || 'An error occurred.';
+        this.errors.editError = message;
+        this.$refs.successMessage.show(`Error: ${message}`, 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handleResetPassword() {
+      if (!this.editingUser) return;
+      
+      if (!confirm(`Reset password for ${this.editingUser.firstname} ${this.editingUser.lastname} to default?\n\nDefault password: "Password123"`)) {
+        return;
+      }
+
+      const id = this.editingUser.empid ?? this.editingUser.id;
+      this.loading = true;
+
+      try {
+        await this.$axios.post(
+          `/auth/admin/users/${id}/reset-password`,
+          {},
+          { withCredentials: true }
+        );
+        this.$refs.successMessage.show('Password reset to default successfully!', 'success');
+        await this.fetchUsers();
+        this.closeEditModal();
+      } catch (err) {
+        console.error('Reset password error:', err);
+        console.error('Response data:', err.response?.data);
+        const message = err.response?.data?.message || 'Failed to reset password.';
+        this.errors.editError = message;
+        this.$refs.successMessage.show(`Error: ${message}`, 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handleBlockAccount() {
+      if (!this.editingUser) return;
+      
+      const action = this.editingUser.is_blocked ? 'unblock' : 'block';
+      if (!confirm(`Are you sure you want to ${action} this account?`)) {
+        return;
+      }
+
+      const id = this.editingUser.empid ?? this.editingUser.id;
+      this.loading = true;
+
+      try {
+        await this.$axios.post(
+          `/auth/admin/users/${id}/${action}-account`,
+          {},
+          { withCredentials: true }
+        );
+        this.$refs.successMessage.show(`Account ${action}ed successfully!`, 'success');
+        this.editingUser.is_blocked = !this.editingUser.is_blocked;
+        await this.fetchUsers();
+      } catch (err) {
+        console.error(`${action} account error:`, err);
+        console.error('Response data:', err.response?.data);
+        const message = err.response?.data?.message || `Failed to ${action} account.`;
+        this.errors.editError = message;
+        this.$refs.successMessage.show(`Error: ${message}`, 'error');
+      } finally {
+        this.loading = false;
+      }
     },
 
     openDeleteModal(user) {
