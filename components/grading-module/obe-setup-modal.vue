@@ -1,6 +1,55 @@
 <template>
   <div v-if="isOpen"
     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-2 md:p-6 backdrop-blur-lg">
+    <!-- Success Message Component -->
+    <success-message ref="successMessage"></success-message>
+
+    <!-- Validation Modal for Weight Matrix -->
+    <div v-if="validationModal.open"
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-lg p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <!-- Icon & Title -->
+        <div class="flex items-start gap-4 mb-4">
+          <div :class="[
+            'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0',
+            validationModal.type === 'below' ? 'bg-orange-100' : 'bg-red-100'
+          ]">
+            <svg :class="validationModal.type === 'below' ? 'text-orange-600' : 'text-red-600'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">{{ validationModal.title }}</h3>
+            <p :class="['text-sm mt-1', validationModal.type === 'below' ? 'text-orange-600' : 'text-red-600']">
+              {{ validationModal.subtitle }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div :class="[
+          'rounded-lg p-4 mb-6',
+          validationModal.type === 'below' ? 'bg-orange-50 border border-orange-200' : 'bg-red-50 border border-red-200'
+        ]">
+          <p :class="['text-sm', validationModal.type === 'below' ? 'text-orange-800' : 'text-red-800']">
+            {{ validationModal.message }}
+          </p>
+          <p class="text-sm font-bold mt-2" :class="validationModal.type === 'below' ? 'text-orange-600' : 'text-red-600'">
+            Current Total: {{ grandTotal }}%
+          </p>
+        </div>
+
+        <!-- Action Button -->
+        <div class="flex justify-end">
+          <button @click="closeValidationModal"
+            class="px-6 py-2.5 text-sm font-bold text-white rounded-lg transition-all transform hover:-translate-y-0.5"
+            :class="validationModal.type === 'below' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-600 hover:bg-red-700'">
+            Understood
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-7xl h-full max-h-[92vh] overflow-hidden font-inria animate-popInDown flex flex-col">
 
       <!-- Header -->
@@ -411,8 +460,11 @@
 </template>
 
 <script>
+import SuccessMessage from '~/components/success-message.vue'
+
 export default {
   name: 'ObeSetupModal',
+  components: { SuccessMessage },
   props: {
     isOpen:        Boolean,
     activeSubject: Object,
@@ -425,6 +477,13 @@ export default {
       showWeightError:  false,
       isLocked:         false,
       unlockModal:      { open: false },  // NEW: Unlock confirmation modal state
+      validationModal:  {
+        open: false,
+        type: '',  // 'below' or 'above'
+        title: '',
+        subtitle: '',
+        message: '',
+      },
 
       // ── TOS Matrix ─────────────────────────────────────────────────
       // matrixRows: ordered list of type_ids (duplicates allowed)
@@ -536,8 +595,10 @@ export default {
     addTypeFromDropdown: function () {
       var typeId = parseInt(this.selectedTypeToAdd, 10)
       if (!typeId) return
+      var typeName = this.getTypeProp(typeId, 'name')
       this._pushMatrixRow(typeId)
       this.selectedTypeToAdd = ''
+      this.$refs.successMessage.show('✓ Added "' + typeName + '" assessment type successfully!', 'success', 2000)
     },
     _pushMatrixRow: function (typeId) {
       var self  = this
@@ -547,8 +608,11 @@ export default {
       this.weightMatrix.push({ typeId: typeId, cells: cells })
     },
     removeTypeFromMatrix: function (rowIdx) {
+      var typeId = this.matrixRows[rowIdx]
+      var typeName = this.getTypeProp(typeId, 'name')
       this.matrixRows.splice(rowIdx, 1)
       this.weightMatrix.splice(rowIdx, 1)
+      this.$refs.successMessage.show('✓ Deleted "' + typeName + '" from matrix', 'success', 2000)
     },
 
     // ── Unlock ───────────────────────────────────────────────────
@@ -578,6 +642,8 @@ export default {
       this.weightMatrix.forEach(function (row) {
         self.$set(row.cells, newCode, 0)
       })
+      // Show real-time notification
+      this.$refs.successMessage.show('✓ Added ' + newCode + ' successfully!', 'success', 2000)
     },
     removeCO: function (idx) {
       if (this.localOutcomes.length <= 1) return
@@ -586,6 +652,7 @@ export default {
       this.weightMatrix.forEach(function (row) {
         delete row.cells[removedCode]
       })
+      this.$refs.successMessage.show('✓ Deleted "' + removedCode + '" successfully!', 'success', 2000)
     },
 
     // ── Fetch assessment types ────────────────────────────────────
@@ -610,10 +677,10 @@ export default {
         var res = await this.$axios.post('/obe/assessment-types', payload)
         this.assessmentTypes.push(res.data)
         this.newType = { name: '', code: '' }
-        alert('New assessment type "' + payload.name + '" registered successfully!')
+        this.$refs.successMessage.show('✓ New assessment type "' + payload.name + '" registered successfully!', 'success', 2500)
       } catch (e) {
         console.error('Failed to register assessment type:', e)
-        alert('Failed to add type. The code might already be taken.')
+        this.$refs.successMessage.show('✗ Failed to add type. The code might already be taken.', 'error', 3000)
       }
     },
 
@@ -621,7 +688,25 @@ export default {
     submitSyllabus: async function () {
       if (this.grandTotal !== 100) {
         this.showWeightError = true
-        alert('Total weight must equal 100% before saving.')
+        
+        // Determine if it's below or above 100%
+        if (this.grandTotal < 100) {
+          this.validationModal = {
+            open: true,
+            type: 'below',
+            title: 'Assessment Weight Below 100%',
+            subtitle: 'Validation Error',
+            message: 'The total assessment weight must be equal to 100%. Currently it is ' + this.grandTotal + '%. Please increase the percentages in the matrix cells to reach exactly 100%.'
+          }
+        } else {
+          this.validationModal = {
+            open: true,
+            type: 'above',
+            title: 'Assessment Weight Above 100%',
+            subtitle: 'Validation Error',
+            message: 'The total assessment weight must be equal to 100%. Currently it is ' + this.grandTotal + '%. Please decrease the percentages in the matrix cells to reach exactly 100%.'
+          }
+        }
         return
       }
       try {
@@ -653,7 +738,7 @@ export default {
 
         console.log('[OBE Modal] Submitting syllabus with payload:', payload)
         await this.$axios.post('/obe/course-outcome/batch', payload)
-        alert('✅ Syllabus updated successfully! Your grading data has been preserved. Refreshing grading sheet and class record...')
+        this.$refs.successMessage.show('✅ Syllabus saved successfully! Refreshing data...', 'success', 3000)
         this.isLocked = true
         
         // Emit save event to trigger parent refresh
@@ -674,8 +759,13 @@ export default {
           errorMsg = e.message
         }
         
-        alert('❌ Failed to save syllabus:\n\n' + errorMsg)
+        this.$refs.successMessage.show('❌ Failed to save: ' + errorMsg, 'error', 4000)
       }
+    },
+
+    // ── Close validation modal ────────────────────────────────────
+    closeValidationModal: function () {
+      this.validationModal.open = false
     },
 
     // ── Load existing syllabus ────────────────────────────────────
