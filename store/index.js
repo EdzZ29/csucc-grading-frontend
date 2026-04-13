@@ -1,10 +1,15 @@
 export const state = () => ({
-    user: null
+    user: null,
+    gradeComputedAt: null  // NEW: Tracks when grades are computed for auto-refresh
 })
 
 export const mutations = {
     SET_USER(state, user) {
         state.user = user
+    },
+    // NEW: Trigger OBE Risk Overview refresh
+    TRIGGER_GRADE_REFRESH(state) {
+        state.gradeComputedAt = new Date().getTime()
     }
 }
 

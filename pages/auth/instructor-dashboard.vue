@@ -535,13 +535,13 @@
                   :style="{ width: (riskModal.students.length > 0 ? riskModal.students.filter(s=>s.risk_level!=='Safe').length/riskModal.students.length*100 : 0) + '%' }"></div>
               </div>
             </div>
-            <div v-if="riskModal.students.filter(s => s.risk_level === 'Critical').length > 0"
+            <!-- <div v-if="riskModal.students.filter(s => s.risk_level === 'Critical').length > 0"
               class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></span>
               <p class="text-[10px] text-yellow-300 font-inria">
                 {{ riskModal.students.filter(s => s.risk_level === 'Critical').length }} student{{ riskModal.students.filter(s => s.risk_level === 'Critical').length > 1 ? 's' : '' }} need immediate intervention
               </p>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -565,14 +565,14 @@
                 </svg>
                 CO Heatmap
               </button>
-              <button @click="switchModalTab('trajectory')"
+              <!-- <button @click="switchModalTab('trajectory')"
                 :class="['flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-xs font-bold font-inria transition-all border-b-2',
                   riskModal.activeTab === 'trajectory' ? 'bg-white border-gray-800 text-gray-800 shadow-sm' : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-white/60']">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                 </svg>
                 Score Trajectory
-              </button>
+              </button> -->
             </div>
 
             <div v-if="riskModal.activeTab === 'risk'" class="flex items-center gap-4 px-6 py-3">
@@ -962,11 +962,20 @@ export default {
         list = list.filter(s => (s.student_name||'').toLowerCase().includes(q) || String(s.studid||'').toLowerCase().includes(q))
       }
       return list
+    },
+    gradeRefreshTrigger() {
+      return this.$store.state.gradeComputedAt
     }
   },
   watch: {
     searchQuery() { this.obePage = 1 },
-    filterYear() { this.obePage = 1 }
+    filterYear() { this.obePage = 1 },
+    gradeRefreshTrigger(newVal) {
+      if (newVal && !this.obeLoading) {
+        console.log('Auto-refreshing My Classes after grade computation...')
+        this.fetchAllClassRisks()
+      }
+    }
   },
   async mounted() {
     try {

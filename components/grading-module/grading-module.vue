@@ -983,6 +983,8 @@ export default {
         })
         this.computedGrades = grades
         this.showAlert('Final grades computed and saved!')
+        // Trigger auto-refresh in OBE Risk Overview dashboard
+        this.$store.commit('TRIGGER_GRADE_REFRESH')
       } catch (err) {
         console.error('Failed to compute grades:', err)
         this.showAlert('Error computing grades. Make sure TOS weights are configured in Syllabus Setup.')

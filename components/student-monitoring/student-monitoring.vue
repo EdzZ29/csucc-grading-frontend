@@ -333,6 +333,20 @@ export default {
       if (!this.riskFilter) return this.batchRisks;
       return this.batchRisks.filter(r => r.risk_level === this.riskFilter);
     },
+    // Watch for grade computation from grading sheet
+    gradeRefreshTrigger() {
+      return this.$store.state.gradeComputedAt;
+    },
+  },
+  watch: {
+    // Auto-refresh OBE Risk data when grades are computed
+    gradeRefreshTrigger(newVal) {
+      if (newVal && this.activeSubject) {
+        console.log('Auto-refreshing OBE Risk Overview after grade computation...');
+        this.analyzeBatchRisk();
+        this.$refs.msg.show('✓ OBE Risk Overview updated with latest grades!', 'success', 2000);
+      }
+    },
   },
   methods: {
 
