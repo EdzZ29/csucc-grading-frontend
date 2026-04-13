@@ -36,14 +36,6 @@
           Laboratory Rubrics
         </button>
 
-        <button @click="saveGrades" :disabled="saving"
-          class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2 flex-1 sm:flex-none">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          {{ saving ? 'Saving...' : 'Save Scores' }}
-        </button>
 
         <button @click="computeGrades" :disabled="computing"
           class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2 flex-1 sm:flex-none">
@@ -53,6 +45,18 @@
           </svg>
           {{ computing ? 'Computing...' : 'Compute OBE Grades' }}
         </button>
+
+        
+        <button @click="saveGrades" :disabled="saving"
+          class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-bold hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2 flex-1 sm:flex-none">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
+          {{ saving ? 'Saving...' : 'Save Scores' }}
+        </button>
+
+        
       </div>
 
       <div class="relative w-full sm:w-56">
