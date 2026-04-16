@@ -392,7 +392,7 @@
           class="w-full sm:w-auto px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           {{ isLocked ? 'Close' : 'Cancel' }}
         </button>
-        <button v-if="!isLocked" @click="submitSyllabus" :disabled="grandTotal !== 100"
+        <button v-if="!isLocked" @click="submitSyllabus" :disabled="grandTotal !== 100 || !allCoDescriptionsAreFilled"
           class="w-full sm:w-auto px-6 sm:px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
@@ -510,6 +510,11 @@ export default {
         if (seen[typeId]) return true
         seen[typeId] = true
         return false
+      })
+    },
+    allCoDescriptionsAreFilled: function () {
+      return this.localOutcomes.every(function (co) {
+        return co.description && co.description.trim() !== ''
       })
     },
   },
@@ -667,7 +672,15 @@ export default {
 
     // ── Add new assessment type ───────────────────────────────────
     addNewAssessmentType: async function () {
-      if (!this.newType.name || !this.newType.code) return
+      // Validate both name and code are provided
+      if (!this.newType.name.trim()) {
+        this.$refs.successMessage.show('⚠️ Assessment type name is required', 'error', 2500)
+        return
+      }
+      if (!this.newType.code.trim()) {
+        this.$refs.successMessage.show('⚠️ Assessment type code is required', 'error', 2500)
+        return
+      }
       try {
         var payload = {
           name:  this.newType.name.trim(),
@@ -686,6 +699,23 @@ export default {
 
     // ── Save ─────────────────────────────────────────────────────
     submitSyllabus: async function () {
+      // ── Validate all CO descriptions are filled ──────────────────
+      var self = this
+      var missingDescriptions = this.localOutcomes.filter(function (co) {
+        return !co.description || co.description.trim() === ''
+      })
+      if (missingDescriptions.length > 0) {
+        var missingList = missingDescriptions.map(function (co) { return co.co_code }).join(', ')
+        this.validationModal = {
+          open: true,
+          type: 'below',
+          title: 'Missing Course Outcome Descriptions',
+          subtitle: 'Required Field',
+          message: 'All Course Outcomes must have descriptions. Please fill in descriptions for: ' + missingList
+        }
+        return
+      }
+
       if (this.grandTotal !== 100) {
         this.showWeightError = true
         
