@@ -447,14 +447,14 @@
                 </svg>
                 CO Heatmap
               </button>
-              <button @click="switchModalTab('trajectory')"
+              <!-- <button @click="switchModalTab('trajectory')"
                 :class="['flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-xs font-bold font-inria transition-all border-b-2',
                   riskModal.activeTab === 'trajectory' ? 'bg-white border-gray-800 text-gray-800 shadow-sm' : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-white/60']">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                 </svg>
                 Score Trajectory
-              </button>
+              </button> -->
             </div>
 
             <div v-if="riskModal.activeTab === 'risk'" class="flex items-center gap-4 px-6 py-3">

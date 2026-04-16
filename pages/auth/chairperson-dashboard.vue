@@ -589,7 +589,7 @@
                 </svg>
                 CO Heatmap
               </button>
-              <button @click="switchModalTab('trajectory')"
+              <!-- <button @click="switchModalTab('trajectory')"
                 :class="['flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-xs font-bold font-inria transition-all border-b-2',
                   riskModal.activeTab === 'trajectory'
                     ? 'bg-white border-gray-800 text-gray-800 shadow-sm'
@@ -598,7 +598,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                 </svg>
                 Score Trajectory
-              </button>
+              </button> -->
             </div>
 
             <!-- Risk tab controls -->
