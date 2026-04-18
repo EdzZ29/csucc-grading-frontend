@@ -395,36 +395,7 @@
         </div>
         <!-- ─── END DASHBOARD ─── -->
 
-      </main>
-
-      <!-- Footer -->
-      <footer class="bg-white mt-auto">
-        <div class="w-full max-w-full mx-auto p-4 md:py-6">
-          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <img src="../../assets/image/ceit-logo.png" class="h-12" alt="Logo" />
-              <div class="text-xs text-gray-500 font-inria">
-                <p class="font-roboto font-bold text-black700">Caraga State University</p>
-                <p>Ampayon, Butuan City</p>
-              </div>
-            </div>
-            <ul class="flex flex-wrap items-center text-xs font-inria font-medium text-gray-500 gap-6">
-              <li><a href="#" class="hover:text-orange400 transition-colors">About</a></li>
-              <li><a href="#" class="hover:text-orange400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" class="hover:text-orange400 transition-colors">Contact</a></li>
-            </ul>
-          </div>
-          <hr class="my-4 border-gray-200" />
-          <span class="block text-xs text-gray-400 font-inria text-center">
-            © 2024 Caraga State University - ICT Center. All Rights Reserved.
-          </span>
-        </div>
-      </footer>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- LOGOUT MODAL                                    -->
-    <!-- ═══════════════════════════════════════════════ -->
+      <!-- Instructor Overview and Risk Modal will continue inside main -->
     <div v-if="showLogoutModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
       <div class="bg-white rounded-xl shadow-2xl p-6 w-80 transform transition-all scale-100"
@@ -1005,20 +976,454 @@
           <!-- End tab content -->
 
         </div>
-        <!-- End right panel -->
+        <!-- End OBE Modal -->
 
       </div>
-    </div>
-    <!-- ── End OBE Modal ── -->
 
-    <!-- Scroll to Top -->
-    <button v-show="showScrollTop" @click="scrollToTop"
-      class="fixed bottom-6 right-6 bg-orange400 hover:bg-orange300 text-white p-3.5 rounded-lg shadow-lg transition-all z-50 hover:scale-110">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-      </svg>
-    </button>
+    </div>
+
+      <!-- ─── INSTRUCTOR OVERVIEW PAGE ─── -->
+        <div v-if="activePage.name === 'Instructor Overview'" class="animate-fade-in space-y-6 w-full">
+
+          <!-- Header -->
+          <div class="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex-1">
+              <h2 class="text-2xl font-epundaslab font-bold text-black700 mb-2">Instructor OBE Setup Status</h2>
+              <p class="text-sm text-gray-500 font-inria">Monitor which instructors have completed their OBE syllabus setup</p>
+            </div>
+            <button @click="fetchInstructorObeStatus" :disabled="instructorOverviewLoading"
+              class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-4 py-2 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50 whitespace-nowrap">
+              <svg v-if="!instructorOverviewLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              {{ instructorOverviewLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+
+          <!-- Summary Cards -->
+          <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+              <p class="text-xs text-gray-500 font-inria uppercase tracking-wide mb-1">Complete Setup</p>
+              <p class="text-3xl font-epundaslab font-bold text-green-700">{{ instructors.filter(i => i.status === 'complete').length }}</p>
+              <p class="text-xs text-gray-400 font-inria mt-2">Ready to grade</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+              <p class="text-xs text-gray-500 font-inria uppercase tracking-wide mb-1">Incomplete Setup</p>
+              <p class="text-3xl font-epundaslab font-bold text-red-700">{{ instructors.filter(i => i.status === 'incomplete').length }}</p>
+              <p class="text-xs text-gray-400 font-inria mt-2">Action needed</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+              <p class="text-xs text-gray-500 font-inria uppercase tracking-wide mb-1">Total Instructors</p>
+              <p class="text-3xl font-epundaslab font-bold text-blue-700">{{ instructors.length }}</p>
+              <p class="text-xs text-gray-400 font-inria mt-2">Across all classes</p>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="w-full relative max-w-md">
+            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+            </svg>
+            <input v-model="instructorFilterSearch" type="text" placeholder="Search instructor name..."
+              class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange400"/>
+          </div>
+
+          <!-- Instructors Table -->
+          <div class="w-full bg-white rounded-xl shadow-md overflow-hidden">
+            <div v-if="instructorOverviewLoading" class="p-8 text-center">
+              <div class="inline-block">
+                <svg class="w-8 h-8 animate-spin text-orange400" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-inria mt-3">Loading instructor data...</p>
+            </div>
+            <div v-else-if="filteredInstructors.length === 0" class="p-8 text-center text-gray-400">
+              <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <p class="font-inria">No instructors found</p>
+            </div>
+            <div v-else class="w-full overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-inria">Instructor Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-inria">Classes</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-inria">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider font-inria">Detailed Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="instructor in filteredInstructors" :key="instructor.empid"
+                    :class="instructor.status === 'complete' ? 'bg-white' : 'bg-red-50/30'">
+                    <td class="px-6 py-4">
+                      <p class="font-semibold text-gray-800 font-inria">{{ instructor.name }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold font-inria">
+                        {{ instructor.classCount }} class{{ instructor.classCount !== 1 ? 'es' : '' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div v-if="instructor.status === 'complete'" class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-green-700 font-semibold font-inria">Complete</span>
+                      </div>
+                      <div v-else class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-red-700 font-semibold font-inria">Incomplete</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div v-if="instructor.status === 'complete'" class="space-y-3">
+                        <div class="text-sm text-green-700 font-inria bg-green-50 rounded-lg p-3 border border-green-200">
+                          ✅ Setup Complete - Ready for Grading
+                        </div>
+                        
+                        <!-- Completion Progress Bar -->
+                        <div class="space-y-2">
+                          <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-gray-600 font-inria">Completion Status</span>
+                            <span class="text-sm font-bold text-green-700">{{ instructor.completionPercentage }}%</span>
+                          </div>
+                          <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 bg-green-500 rounded-full transition-all" :style="{ width: instructor.completionPercentage + '%' }"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- Progress Items -->
+                        <div class="space-y-1">
+                          <div v-for="item in instructor.progressItems" :key="item" class="text-xs font-inria text-gray-700 flex items-center gap-2">
+                            <span>{{ item }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else class="space-y-3">
+                        <!-- Completion Progress Bar -->
+                        <div class="space-y-2">
+                          <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-gray-600 font-inria">Completion Status</span>
+                            <span class="text-sm font-bold text-orange-700">{{ instructor.completionPercentage }}%</span>
+                          </div>
+                          <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 bg-orange-400 rounded-full transition-all" :style="{ width: instructor.completionPercentage + '%' }"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- Progress Items with Details -->
+                        <div class="space-y-2">
+                          <div v-for="item in instructor.progressItems" :key="item" 
+                            :class="[
+                              'text-xs font-inria p-2 rounded border flex items-start gap-2',
+                              item.includes('✅')
+                                ? 'bg-green-50 text-green-700 border-green-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            ]">
+                            <span class="flex-shrink-0">{{ item.substring(0, 2) }}</span>
+                            <span class="flex-grow">{{ item.substring(3) }}</span>
+                          </div>
+                        </div>
+                        
+                        <!-- Missing Components -->
+                        <div v-if="instructor.flags.length > 0" class="space-y-2 border-t border-red-200 pt-2">
+                          <p class="text-xs font-semibold text-red-700 font-inria">Action Required:</p>
+                          <div v-for="flag in instructor.flags" :key="flag" class="text-xs text-red-700 font-inria bg-red-50 rounded-lg p-2 flex items-start gap-2">
+                            <span class="text-lg flex-shrink-0">⚠️</span>
+                            <div>
+                              <p class="font-semibold">{{ flag }}</p>
+                              <p class="text-xs mt-1 opacity-90">
+                                {{ flag === 'No Course Outcomes' 
+                                  ? 'Define learning outcomes and descriptions in OBE Setup'
+                                  : 'Configure assessment types and weights in OBE Setup'
+                                }}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── STUDENT OVERVIEW PAGE ─── -->
+        <div v-if="activePage.name === 'Student Overview'" class="animate-fade-in space-y-6 w-full">
+
+          <!-- Header -->
+          <div class="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex-1">
+              <h2 class="text-2xl font-epundaslab font-bold text-black700 mb-2">Student Performance Monitoring</h2>
+              <p class="text-sm text-gray-500 font-inria">Monitor student performance across courses · SAFE (≥{{ studentGradeThreshold }}%) | WARNING (60-{{ studentGradeThreshold }}%) | CRITICAL (< 60%)</p>
+            </div>
+            <button @click="fetchStudentsWithLowGrades" :disabled="studentOverviewLoading"
+              class="text-sm text-orange400 hover:text-orange300 font-inria font-medium flex items-center gap-1 bg-orange100 px-4 py-2 rounded-lg transition-all hover:bg-orange200 disabled:opacity-50 whitespace-nowrap">
+              <svg v-if="!studentOverviewLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              {{ studentOverviewLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+
+          <!-- Loading skeleton -->
+          <div v-if="studentOverviewLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div v-for="n in 3" :key="n" class="bg-white rounded-xl shadow-md p-5 animate-pulse">
+              <div class="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+              <div class="h-3 bg-gray-100 rounded w-3/4 mb-6"></div>
+              <div class="flex justify-center mb-4">
+                <div class="w-24 h-24 bg-gray-200 rounded-full"></div>
+              </div>
+              <div class="h-3 bg-gray-100 rounded w-full mb-2"></div>
+              <div class="h-3 bg-gray-100 rounded w-5/6"></div>
+            </div>
+          </div>
+
+          <!-- No classes with grades -->
+          <div v-else-if="studentCourseCards.length === 0"
+            class="bg-white rounded-xl shadow-md p-12 text-center text-gray-400">
+            <svg class="w-14 h-14 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M14 10h-2m0 0h-2m2 0v-2m0 2v2M4 12a8 8 0 1116 0 8 8 0 01-16 0z" />
+            </svg>
+            <p class="font-medium font-epundaslab text-lg mb-1">No Grade Data Available</p>
+            <p class="text-sm font-inria">No students with grades have been entered yet. Run Compute Grades in the Grading Module.</p>
+          </div>
+
+          <!-- Course cards grid with SAFE/WARNING/CRITICAL -->
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div v-for="card in studentCourseCards" :key="card.key"
+              class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transform hover:-translate-y-1 transition-all cursor-pointer group">
+              
+              <!-- Card header -->
+              <div class="bg-gradient-to-r from-gray-800 to-gray-900 px-5 py-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="font-epundaslab font-bold text-white text-lg leading-tight">{{ card.subjcode }}</h4>
+                    <p class="text-gray-400 text-xs mt-0.5 font-inria">{{ card.instructor }}</p>
+                  </div>
+                  <span class="bg-orange400/80 text-white text-xs px-2 py-1 rounded-full font-bold font-inria whitespace-nowrap">
+                    Sec {{ card.section }}
+                  </span>
+                </div>
+                <p class="text-gray-500 text-[10px] mt-1 font-inria">{{ card.sy }} · {{ card.sem }} Sem</p>
+              </div>
+
+              <!-- Card content with donut chart -->
+              <div class="px-5 py-4">
+                <div class="flex items-center gap-4">
+                  <!-- SVG Donut Pie Chart -->
+                  <div class="relative flex-shrink-0">
+                    <svg width="90" height="90" viewBox="0 0 90 90">
+                      <circle cx="45" cy="45" r="38" fill="none" stroke="#f3f4f6" stroke-width="14"/>
+                      <circle cx="45" cy="45" r="38" fill="none" stroke="#22c55e" stroke-width="14"
+                        :stroke-dasharray="`${card.total > 0 ? (card.safe / card.total) * 238.76 : 0} 238.76`"
+                        stroke-linecap="butt"
+                        transform="rotate(-90 45 45)"
+                        style="transition: stroke-dasharray 0.6s ease;"/>
+                      <circle cx="45" cy="45" r="38" fill="none" stroke="#f59e0b" stroke-width="14"
+                        :stroke-dasharray="`${card.total > 0 ? (card.warning / card.total) * 238.76 : 0} 238.76`"
+                        :stroke-dashoffset="`${card.total > 0 ? -(card.safe / card.total) * 238.76 : 0}`"
+                        stroke-linecap="butt"
+                        transform="rotate(-90 45 45)"
+                        style="transition: all 0.6s ease;"/>
+                      <circle cx="45" cy="45" r="38" fill="none" stroke="#ef4444" stroke-width="14"
+                        :stroke-dasharray="`${card.total > 0 ? (card.critical / card.total) * 238.76 : 0} 238.76`"
+                        :stroke-dashoffset="`${card.total > 0 ? -(card.safe / card.total) * 238.76 - (card.warning / card.total) * 238.76 : 0}`"
+                        stroke-linecap="butt"
+                        transform="rotate(-90 45 45)"
+                        style="transition: all 0.6s ease;"/>
+                      <text x="45" y="41" text-anchor="middle" style="font-size:13px; font-weight:700; fill:#1f2937;">{{ card.total }}</text>
+                      <text x="45" y="54" text-anchor="middle" style="font-size:7px; fill:#9ca3af;">students</text>
+                    </svg>
+                  </div>
+
+                  <!-- Legend -->
+                  <div class="flex-1 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                        <span class="text-xs font-inria text-gray-600">Safe</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs font-bold text-green-700">{{ card.safe }}</span>
+                        <span class="text-[10px] text-gray-400 font-inria">({{ card.total > 0 ? Math.round(card.safe / card.total * 100) : 0 }}%)</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 flex-shrink-0"></span>
+                        <span class="text-xs font-inria text-gray-600">Warning</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs font-bold text-yellow-700">{{ card.warning }}</span>
+                        <span class="text-[10px] text-gray-400 font-inria">({{ card.total > 0 ? Math.round(card.warning / card.total * 100) : 0 }}%)</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                        <span class="text-xs font-inria text-gray-600">Critical</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs font-bold text-red-700">{{ card.critical }}</span>
+                        <span class="text-[10px] text-gray-400 font-inria">({{ card.total > 0 ? Math.round(card.critical / card.total * 100) : 0 }}%)</span>
+                      </div>
+                    </div>
+                    <!-- Risk bar -->
+                    <div class="mt-1 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden flex">
+                      <div class="h-full bg-green-500 transition-all" :style="{ width: (card.total > 0 ? card.safe / card.total * 100 : 0) + '%' }"></div>
+                      <div class="h-full bg-yellow-400 transition-all" :style="{ width: (card.total > 0 ? card.warning / card.total * 100 : 0) + '%' }"></div>
+                      <div class="h-full bg-red-500 transition-all" :style="{ width: (card.total > 0 ? card.critical / card.total * 100 : 0) + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- At-Risk Students List for Guidance Referral -->
+          <div v-if="studentsAtRisk.length > 0" class="space-y-4">
+            <div class="border-t border-gray-200 pt-6">
+              <h3 class="text-lg font-epundaslab font-bold text-black700 mb-4">Students Requiring Attention</h3>
+              <div class="space-y-2">
+                <div v-for="student in studentsAtRisk" :key="student.key"
+                  class="bg-white rounded-lg border-l-4 p-4 flex items-center justify-between group hover:shadow-md transition-all"
+                  :class="student.riskLevel === 'critical' ? 'border-l-red-500 hover:bg-red-50' : 'border-l-yellow-500 hover:bg-yellow-50'">
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 flex-wrap">
+                      <!-- Risk badge -->
+                      <span v-if="student.riskLevel === 'critical'" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold font-inria whitespace-nowrap">
+                        <span class="text-lg">🚨</span> CRITICAL
+                      </span>
+                      <span v-else class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold font-inria whitespace-nowrap">
+                        <span class="text-lg">⚠️</span> WARNING
+                      </span>
+                      
+                      <!-- Student info -->
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-800 font-inria">{{ student.studentName }} (ID: {{ student.studentId }})</p>
+                        <p class="text-xs text-gray-600 font-inria mt-0.5">
+                          {{ student.courseCode }} · Sec {{ student.courseSection }} · Instructor: {{ student.instructorName }}
+                        </p>
+                      </div>
+                      
+                      <!-- Grade -->
+                      <div class="text-right whitespace-nowrap">
+                        <p class="text-lg font-bold" :class="student.riskLevel === 'critical' ? 'text-red-600' : 'text-yellow-600'">
+                          {{ student.currentGrade }}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Send to Guidance Button -->
+                  <button @click="sendStudentToGuidance(student)"
+                    :disabled="sendingToGuidance.has(student.key)"
+                    class="ml-4 px-4 py-2 rounded-lg font-inria text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0"
+                    :class="sendingToGuidance.has(student.key)
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : student.riskLevel === 'critical'
+                        ? 'bg-red-500 text-white hover:bg-red-600 transform hover:scale-105'
+                        : 'bg-yellow-500 text-white hover:bg-yellow-600 transform hover:scale-105'">
+                    <span v-if="!sendingToGuidance.has(student.key)" class="flex items-center gap-1">
+                      📞 Send to Guidance
+                    </span>
+                    <span v-else class="flex items-center gap-1">
+                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      Sending...
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                <p class="text-xs text-gray-500 font-inria mb-1">🚨 Critical Students</p>
+                <p class="text-2xl font-bold text-red-600 font-epundaslab">
+                  {{ studentsAtRisk.filter(s => s.riskLevel === 'critical').length }}
+                </p>
+                <p class="text-xs text-gray-400 font-inria mt-1">Grade < 60%</p>
+              </div>
+              <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-yellow-500">
+                <p class="text-xs text-gray-500 font-inria mb-1">⚠️ Warning Students</p>
+                <p class="text-2xl font-bold text-yellow-600 font-epundaslab">
+                  {{ studentsAtRisk.filter(s => s.riskLevel === 'warning').length }}
+                </p>
+                <p class="text-xs text-gray-400 font-inria mt-1">60% - {{ studentGradeThreshold }}%</p>
+              </div>
+              <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500">
+                <p class="text-xs text-gray-500 font-inria mb-1">📊 Average Grade</p>
+                <p class="text-2xl font-bold text-blue-600 font-epundaslab">
+                  {{ Math.round((studentsAtRisk.reduce((sum, s) => sum + s.currentGrade, 0) / (studentsAtRisk.length || 1)) * 100) / 100 }}%
+                </p>
+                <p class="text-xs text-gray-400 font-inria mt-1">Across at-risk students</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-white mt-auto">
+        <div class="w-full max-w-full mx-auto p-4 md:py-6">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <img src="../../assets/image/ceit-logo.png" class="h-12" alt="Logo" />
+              <div class="text-xs text-gray-500 font-inria">
+                <p class="font-roboto font-bold text-black700">Caraga State University</p>
+                <p>Ampayon, Butuan City</p>
+              </div>
+            </div>
+            <ul class="flex flex-wrap items-center text-xs font-inria font-medium text-gray-500 gap-6">
+              <li><a href="#" class="hover:text-orange400 transition-colors">About</a></li>
+              <li><a href="#" class="hover:text-orange400 transition-colors">Privacy Policy</a></li>
+              <li><a href="#" class="hover:text-orange400 transition-colors">Contact</a></li>
+            </ul>
+          </div>
+          <hr class="my-4 border-gray-200" />
+          <span class="block text-xs text-gray-400 font-inria text-center">
+            © 2024 Caraga State University - ICT Center. All Rights Reserved.
+          </span>
+        </div>
+      </footer>
+
+      <!-- Scroll to Top -->
+      <button v-show="showScrollTop" @click="scrollToTop"
+        class="fixed bottom-6 right-6 bg-orange400 hover:bg-orange300 text-white p-3.5 rounded-lg shadow-lg transition-all z-50 hover:scale-110">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+
+    </div>
+    <!-- End main flex container -->
+
   </div>
+
 </template>
 
 <script>
@@ -1034,7 +1439,9 @@ export default {
       showScrollTop: false,
       activePage: { name: "Dashboard", component: null },
       menuItems: [
-        { name: "Dashboard",          component: null,              icon: require("../../assets/image/dashboard-sidebar.png") },
+        { name: "Dashboard",                    component: null,              icon: require("../../assets/image/dashboard-sidebar.png") },
+        { name: "Instructor Overview",          component: null,              icon: require("../../assets/image/user-sidebar.png") },
+        { name: "Student Overview",             component: null,              icon: require("../../assets/image/user-sidebar.png") },
       ],
       masterlistStats: {
         count: 0,
@@ -1045,6 +1452,17 @@ export default {
       obeClassCards: [],
       filterYear: '',
       filterInstructor: '',
+      // ── Instructor Overview ──
+      instructorOverviewLoading: false,
+      instructors: [],
+      instructorFilterSearch: '',
+      // ── Student Overview ──
+      studentOverviewLoading: false,
+      studentsAtRisk: [],
+      studentFilterSearch: '',
+      studentGradeThreshold: 75,
+      studentCourseCards: [],
+      sendingToGuidance: new Set(),
       riskModal: {
         open: false,
         loading: false,
@@ -1148,6 +1566,28 @@ export default {
         )
       }
       return list
+    },
+    filteredInstructors() {
+      let list = [...this.instructors]
+      if (this.instructorFilterSearch.trim()) {
+        const q = this.instructorFilterSearch.trim().toLowerCase()
+        list = list.filter(inst =>
+          (inst.name || '').toLowerCase().includes(q)
+        )
+      }
+      return list
+    },
+    filteredStudentsAtRisk() {
+      let list = [...this.studentsAtRisk]
+      if (this.studentFilterSearch.trim()) {
+        const q = this.studentFilterSearch.trim().toLowerCase()
+        list = list.filter(student =>
+          (student.studentName || '').toLowerCase().includes(q) ||
+          String(student.studentId || '').toLowerCase().includes(q) ||
+          (student.instructorName || '').toLowerCase().includes(q)
+        )
+      }
+      return list
     }
   },
   async mounted() {
@@ -1194,6 +1634,10 @@ export default {
       if (item.name === 'Dashboard') {
         this.fetchDashboardStats()
         if (this.obeClassCards.length === 0) this.fetchAllClassRisks()
+      } else if (item.name === 'Instructor Overview') {
+        this.fetchInstructorObeStatus()
+      } else if (item.name === 'Student Overview') {
+        this.fetchStudentsWithLowGrades()
       }
     },
     showLogout() {
@@ -1397,6 +1841,385 @@ export default {
         this.riskModal.trajectoryData = { error: 'Failed to load trajectory data.' }
       } finally {
         this.riskModal.trajectoryLoading = false
+      }
+    },
+
+    // ── Instructor OBE Status ────────────────────────────────────────
+    async fetchInstructorObeStatus() {
+      this.instructorOverviewLoading = true
+      this.instructors = []
+      try {
+        // Fetch all classes to get list of instructors
+        const response = await this.$axios.get('/masterlist/all-classes', { withCredentials: true })
+        const classesData = response.data || []
+        
+        if (!Array.isArray(classesData) || classesData.length === 0) {
+          this.instructors = []
+          return
+        }
+        
+        // Group by employee ID and get unique instructors with their classes
+        const instructorMap = new Map()
+        classesData.forEach(cls => {
+          if (cls.employee && cls.employee.empid) {
+            const empid = cls.employee.empid
+            const name = `${cls.employee.firstname || ''} ${cls.employee.lastname || ''}`.trim()
+            
+            if (!instructorMap.has(empid)) {
+              instructorMap.set(empid, {
+                empid,
+                name,
+                classes: []
+              })
+            }
+            
+            // Add class if not already present
+            const existingClass = instructorMap.get(empid).classes.find(
+              c => c.subjcode === cls.subjcode && c.section === cls.section
+            )
+            if (!existingClass) {
+              instructorMap.get(empid).classes.push({
+                subjcode: cls.subjcode,
+                section: cls.section,
+                sy: cls.sy,
+                sem: cls.sem
+              })
+            }
+          }
+        })
+        
+        // Check OBE completion status for each instructor in parallel
+        const instructorsList = []
+        const instructorCheckPromises = []
+        
+        for (const [empid, instructor] of instructorMap) {
+          const promise = (async () => {
+            let hasCourseOutcomes = false
+            let hasAssessmentTypes = false
+            let totalActivities = 0
+            let totalGradeRecords = 0
+            
+            // Check all classes for this instructor in parallel
+            const classCheckResults = await Promise.allSettled(
+              instructor.classes.map(async cls => {
+                const responses = await Promise.allSettled([
+                  // Get syllabus (course outcomes + weights)
+                  this.$axios.get(`/obe/syllabus/${empid}/${cls.subjcode}/${cls.section}`, { withCredentials: true }),
+                  // Get class activities
+                  this.$axios.get(`/class-activity/class/${cls.subjcode}/${cls.section}`, { withCredentials: true }),
+                  // Get grade records
+                  this.$axios.get(`/raw-score/class/${cls.subjcode}/${cls.section}`, { withCredentials: true })
+                ])
+                
+                return {
+                  cls,
+                  syllabus: responses[0].status === 'fulfilled' ? responses[0].value.data : null,
+                  activities: responses[1].status === 'fulfilled' ? responses[1].value.data : null,
+                  grades: responses[2].status === 'fulfilled' ? responses[2].value.data : null
+                }
+              })
+            )
+            
+            // Process all results
+            classCheckResults.forEach(result => {
+              if (result.status === 'fulfilled' && result.value) {
+                const { syllabus, activities, grades } = result.value
+                
+                // Check syllabus setup (course outcomes + assessment types)
+                if (syllabus?.data || syllabus) {
+                  const data = syllabus?.data || syllabus
+                  
+                  // Check if has course outcomes with descriptions
+                  if (data.outcomes && Array.isArray(data.outcomes) && data.outcomes.length > 0) {
+                    const hasDescriptions = data.outcomes.some(o => o.description && o.description.trim())
+                    if (hasDescriptions) hasCourseOutcomes = true
+                  }
+                  
+                  // Check if has assessment types/weights
+                  if (data.weights && Array.isArray(data.weights) && data.weights.length > 0) {
+                    hasAssessmentTypes = true
+                  }
+                }
+                
+                // Count class activities
+                if (activities && Array.isArray(activities)) {
+                  totalActivities += activities.length
+                } else if (activities?.data && Array.isArray(activities.data)) {
+                  totalActivities += activities.data.length
+                }
+                
+                // Count grade records
+                if (grades && Array.isArray(grades)) {
+                  totalGradeRecords += grades.length
+                } else if (grades?.data && Array.isArray(grades.data)) {
+                  totalGradeRecords += grades.data.length
+                }
+              }
+            })
+            
+            // Check for assessment types if not found via weights
+            if (!hasAssessmentTypes) {
+              try {
+                const assessmentTypes = await this.$axios.get(`/obe/assessment-types?empid=${empid}`, { withCredentials: true })
+                if (assessmentTypes.data && Array.isArray(assessmentTypes.data) && assessmentTypes.data.length > 0) {
+                  hasAssessmentTypes = true
+                }
+              } catch (err) {
+                console.log(`Assessment types check failed for empid ${empid}:`, err.message)
+              }
+            }
+            
+            // Determine completion status and create detailed progress
+            const syllabusComplete = hasCourseOutcomes && hasAssessmentTypes
+            const activitiesAdded = totalActivities > 0
+            const gradesEntered = totalGradeRecords > 0
+            
+            const status = syllabusComplete ? 'complete' : 'incomplete'
+            const flags = []
+            const progressItems = []
+            
+            // Build progress tracking
+            if (syllabusComplete) {
+              progressItems.push('✅ Syllabus Setup (Course Outcomes & Assessment Types)')
+            } else {
+              if (!hasCourseOutcomes) flags.push('No Course Outcomes')
+              if (!hasAssessmentTypes) flags.push('No Assessment Types')
+              progressItems.push('❌ Syllabus Setup')
+            }
+            
+            progressItems.push(activitiesAdded ? `✅ Activities (${totalActivities} added)` : '❌ No Activities Added')
+            progressItems.push(gradesEntered ? `✅ Grades (${totalGradeRecords} records)` : '❌ No Grades Entered')
+            
+            // Calculate overall completion percentage
+            const completionSteps = [syllabusComplete, activitiesAdded, gradesEntered]
+            const completionPercentage = Math.round((completionSteps.filter(Boolean).length / 3) * 100)
+            
+            return {
+              empid,
+              name: instructor.name || 'Unknown',
+              classCount: instructor.classes.length,
+              status,
+              flags,
+              hasCourseOutcomes,
+              hasAssessmentTypes,
+              activitiesAdded,
+              totalActivities,
+              gradesEntered,
+              totalGradeRecords,
+              progressItems,
+              completionPercentage
+            }
+          })()
+          
+          instructorCheckPromises.push(promise)
+        }
+        
+        // Wait for all instructor checks to complete
+        const results = await Promise.allSettled(instructorCheckPromises)
+        results.forEach(result => {
+          if (result.status === 'fulfilled' && result.value) {
+            instructorsList.push(result.value)
+          }
+        })
+        
+        this.instructors = instructorsList.sort((a, b) => {
+          // Show incomplete first
+          if (a.status !== b.status) return a.status === 'incomplete' ? -1 : 1
+          return a.name.localeCompare(b.name)
+        })
+      } catch (err) {
+        console.error('Error fetching instructor OBE status:', err)
+        if (this.$notify && this.$notify.error) {
+          this.$notify.error('Failed to load instructor data')
+        } else {
+          alert('Failed to load instructor data')
+        }
+      } finally {
+        this.instructorOverviewLoading = false
+      }
+    },
+
+    // ── Student Low Grades Monitor ──────────────────────────────────
+    async fetchStudentsWithLowGrades() {
+      this.studentOverviewLoading = true
+      this.studentsAtRisk = []
+      this.studentCourseCards = []
+      try {
+        // Fetch all classes and their instructors
+        const response = await this.$axios.get('/masterlist/all-classes', { withCredentials: true })
+        const classesData = response.data || []
+        
+        if (!Array.isArray(classesData) || classesData.length === 0) {
+          this.studentsAtRisk = []
+          this.studentCourseCards = []
+          return
+        }
+
+        const studentsMap = new Map()
+        const courseCardsMap = new Map()
+        
+        // Fetch grades for each class in parallel
+        const gradesFetchPromises = classesData.map(async cls => {
+          try {
+            const gradesResponse = await this.$axios.get(
+              `/raw-score/class/${cls.subjcode}/${cls.section}`,
+              { withCredentials: true }
+            )
+            
+            const grades = gradesResponse.data || []
+            const instructorName = cls.employee 
+              ? `${cls.employee.firstname || ''} ${cls.employee.lastname || ''}`.trim()
+              : 'Unknown Instructor'
+            const courseKey = `${cls.subjcode}-${cls.section}`
+            
+            // Initialize course card if not exists
+            if (!courseCardsMap.has(courseKey)) {
+              courseCardsMap.set(courseKey, {
+                key: courseKey,
+                subjcode: cls.subjcode,
+                section: cls.section,
+                courseName: cls.descriptive_name || cls.subjcode,
+                instructor: instructorName,
+                sy: cls.sy,
+                sem: cls.sem,
+                safe: 0,
+                warning: 0,
+                critical: 0,
+                total: 0,
+                students: []
+              })
+            }
+            
+            // Process each grade record
+            if (Array.isArray(grades)) {
+              grades.forEach(grade => {
+                // Calculate cumulative grade
+                let cumulativeGrade = 0
+                
+                if (grade.totalScore !== undefined && grade.totalScore !== null) {
+                  cumulativeGrade = parseFloat(grade.totalScore) || 0
+                } else if (grade.scores && Array.isArray(grade.scores)) {
+                  const validScores = grade.scores.filter(s => s.score !== undefined && s.score !== null)
+                  if (validScores.length > 0) {
+                    cumulativeGrade = validScores.reduce((sum, s) => sum + parseFloat(s.score || 0), 0) / validScores.length
+                  }
+                }
+                
+                if (cumulativeGrade > 0) {
+                  const key = `${grade.studid}-${cls.subjcode}-${cls.section}`
+                  let riskLevel = 'safe'
+                  
+                  if (cumulativeGrade < 60) {
+                    riskLevel = 'critical'
+                  } else if (cumulativeGrade < this.studentGradeThreshold) {
+                    riskLevel = 'warning'
+                  }
+                  
+                  const card = courseCardsMap.get(courseKey)
+                  
+                  const studentData = {
+                    key,
+                    studentId: grade.studid,
+                    studentName: grade.student_name || 'Unknown Student',
+                    courseCode: cls.subjcode,
+                    courseSection: cls.section,
+                    courseName: cls.descriptive_name || cls.subjcode,
+                    instructorName,
+                    currentGrade: Math.round(cumulativeGrade * 100) / 100,
+                    riskLevel,
+                    sy: cls.sy,
+                    sem: cls.sem
+                  }
+                  
+                  card.total++
+                  if (riskLevel === 'safe') {
+                    card.safe++
+                  } else if (riskLevel === 'warning') {
+                    card.warning++
+                  } else if (riskLevel === 'critical') {
+                    card.critical++
+                  }
+                  card.students.push(studentData)
+                  
+                  // Only add to at-risk if not safe
+                  if (riskLevel !== 'safe') {
+                    if (!studentsMap.has(key)) {
+                      studentsMap.set(key, studentData)
+                    }
+                  }
+                }
+              })
+            }
+          } catch (err) {
+            console.log(`Failed to fetch grades for ${cls.subjcode}-${cls.section}:`, err.message)
+          }
+        })
+        
+        // Wait for all grade fetches to complete
+        await Promise.allSettled(gradesFetchPromises)
+        
+        // Convert maps to arrays
+        this.studentsAtRisk = Array.from(studentsMap.values())
+          .sort((a, b) => {
+            // Show critical first, then warning, then by grade (lowest first)
+            const riskOrder = { critical: 0, warning: 1, safe: 2 }
+            if (a.riskLevel !== b.riskLevel) {
+              return riskOrder[a.riskLevel] - riskOrder[b.riskLevel]
+            }
+            return a.currentGrade - b.currentGrade
+          })
+        
+        this.studentCourseCards = Array.from(courseCardsMap.values())
+          .filter(card => card.total > 0)
+          .sort((a, b) => {
+            // Show courses with more critical students first
+            if (a.critical !== b.critical) return b.critical - a.critical
+            if (a.warning !== b.warning) return b.warning - a.warning
+            return a.subjcode.localeCompare(b.subjcode)
+          })
+          
+      } catch (err) {
+        console.error('Error fetching students with low grades:', err)
+        this.studentsAtRisk = []
+        this.studentCourseCards = []
+      } finally {
+        this.studentOverviewLoading = false
+      }
+    },
+
+    async sendStudentToGuidance(student) {
+      const key = student.key
+      try {
+        this.sendingToGuidance.add(key)
+        
+        // TODO: Replace with actual guidance referral API endpoint
+        // For now, we'll just show a success message
+        // await this.$axios.post('/guidance/referral', {
+        //   studentId: student.studentId,
+        //   courseCode: student.courseCode,
+        //   currentGrade: student.currentGrade,
+        //   riskLevel: student.riskLevel,
+        //   instructorName: student.instructorName
+        // }, { withCredentials: true })
+        
+        // Simulated success
+        setTimeout(() => {
+          this.sendingToGuidance.delete(key)
+          if (this.$notify && this.$notify.success) {
+            this.$notify.success(`Student ${student.studentName} referred to Guidance Office`)
+          } else {
+            alert(`Student ${student.studentName} has been referred to the Guidance Office`)
+          }
+        }, 300)
+        
+      } catch (err) {
+        this.sendingToGuidance.delete(key)
+        console.error('Error sending student to guidance:', err)
+        if (this.$notify && this.$notify.error) {
+          this.$notify.error('Failed to send student to guidance')
+        } else {
+          alert('Failed to send student to guidance')
+        }
       }
     },
 

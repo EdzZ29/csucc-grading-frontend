@@ -576,20 +576,7 @@
             </div>
 
             <div v-if="riskModal.activeTab === 'risk'" class="flex items-center gap-4 px-6 py-3">
-              <div class="flex-1 max-w-xs relative">
-                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-                </svg>
-                <input v-model="riskModal.search" type="text" placeholder="Search student name or ID..."
-                  class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange400"/>
-              </div>
-              <select v-model="riskModal.filter"
-                class="flex-shrink-0 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange400">
-                <option value="">All Students</option>
-                <option value="Critical">Critical Only</option>
-                <option value="Warning">Warning Only</option>
-                <option value="Safe">Safe Only</option>
-              </select>
+              <!-- Search only shows when a category is selected (moved to inline in tab content) -->
             </div>
 
             <div v-if="riskModal.activeTab === 'heatmap'" class="flex items-center gap-3 px-6 py-3">
@@ -633,93 +620,165 @@
           <div class="flex-1 overflow-y-auto">
 
             <!-- TAB 1: Risk List -->
-            <div v-if="riskModal.activeTab === 'risk'" class="px-5 py-4 space-y-3">
-              <div v-if="riskModal.loading" class="space-y-3">
-                <div v-for="n in 5" :key="n" class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+            <div v-if="riskModal.activeTab === 'risk'" class="px-5 py-4 space-y-6">
+              <!-- Risk Category Cards (only show if no category is selected) -->
+              <div v-if="!riskModal.selectedRiskCategory" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Safe Card -->
+                <button @click="riskModal.selectedRiskCategory = 'Safe'"
+                  class="rounded-xl border-2 border-green-200 bg-green-50 p-6 text-left hover:shadow-lg hover:border-green-400 transition-all transform hover:-translate-y-1 cursor-pointer group">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-bold text-green-600 uppercase">Safe</span>
+                  </div>
+                  <p class="text-4xl font-epundaslab font-bold text-green-700 mb-2">{{ riskCategoryCounts.Safe }}</p>
+                  <p class="text-sm text-green-600 font-inria">Students on track</p>
+                  <p class="text-xs text-green-500 mt-3 font-inria group-hover:translate-x-1 transition-transform">Click to view students →</p>
+                </button>
+
+                <!-- Warning Card -->
+                <button @click="riskModal.selectedRiskCategory = 'Warning'"
+                  class="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-6 text-left hover:shadow-lg hover:border-yellow-400 transition-all transform hover:-translate-y-1 cursor-pointer group">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-bold text-yellow-600 uppercase">Warning</span>
+                  </div>
+                  <p class="text-4xl font-epundaslab font-bold text-yellow-700 mb-2">{{ riskCategoryCounts.Warning }}</p>
+                  <p class="text-sm text-yellow-600 font-inria">Need attention</p>
+                  <p class="text-xs text-yellow-500 mt-3 font-inria group-hover:translate-x-1 transition-transform">Click to view students →</p>
+                </button>
+
+                <!-- Critical Card -->
+                <button @click="riskModal.selectedRiskCategory = 'Critical'"
+                  class="rounded-xl border-2 border-red-200 bg-red-50 p-6 text-left hover:shadow-lg hover:border-red-400 transition-all transform hover:-translate-y-1 cursor-pointer group">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                      <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-bold text-red-600 uppercase">Critical</span>
+                  </div>
+                  <p class="text-4xl font-epundaslab font-bold text-red-700 mb-2">{{ riskCategoryCounts.Critical }}</p>
+                  <p class="text-sm text-red-600 font-inria">At risk of failure</p>
+                  <p class="text-xs text-red-500 mt-3 font-inria group-hover:translate-x-1 transition-transform">Click to view students →</p>
+                </button>
               </div>
-              <div v-else-if="filteredModalStudents.length === 0"
-                class="flex flex-col items-center justify-center py-16 text-gray-400">
-                <p class="font-inria text-sm">No students match this filter.</p>
-              </div>
-              <div v-for="(student, idx) in filteredModalStudents" :key="student.studid"
-                class="rounded-xl border overflow-hidden"
-                :class="{ 'border-red-200': student.risk_level==='Critical', 'border-yellow-200': student.risk_level==='Warning', 'border-green-200': student.risk_level==='Safe' }">
-                <div class="flex items-stretch"
-                  :class="{ 'bg-red-50': student.risk_level==='Critical', 'bg-yellow-50': student.risk_level==='Warning', 'bg-green-50': student.risk_level==='Safe' }">
-                  <div class="flex flex-col items-center justify-center px-4 py-3 gap-1 border-r border-white/60 min-w-[56px]"
-                    :class="{ 'bg-red-100': student.risk_level==='Critical', 'bg-yellow-100': student.risk_level==='Warning', 'bg-green-100': student.risk_level==='Safe' }">
-                    <span class="text-[10px] font-bold text-gray-400">#{{ idx + 1 }}</span>
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                      :class="{ 'bg-red-500': student.risk_level==='Critical', 'bg-yellow-500': student.risk_level==='Warning', 'bg-green-500': student.risk_level==='Safe' }">
-                      <div class="w-3 h-3 rounded-full bg-white/80"></div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col justify-center px-4 py-3 w-52 flex-shrink-0 border-r border-white/60">
-                    <p class="font-bold text-gray-800 text-sm font-inria leading-tight">{{ student.student_name }}</p>
-                    <p class="text-[10px] text-gray-500 font-inria mt-0.5">ID: {{ student.studid }}</p>
-                    <span v-if="student.is_partial" class="mt-1 text-[9px] text-blue-600 font-inria bg-blue-50 px-1.5 py-0.5 rounded-full w-fit">⚡ Early prediction</span>
-                  </div>
-                  <div class="flex items-center justify-center px-4 border-r border-white/60 flex-shrink-0">
-                    <span v-if="student.risk_level==='Critical'" class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full border border-red-300">
-                      <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>Critical
-                    </span>
-                    <span v-else-if="student.risk_level==='Warning'" class="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1.5 rounded-full border border-yellow-300">
-                      <span class="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></span>Warning
-                    </span>
-                    <span v-else class="inline-flex items-center gap-1.5 bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-300">
-                      <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>Safe
-                    </span>
-                  </div>
-                  <div class="flex flex-col justify-center px-4 py-3 w-40 flex-shrink-0 border-r border-white/60">
-                    <div class="flex justify-between text-[10px] mb-1">
-                      <span class="text-gray-500 font-inria">Fail Probability</span>
-                      <span class="font-bold" :class="{ 'text-red-600': student.fail_probability>=70, 'text-yellow-600': student.fail_probability>=40&&student.fail_probability<70, 'text-green-600': student.fail_probability<40 }">{{ student.fail_probability }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div class="h-2 rounded-full transition-all"
-                        :class="{ 'bg-red-500': student.fail_probability>=70, 'bg-yellow-500': student.fail_probability>=40&&student.fail_probability<70, 'bg-green-500': student.fail_probability<40 }"
-                        :style="{ width: student.fail_probability + '%' }"></div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col justify-center items-center px-4 py-3 w-28 flex-shrink-0 border-r border-white/60">
-                    <p class="text-[10px] text-gray-500 font-inria">CO Pass Rate</p>
-                    <p class="font-bold text-base" :class="student.co_pass_rate>=0.75?'text-green-700':student.co_pass_rate>=0.5?'text-yellow-700':'text-red-700'">
-                      {{ student.co_pass_rate !== undefined ? (student.co_pass_rate * 100).toFixed(0) : '—' }}%
-                    </p>
-                  </div>
-                  <div class="flex flex-col justify-center items-center px-4 py-3 w-28 flex-shrink-0 border-r border-white/60">
-                    <p class="text-[10px] text-gray-500 font-inria">Weighted Score</p>
-                    <p class="font-bold text-base"
-                      :class="{ 'text-red-600': (student.total_weighted_percent||0)<60, 'text-yellow-600': (student.total_weighted_percent||0)>=60&&(student.total_weighted_percent||0)<75, 'text-green-600': (student.total_weighted_percent||0)>=75 }">
-                      {{ student.total_weighted_percent ? student.total_weighted_percent.toFixed(1) + '%' : '—' }}
-                    </p>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-1 px-4 py-3 flex-1 min-w-0">
-                    <template v-if="student.weak_cos && student.weak_cos.length > 0">
-                      <span class="text-[10px] text-gray-500 font-inria mr-1 flex-shrink-0">Weak COs:</span>
-                      <span v-for="co in student.weak_cos" :key="co"
-                        class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-200 flex-shrink-0">{{ co }}</span>
-                    </template>
-                    <span v-else class="text-[10px] text-gray-400 font-inria italic">
-                      {{ student.risk_level==='Safe' ? 'All COs on track' : 'No CO data yet' }}
-                    </span>
-                  </div>
+
+              <!-- Back Button & Search (show when category is selected) -->
+              <div v-if="riskModal.selectedRiskCategory" class="flex items-center gap-3">
+                <button @click="riskModal.selectedRiskCategory = null; riskModal.search = ''"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back to Categories
+                </button>
+                <div class="flex-1 max-w-xs relative">
+                  <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                  </svg>
+                  <input v-model="riskModal.search" type="text" :placeholder="'Search ' + riskModal.selectedRiskCategory + ' students...'"
+                    class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-inria focus:outline-none focus:ring-2 focus:ring-orange-400"/>
                 </div>
-                <div class="border-t bg-white"
+              </div>
+
+              <!-- Students List (show only when category is selected) -->
+              <div v-if="riskModal.selectedRiskCategory">
+                <div v-if="riskModal.loading" class="space-y-3">
+                  <div v-for="n in 5" :key="n" class="h-24 bg-gray-100 rounded-xl animate-pulse"></div>
+                </div>
+                <div v-else-if="filteredModalStudents.length === 0"
+                  class="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <p class="font-inria text-sm">No {{ riskModal.selectedRiskCategory }} students found.</p>
+                </div>
+                <div v-for="(student, idx) in filteredModalStudents" :key="student.studid"
+                  class="rounded-xl border overflow-hidden cursor-pointer hover:shadow-lg transition-all"
                   :class="{ 'border-red-200': student.risk_level==='Critical', 'border-yellow-200': student.risk_level==='Warning', 'border-green-200': student.risk_level==='Safe' }">
-                  <div class="px-4 py-3">
-                    <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria uppercase tracking-wide">Needs Intervention</p>
-                    <div v-if="student.weak_cos && student.weak_cos.length > 0" class="flex flex-wrap gap-2">
-                      <div v-for="co in student.weak_cos" :key="'int-' + co"
-                        class="flex flex-col gap-1 bg-red-50 border border-red-100 rounded-lg px-3 py-2 min-w-[120px]">
-                        <span class="text-red-800 text-[10px] font-black uppercase">{{ co }}</span>
-                        <span v-if="student.weak_co_details && student.weak_co_details[co] && student.weak_co_details[co].length"
-                          class="text-[11px] text-red-600 font-bold font-inria">{{ student.weak_co_details[co].join(', ') }}</span>
-                        <span v-else class="text-[11px] text-red-600 font-bold font-inria">Missing Submissions</span>
+                  <div class="flex items-stretch"
+                    :class="{ 'bg-red-50': student.risk_level==='Critical', 'bg-yellow-50': student.risk_level==='Warning', 'bg-green-50': student.risk_level==='Safe' }">
+                    <div class="flex flex-col items-center justify-center px-4 py-3 gap-1 border-r border-white/60 min-w-[56px]"
+                      :class="{ 'bg-red-100': student.risk_level==='Critical', 'bg-yellow-100': student.risk_level==='Warning', 'bg-green-100': student.risk_level==='Safe' }">
+                      <span class="text-[10px] font-bold text-gray-400">#{{ idx + 1 }}</span>
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                        :class="{ 'bg-red-500': student.risk_level==='Critical', 'bg-yellow-500': student.risk_level==='Warning', 'bg-green-500': student.risk_level==='Safe' }">
+                        <div class="w-3 h-3 rounded-full bg-white/80"></div>
                       </div>
                     </div>
-                    <div v-else-if="student.risk_level==='Safe'" class="text-[11px] text-green-600 font-bold font-inria">All assessments are safely passing.</div>
-                    <div v-else class="text-[11px] text-gray-400 font-inria italic">Enter more scores for detailed assessment data.</div>
+                    <div class="flex flex-col justify-center px-4 py-3 w-52 flex-shrink-0 border-r border-white/60">
+                      <p class="font-bold text-gray-800 text-sm font-inria leading-tight">{{ student.student_name }}</p>
+                      <p class="text-[10px] text-gray-500 font-inria mt-0.5">ID: {{ student.studid }}</p>
+                      <span v-if="student.is_partial" class="mt-1 text-[9px] text-blue-600 font-inria bg-blue-50 px-1.5 py-0.5 rounded-full w-fit">⚡ Early prediction</span>
+                    </div>
+                    <div class="flex items-center justify-center px-4 border-r border-white/60 flex-shrink-0">
+                      <span v-if="student.risk_level==='Critical'" class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full border border-red-300">
+                        <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>Critical
+                      </span>
+                      <span v-else-if="student.risk_level==='Warning'" class="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1.5 rounded-full border border-yellow-300">
+                        <span class="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></span>Warning
+                      </span>
+                      <span v-else class="inline-flex items-center gap-1.5 bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-300">
+                        <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>Safe
+                      </span>
+                    </div>
+                    <div class="flex flex-col justify-center px-4 py-3 w-40 flex-shrink-0 border-r border-white/60">
+                      <div class="flex justify-between text-[10px] mb-1">
+                        <span class="text-gray-500 font-inria">Fail Probability</span>
+                        <span class="font-bold" :class="{ 'text-red-600': student.fail_probability>=70, 'text-yellow-600': student.fail_probability>=40&&student.fail_probability<70, 'text-green-600': student.fail_probability<40 }">{{ student.fail_probability }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all"
+                          :class="{ 'bg-red-500': student.fail_probability>=70, 'bg-yellow-500': student.fail_probability>=40&&student.fail_probability<70, 'bg-green-500': student.fail_probability<40 }"
+                          :style="{ width: student.fail_probability + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="flex flex-col justify-center items-center px-4 py-3 w-28 flex-shrink-0 border-r border-white/60">
+                      <p class="text-[10px] text-gray-500 font-inria">CO Pass Rate</p>
+                      <p class="font-bold text-base" :class="student.co_pass_rate>=0.75?'text-green-700':student.co_pass_rate>=0.5?'text-yellow-700':'text-red-700'">
+                        {{ student.co_pass_rate !== undefined ? (student.co_pass_rate * 100).toFixed(0) : '—' }}%
+                      </p>
+                    </div>
+                    <div class="flex flex-col justify-center items-center px-4 py-3 w-28 flex-shrink-0 border-r border-white/60">
+                      <p class="text-[10px] text-gray-500 font-inria">Weighted Score</p>
+                      <p class="font-bold text-base"
+                        :class="{ 'text-red-600': (student.total_weighted_percent||0)<60, 'text-yellow-600': (student.total_weighted_percent||0)>=60&&(student.total_weighted_percent||0)<75, 'text-green-600': (student.total_weighted_percent||0)>=75 }">
+                        {{ student.total_weighted_percent ? student.total_weighted_percent.toFixed(1) + '%' : '—' }}
+                      </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1 px-4 py-3 flex-1 min-w-0">
+                      <template v-if="student.weak_cos && student.weak_cos.length > 0">
+                        <span class="text-[10px] text-gray-500 font-inria mr-1 flex-shrink-0">Weak COs:</span>
+                        <span v-for="co in student.weak_cos" :key="co"
+                          class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-200 flex-shrink-0">{{ co }}</span>
+                      </template>
+                      <span v-else class="text-[10px] text-gray-400 font-inria italic">
+                        {{ student.risk_level==='Safe' ? 'All COs on track' : 'No CO data yet' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="border-t bg-white"
+                    :class="{ 'border-red-200': student.risk_level==='Critical', 'border-yellow-200': student.risk_level==='Warning', 'border-green-200': student.risk_level==='Safe' }">
+                    <div class="px-4 py-3">
+                      <p class="text-[10px] font-bold text-gray-600 mb-1.5 font-inria uppercase tracking-wide">Needs Intervention</p>
+                      <div v-if="student.weak_cos && student.weak_cos.length > 0" class="flex flex-wrap gap-2">
+                        <div v-for="co in student.weak_cos" :key="'int-' + co"
+                          class="flex flex-col gap-1 bg-red-50 border border-red-100 rounded-lg px-3 py-2 min-w-[120px]">
+                          <span class="text-red-800 text-[10px] font-black uppercase">{{ co }}</span>
+                          <span v-if="student.weak_co_details && student.weak_co_details[co] && student.weak_co_details[co].length"
+                            class="text-[11px] text-red-600 font-bold font-inria">{{ student.weak_co_details[co].join(', ') }}</span>
+                          <span v-else class="text-[11px] text-red-600 font-bold font-inria">Missing Submissions</span>
+                        </div>
+                      </div>
+                      <div v-else-if="student.risk_level==='Safe'" class="text-[11px] text-green-600 font-bold font-inria">All assessments are safely passing.</div>
+                      <div v-else class="text-[11px] text-gray-400 font-inria italic">Enter more scores for detailed assessment data.</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -898,7 +957,7 @@ export default {
       obeCardsPerPage: 3,
       riskModal: {
         open: false, loading: false, card: null, students: [],
-        filter: '', search: '', activeTab: 'risk',
+        filter: '', search: '', activeTab: 'risk', selectedRiskCategory: null,
         heatmapData: null, heatmapLoading: false, heatmapSearch: '',
         trajectoryData: null, trajectoryLoading: false, trajectorySearch: '', trajectoryFilter: ''
       }
@@ -937,12 +996,26 @@ export default {
     },
     filteredModalStudents() {
       let list = this.riskModal.students
-      if (this.riskModal.filter) list = list.filter(s => s.risk_level === this.riskModal.filter)
+      // Filter by selected risk category if one is chosen
+      if (this.riskModal.selectedRiskCategory) {
+        list = list.filter(s => s.risk_level === this.riskModal.selectedRiskCategory)
+      } else if (this.riskModal.filter) {
+        list = list.filter(s => s.risk_level === this.riskModal.filter)
+      }
       if (this.riskModal.search.trim()) {
         const q = this.riskModal.search.trim().toLowerCase()
         list = list.filter(s => (s.student_name||'').toLowerCase().includes(q) || String(s.studid||'').toLowerCase().includes(q))
       }
       return list
+    },
+    riskCategoryCounts() {
+      const counts = { Safe: 0, Warning: 0, Critical: 0 }
+      this.riskModal.students.forEach(s => {
+        if (s.risk_level === 'Safe') counts.Safe++
+        else if (s.risk_level === 'Warning') counts.Warning++
+        else if (s.risk_level === 'Critical') counts.Critical++
+      })
+      return counts
     },
     filteredHeatmapStudents() {
       if (!this.riskModal.heatmapData) return []

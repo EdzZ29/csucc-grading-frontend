@@ -12,7 +12,8 @@
         <div class="flex items-start gap-4 mb-4">
           <div :class="[
             'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0',
-            validationModal.type === 'below' ? 'bg-orange-100' : 'bg-red-100'
+            validationModal.type === 'below' ? 'bg-orange-100' : 'bg-red-100',
+            validationModal.type === 'missing-description' ? 'bg-red-100' : ''
           ]">
             <svg :class="validationModal.type === 'below' ? 'text-orange-600' : 'text-red-600'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -31,7 +32,7 @@
           'rounded-lg p-4 mb-6',
           validationModal.type === 'below' ? 'bg-orange-50 border border-orange-200' : 'bg-red-50 border border-red-200'
         ]">
-          <p :class="['text-sm', validationModal.type === 'below' ? 'text-orange-800' : 'text-red-800']">
+          <p :class="['text-sm font-medium', validationModal.type === 'below' ? 'text-orange-800' : 'text-red-800']">
             {{ validationModal.message }}
           </p>
           <p class="text-sm font-bold mt-2" :class="validationModal.type === 'below' ? 'text-orange-600' : 'text-red-600'">
@@ -127,11 +128,13 @@
             </div>
           </div>
           <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-            <div class="flex gap-2 flex-1">
+            <div class="flex gap-2 flex-1 flex-col sm:flex-row">
               <input v-model="newType.name" placeholder="Name (e.g. Field Trip)" :disabled="isLocked"
-                class="text-xs p-2.5 border border-gray-200 rounded-lg bg-gray-50 flex-1 focus:ring-2 focus:ring-orange-400 outline-none disabled:cursor-not-allowed" />
+                :class="newType.name && newType.name.trim() !== '' ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-gray-50'"
+                class="text-xs p-2.5 border rounded-lg flex-1 focus:ring-2 focus:ring-blue-400 outline-none disabled:cursor-not-allowed transition-colors" />
               <input v-model="newType.code" placeholder="Code" :disabled="isLocked"
-                class="text-xs p-2.5 border border-gray-200 rounded-lg bg-gray-50 w-20 focus:ring-2 focus:ring-orange-400 outline-none disabled:cursor-not-allowed" />
+                :class="newType.code && newType.code.trim() !== '' ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-gray-50'"
+                class="text-xs p-2.5 border rounded-lg sm:w-20 w-full focus:ring-2 focus:ring-blue-400 outline-none disabled:cursor-not-allowed transition-colors" />
             </div>
             <button @click="addNewAssessmentType" :disabled="isLocked"
               class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -183,11 +186,15 @@
                     class="font-bold text-base w-full bg-transparent border-b-2 border-gray-100 outline-none uppercase transition-colors" />
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description</label>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description <span class="text-red-500 font-black">*</span> <span class="text-red-500 text-[9px] font-bold">REQUIRED</span></label>
                   <textarea v-model="co.description" placeholder="Describe the course outcome..." rows="2"
                     :disabled="isLocked"
-                    :class="isLocked ? 'cursor-not-allowed text-gray-500' : 'focus:ring-2 focus:ring-orange-400 focus:border-transparent'"
-                    class="text-xs w-full bg-gray-50 border border-gray-200 rounded-lg p-2 outline-none resize-none"></textarea>
+                    :class="[
+                      isLocked ? 'cursor-not-allowed text-gray-500' : 'focus:ring-2 focus:ring-orange-400 focus:border-transparent',
+                      !co.description || co.description.trim() === '' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    ]"
+                    class="text-xs w-full rounded-lg p-2 outline-none resize-none border"></textarea>
+                  <p v-if="!co.description || co.description.trim() === ''" class="text-[9px] text-red-500 font-bold mt-1">⚠️ Description cannot be empty</p>
                 </div>
               </div>
             </div>
@@ -392,7 +399,7 @@
           class="w-full sm:w-auto px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           {{ isLocked ? 'Close' : 'Cancel' }}
         </button>
-        <button v-if="!isLocked" @click="submitSyllabus" :disabled="grandTotal !== 100 || !allCoDescriptionsAreFilled"
+        <button v-if="!isLocked" @click="submitSyllabus" :disabled="grandTotal !== 100"
           class="w-full sm:w-auto px-6 sm:px-8 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
@@ -510,11 +517,6 @@ export default {
         if (seen[typeId]) return true
         seen[typeId] = true
         return false
-      })
-    },
-    allCoDescriptionsAreFilled: function () {
-      return this.localOutcomes.every(function (co) {
-        return co.description && co.description.trim() !== ''
       })
     },
   },
@@ -672,13 +674,12 @@ export default {
 
     // ── Add new assessment type ───────────────────────────────────
     addNewAssessmentType: async function () {
-      // Validate both name and code are provided
-      if (!this.newType.name.trim()) {
-        this.$refs.successMessage.show('⚠️ Assessment type name is required', 'error', 2500)
+      if (!this.newType.name || this.newType.name.trim() === '') {
+        this.$refs.successMessage.show('⚠️ Name is required. Please enter an assessment type name.', 'error', 3000)
         return
       }
-      if (!this.newType.code.trim()) {
-        this.$refs.successMessage.show('⚠️ Assessment type code is required', 'error', 2500)
+      if (!this.newType.code || this.newType.code.trim() === '') {
+        this.$refs.successMessage.show('⚠️ Code is required. Please enter an assessment type code.', 'error', 3000)
         return
       }
       try {
@@ -690,28 +691,41 @@ export default {
         var res = await this.$axios.post('/obe/assessment-types', payload)
         this.assessmentTypes.push(res.data)
         this.newType = { name: '', code: '' }
-        this.$refs.successMessage.show('✓ New assessment type "' + payload.name + '" registered successfully!', 'success', 2500)
+        this.$refs.successMessage.show('✅ Assessment type "' + payload.name + '" [' + payload.code + '] registered successfully! You can now add it to the matrix.', 'success', 3500)
       } catch (e) {
         console.error('Failed to register assessment type:', e)
         this.$refs.successMessage.show('✗ Failed to add type. The code might already be taken.', 'error', 3000)
       }
     },
 
-    // ── Save ─────────────────────────────────────────────────────
-    submitSyllabus: async function () {
-      // ── Validate all CO descriptions are filled ──────────────────
-      var self = this
-      var missingDescriptions = this.localOutcomes.filter(function (co) {
-        return !co.description || co.description.trim() === ''
+    // ── Get COs missing descriptions ────────────────────────
+    getMissingDescriptions: function () {
+      var missing = []
+      this.localOutcomes.forEach(function (co) {
+        if (!co.description || co.description.trim() === '') {
+          missing.push(co.co_code)
+        }
       })
-      if (missingDescriptions.length > 0) {
-        var missingList = missingDescriptions.map(function (co) { return co.co_code }).join(', ')
+      return missing
+    },
+
+    // ── Check if all COs have descriptions ───────────────────
+    hasAllDescriptions: function () {
+      return this.getMissingDescriptions().length === 0
+    },
+
+    // ── Save ─────────────────────────────────────────────────
+    submitSyllabus: async function () {
+      // Check if all COs have descriptions
+      if (!this.hasAllDescriptions()) {
+        var missing = this.getMissingDescriptions()
+        var missingList = missing.join(', ')
         this.validationModal = {
           open: true,
-          type: 'below',
+          type: 'missing-description',
           title: 'Missing Course Outcome Descriptions',
-          subtitle: 'Required Field',
-          message: 'All Course Outcomes must have descriptions. Please fill in descriptions for: ' + missingList
+          subtitle: 'Validation Error',
+          message: 'The following Course Outcomes are missing descriptions: ' + missingList + '. All Course Outcomes require a description before saving.'
         }
         return
       }
