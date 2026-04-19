@@ -1016,7 +1016,11 @@ export default {
     },
 
     confirmAddActivity: function () {
-      if (!this.newActivity.co_code || !this.newActivity.name || !this.newActivity.type_id) return
+      if (!this.newActivity.co_code || !this.newActivity.type_id) return
+      if (!this.newActivity.name || this.newActivity.name.trim() === '') {
+        this.showAlert('Required: Task Name\n\nPlease enter a task name to add the activity.')
+        return
+      }
       var co_code = this.newActivity.co_code
       var type    = null
       for (var i = 0; i < this.assessmentTypes.length; i++) {
@@ -1226,28 +1230,28 @@ export default {
 
       // Check Activity Name first with specific message
       if (!rubric.activityName.trim()) {
-        this.showAlert('⚠️ Required: Activity Name\n\nPlease enter an activity name to save the rubric.')
+        this.showAlert('Required: Activity Name\n\nPlease enter an activity name to save the rubric.')
         return
       }
 
       // Check CO selection
       if (!rubric.selectedCo) {
-        this.showAlert('⚠️ Required: Course Outcome (CO)\n\nPlease select a Course Outcome before saving.')
+        this.showAlert('Required: Course Outcome (CO)\n\nPlease select a Course Outcome before saving.')
         return
       }
 
       // Check Assessment Type selection  
       if (!rubric.selectedTypeId) {
-        this.showAlert('⚠️ Required: Assessment Type\n\nPlease select an Assessment Type before saving.')
+        this.showAlert('Required: Assessment Type\n\nPlease select an Assessment Type before saving.')
         return
       }
 
       if (rubric.criteria.length === 0) {
-        this.showAlert('⚠️ Required: Criteria\n\nPlease add at least one criterion before saving.')
+        this.showAlert('Required: Criteria\n\nPlease add at least one criterion before saving.')
         return
       }
       if (totalMax === 0) {
-        this.showAlert('⚠️ Invalid: Total Max Score\n\nTotal max score must be greater than 0.')
+        this.showAlert('Invalid: Total Max Score\n\nTotal max score must be greater than 0.')
         return
       }
 
@@ -1256,7 +1260,7 @@ export default {
         return self.rubricPanelRowTotal(rIdx, s.studid) > 0
       })
       if (!hasAnyScore) {
-        this.showAlert('⚠️ Required: Student Scores\n\nPlease enter scores for at least one student before saving.')
+        this.showAlert('Required: Student Scores\n\nPlease enter scores for at least one student before saving.')
         return
       }
 
@@ -1317,8 +1321,15 @@ export default {
 <style scoped>
 table { border-spacing: 0; }
 input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button { opacity: 0; }
-input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  opacity: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 
 @keyframes popInDown {
   0% {

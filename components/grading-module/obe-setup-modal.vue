@@ -186,15 +186,15 @@
                     class="font-bold text-base w-full bg-transparent border-b-2 border-gray-100 outline-none uppercase transition-colors" />
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description <span class="text-red-500 font-black">*</span> <span class="text-red-500 text-[9px] font-bold">REQUIRED</span></label>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Description</label>
                   <textarea v-model="co.description" placeholder="Describe the course outcome..." rows="2"
                     :disabled="isLocked"
                     :class="[
                       isLocked ? 'cursor-not-allowed text-gray-500' : 'focus:ring-2 focus:ring-orange-400 focus:border-transparent',
                       !co.description || co.description.trim() === '' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
                     ]"
-                    class="text-xs w-full rounded-lg p-2 outline-none resize-none border"></textarea>
-                  <p v-if="!co.description || co.description.trim() === ''" class="text-[9px] text-red-500 font-bold mt-1">⚠️ Description cannot be empty</p>
+                    class="text-sm w-full rounded-lg p-2 outline-none resize-none border"></textarea>
+                  <p v-if="!co.description || co.description.trim() === ''" class="text-[6px] text-red-500 mt-1">Description cannot be empty</p>
                 </div>
               </div>
             </div>
@@ -435,7 +435,7 @@
         <!-- Warning Message -->
         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p class="text-sm text-gray-700 leading-relaxed">
-            <span class="font-bold text-red-600">⚠️ WARNING:</span> Unlocking the syllabus allows edits. Only <strong>removed Course Outcomes</strong> or <strong>Assessment Types</strong> will delete related scores:
+            <span class="font-bold text-red-600">WARNING:</span> Unlocking the syllabus allows edits. Only <strong>removed Course Outcomes</strong> or <strong>Assessment Types</strong> will delete related scores:
           </p>
           <ul class="list-disc list-inside mt-3 space-y-1 text-sm text-gray-600">
             <li>Scores for Course Outcomes you REMOVE will be deleted</li>
@@ -605,7 +605,7 @@ export default {
       var typeName = this.getTypeProp(typeId, 'name')
       this._pushMatrixRow(typeId)
       this.selectedTypeToAdd = ''
-      this.$refs.successMessage.show('✓ Added "' + typeName + '" assessment type successfully!', 'success', 2000)
+      this.$refs.successMessage.show('Added "' + typeName + '" assessment type successfully!', 'success', 2000)
     },
     _pushMatrixRow: function (typeId) {
       var self  = this
@@ -650,7 +650,7 @@ export default {
         self.$set(row.cells, newCode, 0)
       })
       // Show real-time notification
-      this.$refs.successMessage.show('✓ Added ' + newCode + ' successfully!', 'success', 2000)
+      this.$refs.successMessage.show('Added ' + newCode + ' successfully!', 'success', 2000)
     },
     removeCO: function (idx) {
       if (this.localOutcomes.length <= 1) return
@@ -659,7 +659,7 @@ export default {
       this.weightMatrix.forEach(function (row) {
         delete row.cells[removedCode]
       })
-      this.$refs.successMessage.show('✓ Deleted "' + removedCode + '" successfully!', 'success', 2000)
+      this.$refs.successMessage.show('Deleted "' + removedCode + '" successfully!', 'success', 2000)
     },
 
     // ── Fetch assessment types ────────────────────────────────────
@@ -675,11 +675,11 @@ export default {
     // ── Add new assessment type ───────────────────────────────────
     addNewAssessmentType: async function () {
       if (!this.newType.name || this.newType.name.trim() === '') {
-        this.$refs.successMessage.show('⚠️ Name is required. Please enter an assessment type name.', 'error', 3000)
+        this.$refs.successMessage.show('Name is required. Please enter an assessment type name.', 'error', 3000)
         return
       }
       if (!this.newType.code || this.newType.code.trim() === '') {
-        this.$refs.successMessage.show('⚠️ Code is required. Please enter an assessment type code.', 'error', 3000)
+        this.$refs.successMessage.show('Code is required. Please enter an assessment type code.', 'error', 3000)
         return
       }
       try {
@@ -691,10 +691,10 @@ export default {
         var res = await this.$axios.post('/obe/assessment-types', payload)
         this.assessmentTypes.push(res.data)
         this.newType = { name: '', code: '' }
-        this.$refs.successMessage.show('✅ Assessment type "' + payload.name + '" [' + payload.code + '] registered successfully! You can now add it to the matrix.', 'success', 3500)
+        this.$refs.successMessage.show('Assessment type "' + payload.name + '" [' + payload.code + '] registered successfully! You can now add it to the matrix.', 'success', 3500)
       } catch (e) {
         console.error('Failed to register assessment type:', e)
-        this.$refs.successMessage.show('✗ Failed to add type. The code might already be taken.', 'error', 3000)
+        this.$refs.successMessage.show('Failed to add type. The code might already be taken.', 'error', 3000)
       }
     },
 
@@ -782,7 +782,7 @@ export default {
 
         console.log('[OBE Modal] Submitting syllabus with payload:', payload)
         await this.$axios.post('/obe/course-outcome/batch', payload)
-        this.$refs.successMessage.show('✅ Syllabus saved successfully! Refreshing data...', 'success', 3000)
+        this.$refs.successMessage.show('Syllabus saved successfully! Refreshing data...', 'success', 3000)
         this.isLocked = true
         
         // Emit save event to trigger parent refresh
@@ -803,7 +803,7 @@ export default {
           errorMsg = e.message
         }
         
-        this.$refs.successMessage.show('❌ Failed to save: ' + errorMsg, 'error', 4000)
+        this.$refs.successMessage.show('Failed to save: ' + errorMsg, 'error', 4000)
       }
     },
 

@@ -824,7 +824,7 @@ export default {
 
     data: function () {
         return {
-            academicYears: ['2024-2025', '2025-2026', '2026-2027', '2027-2028', '2028-2029', '2029-2030'],
+            academicYears: ['2026-2027', '2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021'],
             semesters: ['1st', '2nd', 'Summer'],
             selectedYear: '',
             selectedSemester: '',
@@ -1410,10 +1410,10 @@ export default {
                     }
                 }
                 
-                this.$refs.msg.show('✅ Syllabus updated! OBE Grading Sheet and Class Record have been refreshed with the new assessment weights.', 'success')
+                this.$refs.msg.show('Syllabus updated! OBE Grading Sheet and Class Record have been refreshed with the new assessment weights.', 'success')
             } catch (e) {
                 console.error('Error refreshing after syllabus save:', e)
-                this.$refs.msg.show('⚠️ Syllabus saved but there was an error refreshing. Please reload the grading sheet.', 'warning')
+                this.$refs.msg.show('Syllabus saved but there was an error refreshing. Please reload the grading sheet.', 'warning')
             }
         },
 
