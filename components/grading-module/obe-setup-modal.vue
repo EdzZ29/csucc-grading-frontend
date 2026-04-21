@@ -155,17 +155,18 @@
               <div class="flex items-center gap-2">
                 <div class="w-1 h-6 bg-orange-400 rounded-full"></div>
                 <h4 class="font-bold text-gray-700 text-sm">Course Outcomes</h4>
+                <span class="text-[10px] text-gray-400 font-inria">({{ localOutcomes.length }} total)</span>
               </div>
               <button @click="addCO" :disabled="isLocked"
-                class="px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-200 transition-colors flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                class="px-3 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Add CO
               </button>
             </div>
-            <div class="space-y-3">
-              <div v-for="(co, idx) in localOutcomes" :key="'co-' + idx"
+            <div class="space-y-3 flex-1">
+              <div v-for="(co, pageIdx) in paginatedOutcomes" :key="'co-' + co.co_code"
                 class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm relative group transition-all"
                 :class="isLocked ? 'opacity-70' : 'hover:shadow-md hover:border-orange-300'">
                 <div v-if="isLocked" class="absolute top-3 right-3 text-gray-300">
@@ -173,7 +174,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <button v-if="!isLocked" @click="removeCO(idx)"
+                <button v-if="!isLocked" @click="removeCO((currentCoPage - 1) * itemsPerPage + pageIdx)"
                   class="absolute top-3 right-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full w-7 h-7 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -197,6 +198,29 @@
                   <p v-if="!co.description || co.description.trim() === ''" class="text-[6px] text-red-500 mt-1">Description cannot be empty</p>
                 </div>
               </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="totalCoPages > 1" class="mt-4 flex items-center justify-between gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <button @click="prevCoPage" :disabled="currentCoPage === 1"
+                class="px-2 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Prev
+              </button>
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] font-bold text-gray-600">
+                  Page {{ currentCoPage }} of {{ totalCoPages }}
+                </span>
+              </div>
+              <button @click="nextCoPage" :disabled="currentCoPage === totalCoPages"
+                class="px-2 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1">
+                Next
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -499,6 +523,10 @@ export default {
       //   indexed by row position, so duplicates are independent
       weightMatrix:     [],
       selectedTypeToAdd: '',
+
+      // ── Pagination ─────────────────────────────────────────────────
+      currentCoPage:    1,
+      itemsPerPage:     5,
     }
   },
   computed: {
@@ -518,6 +546,14 @@ export default {
         seen[typeId] = true
         return false
       })
+    },
+    totalCoPages: function () {
+      return Math.ceil(this.localOutcomes.length / this.itemsPerPage) || 1
+    },
+    paginatedOutcomes: function () {
+      var start = (this.currentCoPage - 1) * this.itemsPerPage
+      var end = start + this.itemsPerPage
+      return this.localOutcomes.slice(start, end)
     },
   },
   watch: {
@@ -648,8 +684,8 @@ export default {
       var self = this
       this.weightMatrix.forEach(function (row) {
         self.$set(row.cells, newCode, 0)
-      })
-      // Show real-time notification
+      })      // Move to the last page if the new CO is on a new page
+      this.currentCoPage = this.totalCoPages      // Show real-time notification
       this.$refs.successMessage.show('Added ' + newCode + ' successfully!', 'success', 2000)
     },
     removeCO: function (idx) {
@@ -660,6 +696,27 @@ export default {
         delete row.cells[removedCode]
       })
       this.$refs.successMessage.show('Deleted "' + removedCode + '" successfully!', 'success', 2000)
+      // Reset to page 1 if current page exceeds total pages after deletion
+      if (this.currentCoPage > this.totalCoPages) {
+        this.currentCoPage = Math.max(1, this.totalCoPages)
+      }
+    },
+
+    // ── Pagination methods ───────────────────────────────────────
+    nextCoPage: function () {
+      if (this.currentCoPage < this.totalCoPages) {
+        this.currentCoPage++
+      }
+    },
+    prevCoPage: function () {
+      if (this.currentCoPage > 1) {
+        this.currentCoPage--
+      }
+    },
+    goToCoPage: function (page) {
+      if (page >= 1 && page <= this.totalCoPages) {
+        this.currentCoPage = page
+      }
     },
 
     // ── Fetch assessment types ────────────────────────────────────
@@ -819,6 +876,7 @@ export default {
       // Reset state
       this.matrixRows   = []
       this.weightMatrix = []
+      this.currentCoPage = 1
 
       try {
         var empid       = this.$parent.user.empid

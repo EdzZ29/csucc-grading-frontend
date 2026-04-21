@@ -166,8 +166,9 @@
                   :class="idx % 2 === 0 ? 'bg-white group-hover:bg-orange-50/50' : 'bg-gray-50/50 group-hover:bg-orange-50/50'">
                   {{ idx + 1 }}
                 </td>
-                <td class="sticky left-[40px] z-10 border border-gray-200 px-4 py-2.5 font-medium whitespace-nowrap text-gray-700 truncate"
-                  :class="idx % 2 === 0 ? 'bg-white group-hover:bg-orange-50/50' : 'bg-gray-50/50 group-hover:bg-orange-50/50'">
+                <td class="sticky left-[40px] z-10 border border-gray-200 px-4 py-2.5 font-medium whitespace-nowrap text-gray-700 truncate cursor-pointer hover:text-orange-600 hover:bg-orange-100 transition-all"
+                  :class="idx % 2 === 0 ? 'bg-white group-hover:bg-orange-50/50' : 'bg-gray-50/50 group-hover:bg-orange-50/50'"
+                  @click="openStudentDetail(student)">
                   {{ student.studlastname }}, {{ student.studfirstname }}
                 </td>
                 <template v-for="group in coGroups">
@@ -630,6 +631,43 @@
       </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════════════
+         STUDENT DETAIL MODAL
+    ══════════════════════════════════════════════════════════════ -->
+    <div v-if="studentDetailModal.open && studentDetailModal.student" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-lg p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-popInDown">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4 flex items-center justify-between">
+          <h2 class="text-lg font-epundaslab font-bold">Student Information</h2>
+          <button @click="closeStudentDetail" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Student Info Section -->
+        <div class="p-6 space-y-4">
+          <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Student Name</p>
+            <p class="text-lg font-bold text-gray-800">{{ studentDetailModal.student.studlastname }}, {{ studentDetailModal.student.studfirstname }}</p>
+          </div>
+
+          <div class="bg-orange-50 rounded-xl p-4 border border-orange-200">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID Number</p>
+            <p class="text-xl font-black text-orange-600">{{ studentDetailModal.student.studid }}</p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+          <button @click="closeStudentDetail" class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-lg shadow transition-all transform hover:-translate-y-0.5">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -690,6 +728,11 @@ export default {
       alertModal: {
         open: false,
         message: ''
+      },
+
+      studentDetailModal: {
+        open: false,
+        student: null,
       },
     }
   },
@@ -787,7 +830,7 @@ export default {
     },
 
     anyModalOpen: function () {
-      return this.showAddModal || this.showRubricsModal || (this.criteriaModal && this.criteriaModal.open)
+      return this.showAddModal || this.showRubricsModal || (this.criteriaModal && this.criteriaModal.open) || this.studentDetailModal.open
     },
   },
 
@@ -829,6 +872,16 @@ export default {
     showAlert(message) {
       this.alertModal.message = message;
       this.alertModal.open = true;
+    },
+
+    openStudentDetail: function (student) {
+      this.studentDetailModal.student = student
+      this.studentDetailModal.open = true
+    },
+
+    closeStudentDetail: function () {
+      this.studentDetailModal.open = false
+      this.studentDetailModal.student = null
     },
 
     clampScore: function (student, localId, maxScore) {
