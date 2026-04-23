@@ -335,7 +335,7 @@
                           pattern="[0-9]*"
                           :value="getCellValue(rowIdx, co.co_code) || ''"
                           @input="setCellValue(rowIdx, co.co_code, $event.target.value)"
-                          @blur="sanitizeCellOnBlur(rowIdx, co.co_code, $event.target)"
+                          @blur="sanitizeCellOnBlur(rowIdx, co.co_code)"
                           @keydown="blockNonNumericKeys($event)"
                           :disabled="isLocked"
                           class="w-14 text-center text-xs font-bold rounded-lg px-1 py-1.5 outline-none transition-all"
@@ -602,12 +602,10 @@ export default {
       if (!row) return
       this.$set(row.cells, coCode, val)
     },
-    // Called on blur — writes the clean integer back into the input so the
-    // displayed value always matches the stored integer (no trailing dots, etc.)
-    sanitizeCellOnBlur: function (rowIdx, coCode, inputEl) {
-      var stored = this.getCellValue(rowIdx, coCode)
-      // Show empty string when 0 so the placeholder is visible
-      inputEl.value = stored > 0 ? String(stored) : ''
+    // Called on blur — ensures value is properly stored
+    sanitizeCellOnBlur: function (rowIdx, coCode) {
+      // Value is already properly stored by setCellValue, no need to manipulate DOM
+      // Vue's :value binding will reflect the stored value automatically
     },
     // Block arrow-up / arrow-down / wheel so the value never auto-increments
     blockNonNumericKeys: function (evt) {
@@ -897,24 +895,15 @@ export default {
           })
 
           // Build matrix from tosWeights
-          var self          = this
-          var allDecimal    = true // detect if backend returns decimals
-
-          uniqueCOs.forEach(function (co) {
-            if (co.tosWeights && co.tosWeights.length > 0) {
-              co.tosWeights.forEach(function (tw) {
-                if (tw.weight_percentage >= 1) allDecimal = false
-              })
-            }
-          })
+          var self = this
 
           uniqueCOs.forEach(function (co) {
             if (co.tosWeights && co.tosWeights.length > 0) {
               co.tosWeights.forEach(function (tw) {
                 var typeId = tw.type_id
-                var pct    = allDecimal
-                  ? Math.floor(tw.weight_percentage * 100)
-                  : Math.floor(tw.weight_percentage)
+                // Use the weight_percentage value directly as-is (no conversion needed)
+                // The backend stores it as an integer (0-100), so use it directly
+                var pct = Math.floor(tw.weight_percentage)
 
                 // Find existing row for this typeId, or add one
                 var existingRowIdx = self.matrixRows.indexOf(typeId)
