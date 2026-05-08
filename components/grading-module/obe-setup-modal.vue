@@ -230,7 +230,6 @@
               <div class="flex items-center gap-2">
                 <div class="w-1 h-6 bg-blue-400 rounded-full"></div>
                 <h4 class="font-bold text-gray-700 text-sm">Assessment Weight Matrix (TOS)</h4>
-                <span class="text-[10px] text-gray-400 font-inria">— each cell is the % weight for that assessment in that CO</span>
               </div>
             </div>
 

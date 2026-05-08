@@ -693,7 +693,7 @@
                     <p class="text-sm">Select a different academic period or contact administrator</p>
                 </div>
 
-                <div v-for="(subject, index) in subjects" :key="index" @click="openGradingSheet(subject)"
+                <div v-for="(subject, index) in paginatedSubjects" :key="index" @click="openGradingSheet(subject)"
                     class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer group">
                     <div class="bg-gradient-to-r from-orange-400 to-orange-500 p-5 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-8 -mt-8"></div>
@@ -726,6 +726,34 @@
                             </svg>
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="subjects.length > 0" class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <!-- Rows per page selection -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Rows per page:</span>
+                    <select v-model="itemsPerPage" @change="currentPage = 1" class="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm cursor-pointer">
+                        <option v-for="n in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]" :key="n" :value="n">{{ n }}</option>
+                    </select>
+                </div>
+                
+                <!-- Pagination buttons -->
+                <div class="flex items-center gap-2">
+                    <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors text-gray-700">
+                        Prev
+                    </button>
+                    
+                    <div class="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
+                        <button v-for="page in displayedPages" :key="page" @click="currentPage = page" :class="['px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors', currentPage === page ? 'bg-orange-500 text-white border-orange-500 shadow-sm' : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white']">
+                            {{ page }}
+                        </button>
+                    </div>
+
+                    <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors text-gray-700">
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
@@ -824,6 +852,8 @@ export default {
 
     data: function () {
         return {
+            currentPage: 1,
+            itemsPerPage: 5,
             academicYears: ['2026-2027', '2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021'],
             semesters: ['1st', '2nd', 'Summer'],
             selectedYear: '',
@@ -863,6 +893,24 @@ export default {
     },
 
     computed: {
+
+        paginatedSubjects() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.subjects.slice(start, end);
+        },
+
+        totalPages() {
+            return Math.ceil(this.subjects.length / this.itemsPerPage) || 1;
+        },
+
+        displayedPages() {
+            let pages = [];
+            for (let i = 1; i <= this.totalPages; i++) {
+                pages.push(i);
+            }
+            return pages;
+        },
 
         coIdToCode: function () {
             var m = {}
@@ -1191,6 +1239,7 @@ export default {
                 return
             }
             this.loading = true
+            this.currentPage = 1
             this.activeSubject = null
             this.gradeData = []
             this.showClassRecord = false
